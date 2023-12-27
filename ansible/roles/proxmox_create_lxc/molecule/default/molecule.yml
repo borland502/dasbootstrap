@@ -1,0 +1,10 @@
+---
+dependency:
+  enabled: true
+  name: galaxy
+driver:
+  name: default
+  options:
+    managed: false
+platforms: # TODO: Don't assume localhost
+  - name: localhost

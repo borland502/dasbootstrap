@@ -1,0 +1,30 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - /etc/ansible/global_vars/pve.yaml
+  environment:
+    PATH: /usr/local/bin:/usr/bin:/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/opt/python/bin:/home/linuxbrew/.linuxbrew/lib/python3.11/site-packages
+  pre_tasks:
+    - name: Set homebrew python as the python of choice
+      ansible.builtin.set_fact:
+        ansible_python_interpreter: /home/linuxbrew/.linuxbrew/opt/python/bin/python3
+    - name: Install Proxmoxer
+      ansible.builtin.pip:
+        name:
+          - proxmoxer
+  roles:
+    - role: technohouser.proxmox_create_lxc
+
+# - name: Turn the bootstrap into a template
+#   community.general.proxmox:
+#     node: "{{ pve_node }}"
+#     api_host: "{{ pve_api_host }}"
+#     api_user: "{{ pve_api_user | default(omit) }}"
+#     api_password: "{{ pve_api_password | default(omit) }}"
+#     api_token_id: "{{ pve_api_token_id | default(omit) }}"
+#     api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+#     vmid: "{{ pve_lxc_status.proxmox_vms[0].vmid }}"
+#     state: template
+

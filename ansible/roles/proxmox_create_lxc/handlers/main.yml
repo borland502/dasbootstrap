@@ -1,0 +1,14 @@
+---
+# handlers file for ansible-role-proxmox-create-lxc/
+
+- name: Start the container
+  community.general.proxmox:
+    node: "{{ pve_node }}"
+    api_host: "{{ pve_api_host }}"
+    api_user: "{{ pve_api_user | default(omit) }}"
+    api_password: "{{ pve_api_password | default(omit) }}"
+    api_token_id: "{{ pve_api_token_id | default(omit) }}"
+    api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+    hostname: "{{ pve_hostname }}"
+    state: started
+    

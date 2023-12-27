@@ -45,3 +45,6 @@ build
 
 # alias secrets to a directory that's never checked in
 **/secret/*
+
+# IntelliJ
+*.idea

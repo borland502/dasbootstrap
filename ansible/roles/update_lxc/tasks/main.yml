@@ -1,0 +1,75 @@
+---
+
+# TODO: Remove key for short name 
+
+- name: Change root shell
+  ansible.builtin.user:
+    name: root
+    shell: /bin/zsh
+    state: present
+
+- name: Change hostname
+  ansible.builtin.hostname:
+    name: "{{ pve_hostname }}.{{ domain.name }}"
+
+# # https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+# - name: Augment UDP buffer size for http3
+#   ansible.posix.sysctl:
+#     name: net.core.rmem_max
+#     sysctl_set: true
+#     value: 2500000
+#     state: present
+
+# - name: Augment the 2nd UDP buffer size for http3
+#   ansible.posix.sysctl:
+#     name: net.core.wmem_max
+#     sysctl_set: true
+#     value: 2500000
+#     state: present
+
+- name: Increase file limit for systemd
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/system.conf
+    regexp: "^#DefaultLimitNOFILE=$"
+    line: "DefaultLimitNOFILE=4096:524288"
+
+- name: Increase file limit for systemd
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/user.conf
+    regexp: "^#DefaultLimitNOFILE=$"
+    line: "DefaultLimitNOFILE=4096:524288"
+
+- name: Create wheel group (for fun)
+  ansible.builtin.group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^%wheel"
+    line: "%wheel ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+
+- name: Create users group
+  ansible.builtin.group:
+    name: users
+    gid: 100
+    state: present
+
+- name: Check if user exists using getent
+  getent:
+    database: passwd
+    key: "ansible@{{ domain.name }}"
+
+# TODO: Figure out why I can't automate the joining of the domain
+
+# - name: Join Domain
+#   ansible.builtin.expect:
+#     command: /bin/zsh -c "realm -v join {{ domain.name }}"
+#     echo: true
+#     responses:
+#       "Password for Administrator: ": "{{ domain.admin_password }}"
+#     timeout: '-1'
+

@@ -1,0 +1,6 @@
+roles:
+  - name: Comcast.sdkman
+  - name: GROG.package
+  - name: udelarinterior.proxmox_create_lxc
+    src: https://github.com/UdelaRInterior/ansible-role-proxmox-create-lxc.git
+  - name: EddyH85.linux_domain_mgmt

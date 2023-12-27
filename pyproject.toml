@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "dasbootstrap"
+version = "0.1.0"
+description = "System installer using ansible"
+authors = ["Jeremy Hettenhouser <jhettenh@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+wheel = "0.42.0"
+setuptools = "69.0.3"
+ansible = "^9.1.0"
+ansible-lint = { version = "^6.22.1", markers = "platform_system != 'Windows'" }
+proxmoxer = "2.0.1"
+cryptography = "41.0.7"
+urllib3 = "2.1.0"
+lxc = "^3.0.4.0"
+pexpect = "^4.9.0"
+ipaddr = "^2.2.0"
+ansible-compat = "^4.1.10"
+molecule = "^6.0.3"
+molecule-plugins = {extras = ["docker"], version = "^23.5.0"}
+paramiko = "^3.4.0"
+
+[tool.poetry.group.dev.dependencies]
+jmespath = "1.0.1"
+docker = "7.0.0"
+jq = "1.6.0"
+molecule = "6.0.3"
+molecule-containers = "^2.0.0"
+paramiko = "3.4.0"
+requests = "2.31.0"
+argparse = "1.4.0"
+virtualenv-pyenv = "^0.4.0"
+redis = "^5.0.1"
+yq = "^3.2.3"
+certifi = "^2023.11.17"
+dnspython = "2.4.2"
+pyspnego = {extras = ["kerberos"], version = "0.10.2"}
+sansldap = "0.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

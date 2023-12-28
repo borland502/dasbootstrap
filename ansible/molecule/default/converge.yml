@@ -9,6 +9,8 @@
   ignore_unreachable: true
   gather_facts: false
   remote_user: root
+  environment:
+    PATH: /usr/local/bin:/usr/bin:/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/opt/python/bin:/home/linuxbrew/.linuxbrew/lib/python3.11/site-packages  
   vars_files:
     - /etc/ansible/global_vars/all.yaml
     - /etc/ansible/global_vars/pve.yaml
@@ -23,21 +25,22 @@
   gather_facts: true
   remote_user: root
   become: true
+  environment:
+    PATH: /usr/local/bin:/usr/bin:/bin:/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/opt/python/bin:/home/linuxbrew/.linuxbrew/lib/python3.11/site-packages  
   vars_files:
     - /etc/ansible/global_vars/pve.yaml
     - /etc/ansible/global_vars/all.yaml
   roles:
-    - role: robertdebock.bootstrap
     - role: scruffaluff.bootware.age
     - role: scruffaluff.bootware.git
-    - role: buluma.openssh
     - role: buluma.locale
-      vars:
-        locale_timezone: "America/New_York"
     - role: buluma.auto_update
       vars:
         auto_update_apply_updates: true
     - role: buluma.sudo
+    - role: buluma.timezone
+      vars:
+        timezone: "America/New_York"
     - role: buluma.vim
     # # - role: buluma.hosts
     # #   delegate_to: "localhost"
@@ -58,15 +61,6 @@
           - name: adcli
           - name: packagekit
     - role: update_lxc
-
-- name: Install homebrew
-  hosts: "{{ pve_hostname }}"
-  gather_facts: false
-  vars_files:
-    - /etc/ansible/global_vars/pve.yaml
-    - /etc/ansible/global_vars/all.yaml
-  roles:
-    - role: professormanhattan.homebrew
 
 # TODO: system level changes (sysctl, systemd, apt, etc)
 

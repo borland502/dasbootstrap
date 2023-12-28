@@ -2,15 +2,15 @@
 # tasks file for technohouser.proxmox_create_lxc
 # TODO: add pre-generated host keys and ansible account keys to the bootstrap image
 
-- name: Remove host keys from known hosts for controller 
-  ansible.builtin.known_hosts:
-    name: "{{ pve_hostname }}"
-    state: absent
+# - name: Remove host keys from known hosts for controller 
+#   ansible.builtin.known_hosts:
+#     name: "{{ pve_hostname }}"
+#     state: absent
 
-- name: Remove fqdn host keys from known hosts for controller
-  ansible.builtin.known_hosts:
-    name: "{{ pve_hostname }}.{{ domain.alt }}"
-    state: absent
+# - name: Remove fqdn host keys from known hosts for controller
+#   ansible.builtin.known_hosts:
+#     name: "{{ pve_hostname }}.{{ domain.alt }}"
+#     state: absent
 
 - name: Add LXC container template to node
   community.general.proxmox_template:

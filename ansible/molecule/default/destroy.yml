@@ -3,7 +3,12 @@
   hosts: localhost
   connection: local
   gather_facts: false
-  # no_log: "{{ molecule_no_log }}"
+  remote_user: root
+  vars_files:
+    - /etc/ansible/global_vars/all.yaml
+    - /etc/ansible/global_vars/pve.yaml
+  roles:
+    - name: destroy_lxc
   tasks:
     # Developer must implement.
 

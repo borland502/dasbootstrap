@@ -5,17 +5,57 @@
 # ssh-keygen -f "/home/ansible@hettenhouser.com/.ssh/known_hosts" -R "bootstrap.local.technohouser.com"
 
 - name: Create LXC Base Image
-  hosts: "localhost"
+  hosts: "{{ pve_node }}"
   ignore_unreachable: true
   gather_facts: false
   remote_user: root
   vars_files:
     - /etc/ansible/global_vars/all.yaml
     - /etc/ansible/global_vars/pve.yaml
-  pre_tasks:
-    # TODO: Preflight check
+  post_tasks:
+    - name: Ensure the bootstrap container has been started
+      community.general.proxmox:
+        node: "{{ pve_node }}"
+        api_host: "{{ pve_api_host }}"
+        api_user: "{{ pve_api_user | default(omit) }}"
+        api_password: "{{ pve_api_password | default(omit) }}"
+        api_token_id: "{{ pve_api_token_id | default(omit) }}"
+        api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+        hostname: "{{ pve_hostname }}"
+        state: started
+      notify:
+        - Wait for connection
   roles:
     - role: proxmox_create_lxc
+
+- name: Edit the node host lxc file to permit login for domain users
+  hosts: "{{ pve_node }}"
+  remote_user: root
+  vars_files:
+    - /etc/ansible/global_vars/all.yaml
+    - /etc/ansible/global_vars/pve.yaml
+  tasks:
+    - name: Get info on new container
+      community.general.proxmox_vm_info:
+        api_host: "{{ pve_api_host }}"
+        api_user: "{{ pve_api_user | default(omit) }}"
+        api_password: "{{ pve_api_password | default(omit) }}"
+        api_token_id: "{{ pve_api_token_id | default(omit) }}"
+        api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+        name: "{{ pve_hostname }}"
+      register: pve_status
+
+    - name: Debug
+      ansible.builtin.debug:
+        var: pve_status
+
+    - name: Append lines to /etc/pve/lxc/{{ pve_status.proxmox_vms[0].vmid }}.conf if not present
+      lineinfile:
+        path: /etc/pve/lxc/{{ pve_status.proxmox_vms[0].vmid }}.conf
+        line: "{{ item }}"
+      with_items:
+        - "lxc.idmap: u 0 0 2000000000"
+        - "lxc.idmap: g 0 0 2000000000"
 
 - name: Update LXC Base Image
   hosts: "{{ pve_hostname }}"
@@ -30,7 +70,7 @@
     - role: robertdebock.bootstrap
     - role: scruffaluff.bootware.age
     - role: scruffaluff.bootware.git
-    - role: buluma.openssh
+    # - role: buluma.openssh
     - role: buluma.locale
       vars:
         locale_timezone: "America/New_York"
@@ -57,20 +97,41 @@
           - name: libpam-sss
           - name: adcli
           - name: packagekit
+          - name: qemu-guest-agent
+          - name: python3-full
+          - name: python3-proxmoxer
+    # - role: EddyH85.linux_domain_mgmt
+    #   vars:
+    #     join_domain: true
+    #     DomainName: "{{ domain.name }}"
+    #     realm: "{{ domain.realm }}"
+    #     Join_OU: "{{ domain.ou }}"
+    #     Join_User: "{{ domain.admin }}"
+    #     Join_User_Pass: "{{ domain.admin_password }}"
+    #     PermitAdminUsers: "Administrator"
+    #     PermitAdminGroups: "wheel"
     - role: update_lxc
-
-- name: Install homebrew
-  hosts: "{{ pve_hostname }}"
-  gather_facts: false
-  vars_files:
-    - /etc/ansible/global_vars/pve.yaml
-    - /etc/ansible/global_vars/all.yaml
-  roles:
-    - role: professormanhattan.homebrew
+  post_tasks:
+    - name: Restart bootstrap container
+      community.general.proxmox:
+        node: "{{ pve_node }}"
+        api_host: "{{ pve_api_host }}"
+        api_user: "{{ pve_api_user | default(omit) }}"
+        api_password: "{{ pve_api_password | default(omit) }}"
+        api_token_id: "{{ pve_api_token_id | default(omit) }}"
+        api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+        state: restarted
+# - name: Install homebrew
+#   hosts: "{{ pve_hostname }}"
+#   gather_facts: true
+#   vars_files:
+#     - /etc/ansible/global_vars/pve.yaml
+#     - /etc/ansible/global_vars/all.yaml
+#   roles:
+#     - role: professormanhattan.homebrew
 
 # TODO: system level changes (sysctl, systemd, apt, etc)
 
 # TODO: ansible domain user changes (homebrew, join domain, etc)
 
 # TODO: Trigger app install(s) (Jenkins, Nexus, etc)
-    

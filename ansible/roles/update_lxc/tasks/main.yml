@@ -1,6 +1,5 @@
 ---
-
-# TODO: Remove key for short name 
+# TODO: Remove key for short name
 
 - name: Change root shell
   ansible.builtin.user:
@@ -58,10 +57,36 @@
     gid: 100
     state: present
 
-- name: Check if user exists using getent
-  getent:
-    database: passwd
-    key: "ansible@{{ domain.name }}"
+- name: Create ansible group
+  ansible.builtin.group:
+    name: ansible
+    state: present
+
+- name: Create ansible user
+  ansible.builtin.user:
+    name: ansible
+    groups:
+      - ansible
+      - wheel
+      - sudo
+    password: "{{ ansible.password | password_hash }}"
+    shell: /bin/zsh
+    create_home: true
+    generate_ssh_key: true
+    ssh_key_type: rsa
+    ssh_key_bits: 4096
+    state: present
+    
+- name: Add pub key to service account
+  ansible.posix.authorized_key:
+    user: ansible
+    key: "{{ ansible.pub_key }}"
+    state: present
+
+# - name: Check if user exists using getent
+#   getent:
+#     database: passwd
+#     key: "ansible@{{ domain.name }}"
 
 # TODO: Figure out why I can't automate the joining of the domain
 

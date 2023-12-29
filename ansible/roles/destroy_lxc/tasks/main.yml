@@ -1,0 +1,49 @@
+---
+- name: See if containers are stopped
+  community.general.proxmox_vm_info:
+    name: "{{ pve_hostname }}"
+    node: "{{ proxmox.node }}"
+    api_host: "{{ proxmox.uri }}"
+    api_user: "{{ proxmox.user }}"
+    api_password: "{{ proxmox.pass }}"
+  register: pve_status
+
+# tasks file for destroy_lxc
+- name: Ensure the bootstrap container has been stopped
+  community.general.proxmox:
+    node: "{{ pve_node }}"
+    api_host: "{{ pve_api_host }}"
+    api_user: "{{ pve_api_user | default(omit) }}"
+    api_password: "{{ pve_api_password | default(omit) }}"
+    api_token_id: "{{ pve_api_token_id | default(omit) }}"
+    api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+    hostname: "{{ pve_hostname }}"
+    state: stopped
+  when: pve_status.proxmox_vms | map('length') | sum > 0
+
+- name: Destroy the bootstrap container
+  community.general.proxmox:
+    node: "{{ pve_node }}"
+    api_host: "{{ pve_api_host }}"
+    api_user: "{{ pve_api_user | default(omit) }}"
+    api_password: "{{ pve_api_password | default(omit) }}"
+    api_token_id: "{{ pve_api_token_id | default(omit) }}"
+    api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+    hostname: "{{ pve_hostname }}"
+    state: absent
+  when: pve_status.proxmox_vms | map('length') | sum > 0
+
+- name: Remove host keys from known hosts for controller
+  ansible.builtin.known_hosts:
+    name: "{{ pve_hostname }}"
+    state: absent
+
+- name: Remove fqdn host keys from known hosts for controller
+  ansible.builtin.known_hosts:
+    name: "{{ pve_hostname }}.{{ domain }}"
+    state: absent
+
+- name: Remove alt fqdn host keys from known hosts for controller
+  ansible.builtin.known_hosts:
+    name: "{{ pve_hostname }}.{{ domain.alt }}"
+    state: absent

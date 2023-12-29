@@ -1,0 +1,8 @@
+lxc_apps_group:
+  hosts:
+    nexus-oss.local.technohouser.com:
+      vars:
+        pve_py_pckg_mgmt: apt
+      ansible_default_ipv4:
+        address: 192.168.2.35
+  vars:

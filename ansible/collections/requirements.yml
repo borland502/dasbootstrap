@@ -1,7 +1,15 @@
 ---
 collections:
+  - name: "ansible.posix"
+    version: "*"
+
   - name: "community.general"
     version: "*"
 
-  - name: "scruffaluff.bootware"
+  - name: git+https://github.com/scruffaluff/bootware.git
+    type: git
+    version: "*"
+
+  - name: git+https://git.interior.edu.uy/cielito/proxmox.git
+    type: git
     version: "*"

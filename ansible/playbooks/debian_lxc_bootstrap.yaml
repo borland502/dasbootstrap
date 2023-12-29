@@ -1,0 +1,48 @@
+---
+- name: Debian Bookworm Container Bootstrap
+  hosts: "lxc_apps_group"
+  become: true
+  gather_facts: false
+  remote_user: root
+  vars_files:
+    - /etc/ansible/global_vars/all.yaml
+    - /etc/ansible/global_vars/pve.yaml
+  roles:
+    - role: buluma.hosts
+      vars:
+        hosts_backup: true
+        hosts_inventory_to_hosts: true
+        # role does not handle empty values properly
+        hosts_all_private: false
+        hosts_all_public: false
+        hosts_ipv6: false
+      delegate_to: "localhost"
+      # manual alteration: validation logic for sys managed python vs pip managed not yet available
+    - role: cielito.proxmox.create_lxc
+    - role: buluma.roles.bootstrap
+    - role: buluma.roles.buildtools
+    - role: buluma.roles.core_dependencies
+    - role: buluma.roles.locale
+      vars:
+        locale_timezone: "America/New_York"
+    - role: buluma.roles.auto_update
+      vars:
+        auto_update_apply_updates: true
+    - role: buluma.roles.auto_update
+      vars:
+        auto_update_apply_updates: true
+    - role: GROG.package
+      vars:
+        package_state: latest
+        package_update_cache: false
+        package_list:
+          - name: zsh
+          - name: curl
+          - name: realmd
+          - name: sssd-tools
+          - name: sssd
+          - name: libnss-sss
+          - name: libpam-sss
+          - name: adcli
+          - name: packagekit
+          - name: qemu-guest-agent

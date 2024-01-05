@@ -48,3 +48,8 @@ build
 
 # IntelliJ
 *.idea
+
+config.json
+
+*.log
+logs/

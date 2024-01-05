@@ -1,8 +1,24 @@
 lxc_apps_group:
   hosts:
-    nexus-oss.local.technohouser.com:
-      vars:
-        pve_py_pckg_mgmt: apt
-      ansible_default_ipv4:
-        address: 192.168.2.35
+    lxc.local.technohouser.com:
+      pve_lxc_vmid: 7001
+      # ansible_default_ipv4:
+      #   address: 192.168.2.36
+      #   gateway: 192.168.2.1
+      # pve_lxc_net_interfaces:
+      #   - id: net0
+      #     name: eth0
+      #     ip4: 192.168.2.35
+      #     netmask4: 24
+      #     gw4: 192.168.2.1
+      #     bridge: vmbr0
+      #     firewall: true
   vars:
+    pve_py_pckg_mgmt: apt
+kvm_apps_group:
+  hosts:
+    kvm.local.technohouser.com:
+      # ansible_default_ipv4:
+      #   address: 192.168.2.34
+      #   gateway: 192.168.2.1
+      pve_kvm_clone_newid: 7000

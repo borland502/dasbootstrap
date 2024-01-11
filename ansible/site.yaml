@@ -1,5 +1,6 @@
-- name: Import Debian boostrap playbook
+---
+- name: Import Debian LXC boostrap playbook
   ansible.builtin.import_playbook: playbooks/debian_lxc_bootstrap.yaml
 
-# - name: Import Jenkins bootstrap playbook
-#   ansible.builtin.import_playbook: playbooks/jenkins.yaml
+- name: Import Debina kvm playbook
+  ansible.builtin.import_playbook: playbooks/debian_kvm_bootstrap.yaml

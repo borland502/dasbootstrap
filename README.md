@@ -26,3 +26,17 @@ After playing around for a long time with other efforts Proxmox hits the sweet s
 [Proxmox VE Helper-Scripts](https://tteck.github.io/Proxmox/)
 [Robert Debock Roles](https://robertdebock.nl/ansible.html)
 [cielito.proxmox](https://galaxy.ansible.com/ui/repo/published/cielito/proxmox/content/role/create_lxc/)
+
+## Sandbox 
+
+arensb.truenas
+debops.debops
+linuxhq.linux
+manala.roles
+robertdebock.roles
+buluma.roles
+https://github.com/mullholland?tab=repositories
+https://github.com/agaffney/ansible-synology-dsm/tree/master/tasks
+https://github.com/BrynardSecurity-Ansible/ansible-role-domain-join/blob/main/tasks/main.yml
+https://github.com/sgargel/linux_joindomain
+https://github.com/schneidr/linux_joindomain

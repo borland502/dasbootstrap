@@ -1,0 +1,54 @@
+---
+# vars file for ./ansible/roles/technohouser.bootstrap-common
+timesync_timezone: "America/New_York"
+timesync_ntp_hosts:
+  - 0.us.pool.ntp.org
+  - 1.us.pool.ntp.org
+  - 2.us.pool.ntp.org
+  - 3.us.pool.ntp.org
+
+locale_timezone: "America/New_York"
+
+auto_update_apply_updates: true
+
+package_state: latest
+package_update_cache: false
+package_list:
+  - name: zsh
+  - name: systemd-cron
+  - name: curl
+  - name: realmd
+  - name: sssd-tools
+  - name: sssd
+  - name: libnss-sss
+  - name: libpam-sss
+  - name: adcli
+  - name: packagekit
+  - name: python3-full
+  - name: python3-pexpect
+  - name: qemu-guest-agent
+  - name: vim
+  - name: rsync
+
+users_ssh_key_directory: .ssh
+users_shell: /bin/zsh
+users_cron_allow: true
+users_create_home: true
+users_group_list:
+  - name: "{{ ansible.domain_user }}"
+    state: present
+users_user_list:
+  - name: "{{ ansible.domain_user }}"
+    shell: /bin/zsh
+    password: "{{ ansible.password | password_hash }}"
+    comment: "Service User"
+    create_home: true
+    generate_ssh_key: true
+    ssh_key_type: ed25519
+    groups:
+      - "{{ ansible.domain_user }}"
+      - tty
+      - man
+      - users
+      - adm
+      - sudo

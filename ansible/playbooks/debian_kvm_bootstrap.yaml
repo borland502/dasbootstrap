@@ -1,0 +1,52 @@
+---
+- name: Debian Bookworm Container Bootstrap
+  hosts: "kvm_apps_group"
+  become: true
+  gather_facts: true
+  remote_user: "root"
+  vars_files:
+    - /etc/ansible/global_vars/all.yaml
+    - /etc/ansible/global_vars/pve.yaml
+    - /etc/ansible/global_vars/pve_kvm.yaml
+  roles:
+    - role: cielito.proxmox.create_kvm
+    - role: technohouser.bootstrap-common
+    - role: technohouser.sys_tweaks
+
+# - name: Execute roles common to both kvm and lxc
+#   ansible.builtin.import_playbook: common.yaml
+
+# - name: Post common configuration specific to KVMs
+#   hosts: "kvm_apps_group"
+#   become: true
+#   gather_facts: false
+#   remote_user: "root"
+#   vars_files:
+#     - /etc/ansible/global_vars/all.yaml
+#     - /etc/ansible/global_vars/pve.yaml
+#     - /etc/ansible/global_vars/pve_kvm.yaml
+#   roles:
+#     - name: mahdi22.linux_joindomain    
+#       vars:
+#         Join_User: "{{ domain.admin }}"
+#         DomainName: "{{ domain.name }}"
+#         Join_User_pass: "{{ domain.admin_password }}"
+#         realm: "{{ domain.realm }}"
+#         server: "{{ domain.server }}"
+          
+    # - role: ansible-netplan
+    #   vars:
+    #     netplan_config_file: /etc/netplan/00-installer-config.yaml
+    #     netplan_remove_existing: true
+    #     netplan_configuration:
+    #       network:
+    #         ethernets:
+    #           enp6s18:
+    #             - 192.168.2.34/24
+    #         nameservers:
+    #           addresses: [192.168.2.19,192.168.2.20]
+    #         routes:
+    #           - to: default
+    #             via: 192.168.2.1
+    #         version: 2
+              

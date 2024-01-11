@@ -1,0 +1,34 @@
+---
+- name: Increase file limit for systemd
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/system.conf
+    regexp: "^#DefaultLimitNOFILE=$"
+    line: "DefaultLimitNOFILE=4096:524288"
+
+- name: Increase file limit for systemd
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/user.conf
+    regexp: "^#DefaultLimitNOFILE=$"
+    line: "DefaultLimitNOFILE=4096:524288"
+
+- name: Increase UDP read buffer to 25MB
+  ansible.posix.sysctl:
+    name: net.core.rmem_max
+    value: 2500000
+    state: present
+  when: ansible_virtualization_type != 'lxc'
+
+- name: Increase UDP write buffer to 25MB
+  ansible.posix.sysctl:
+    name: net.core.wmem_max
+    value: 2500000
+    state: present
+  when: ansible_virtualization_type != 'lxc'
+
+  # https://github.com/woanware/ansible/blob/master/work.yml
+- name: Tell the kernel to only swap if it really needs it
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: 1
+    state: present
+  when: ansible_virtualization_type != 'lxc'

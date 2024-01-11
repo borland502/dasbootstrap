@@ -1,0 +1,19 @@
+---
+# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.destroy_lxc
+- name: Shut down bootstrap lxc image
+  community.general.proxmox:
+    vmid: "{{ pve_lxc_vmid | int }}"
+    node: "{{ pve_node }}"
+    api_host: "{{ pve_api_host }}"
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    state: stopped
+
+- name: Delete bootstrap lxc image
+  community.general.proxmox:
+    vmid: "{{ pve_lxc_vmid | int }}"
+    node: "{{ pve_node }}"
+    api_host: "{{ pve_api_host }}"
+    api_user: "{{ pve_api_user }}"
+    api_password: "{{ pve_api_password }}"
+    state: absent

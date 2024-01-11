@@ -1,0 +1,13 @@
+---
+
+# TODO: Netplan Change
+
+# Add dns entry to technitium
+
+# Hostname change
+
+# Change host key
+
+# Close off root access by password
+
+# default shell to zsh in /etc/sssd/sssd.conf

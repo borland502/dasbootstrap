@@ -1,0 +1,39 @@
+---
+# tasks file for ./ansible/roles/technohouser.bootstrap-common
+- name: Assume lxc has been established, so gather facts
+  ansible.builtin.setup:
+
+- name: Set up timesyncd
+  ansible.builtin.import_role:
+    name: stuvusIT.systemd-timesyncd
+
+- name: Prep to be managed by ansible
+  ansible.builtin.import_role:
+    name: buluma.roles.bootstrap
+
+- name: Install build tools for homebrew and other downstream dependencies
+  ansible.builtin.import_role:
+    name: buluma.roles.buildtools
+
+- name: Configure automatic updates for apt/yum
+  ansible.builtin.import_role:
+    name: buluma.roles.auto_update
+
+- name: Install system level personal favorite packages
+  ansible.builtin.import_role:
+    name: GROG.package
+
+- name: Configure ansible account
+  ansible.builtin.import_role:
+    name: buluma.roles.users
+
+- name: Add ansible service key to authorized users file in service account
+  ansible.posix.authorized_key:
+    user: "{{ ansible.domain_user }}"
+    key: "{{ ansible.pub_key }}"
+
+- name: Add ansible service key to authorized users file in root
+  remote_user: root
+  ansible.posix.authorized_key:
+    user: "{{ ansible.domain_user }}"
+    key: "{{ ansible.pub_key }}"

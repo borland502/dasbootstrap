@@ -53,3 +53,7 @@ config.json
 
 *.log
 logs/
+
+/ansible/tmp/**/*
+/ansible/inventory/**/*.yaml
+/ansible/collections/ansible_collections/**/*

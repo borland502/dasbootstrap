@@ -1,4 +1,12 @@
 ---
+# Mechanical hard drives can be slow, so ensure the lxc is in a ready state
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    delay: 10
+    sleep: 5
+    timeout: 120
+
 # tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.destroy_lxc
 - name: Shut down bootstrap lxc image
   community.general.proxmox:
@@ -8,6 +16,8 @@
     api_user: "{{ pve_api_user }}"
     api_password: "{{ pve_api_password }}"
     state: stopped
+    timeout: 36000
+  delegate_to: "{{ pve_api_host }}"
 
 - name: Delete bootstrap lxc image
   community.general.proxmox:
@@ -17,3 +27,5 @@
     api_user: "{{ pve_api_user }}"
     api_password: "{{ pve_api_password }}"
     state: absent
+    timeout: 36000
+  delegate_to: "{{ pve_api_host }}"

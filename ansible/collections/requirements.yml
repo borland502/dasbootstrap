@@ -6,10 +6,21 @@ collections:
   - name: "community.general"
     version: "*"
 
-  - name: git+https://github.com/scruffaluff/bootware.git
-    type: git
+  - name: "microsoft.ad"
     version: "*"
 
-  - name: git+https://git.interior.edu.uy/cielito/proxmox.git
+  - name: "community.docker"
+    version: "*"
+
+  - name: "robertdebock.roles"
+    version: "*"
+
+  - name: "buluma.roles"
+    version: "*"
+
+  - name: "debops.debops"
+    version: "*"
+
+  - name: git+https://github.com/borland502/proxmox-ansible.git
     type: git
     version: "*"

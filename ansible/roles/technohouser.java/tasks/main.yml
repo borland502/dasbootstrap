@@ -1,0 +1,5 @@
+---
+# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.java
+- name: Install Java 8 from sdkman
+  ansible.builtin.import_role:
+    name: Comcast.sdkman

@@ -1,11 +1,27 @@
 ---
 # tasks file for ./ansible/roles/technohouser.bootstrap-common
-- name: Assume lxc has been established, so gather facts
-  ansible.builtin.setup:
+
+# Mechanical hard drives can be slow, so ensure the lxc is in a ready state
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    delay: 10
+    sleep: 5
+    timeout: 120
+
+- name: Setup apt-cacher proxy
+  ansible.builtin.template:
+    src: 00aptproxy.j2
+    dest: /etc/apt/apt.conf.d/00aptproxy
+    mode: "0644"
 
 - name: Set up timesyncd
   ansible.builtin.import_role:
     name: stuvusIT.systemd-timesyncd
+
+- name: Configure locale for en_us.utf8
+  ansible.builtin.import_role:
+    name: buluma.roles.locale
 
 - name: Prep to be managed by ansible
   ansible.builtin.import_role:
@@ -23,17 +39,63 @@
   ansible.builtin.import_role:
     name: GROG.package
 
-- name: Configure ansible account
-  ansible.builtin.import_role:
-    name: buluma.roles.users
+- name: Change root password
+  ansible.builtin.user:
+    name: "root"
+    update_password: always
+    password: "{{ ansible.password | ansible.builtin.password_hash }}"
+    state: present
+
+- name: Create service account group
+  ansible.builtin.group:
+    name: "{{ ansible.domain_user }}"
+    state: present
+
+- name: Create service account user
+  ansible.builtin.user:
+    name: "{{ ansible.domain_user }}"
+    groups:
+      - users
+      - sudo
+      - "{{ ansible.domain_user }}"
+    password: "{{ ansible.password | ansible.builtin.password_hash }}"
+    state: present
 
 - name: Add ansible service key to authorized users file in service account
   ansible.posix.authorized_key:
     user: "{{ ansible.domain_user }}"
     key: "{{ ansible.pub_key }}"
 
+- name: Add administrator pub key
+  ansible.posix.authorized_key:
+    user: "{{ ansible.domain_user }}"
+    key: "{{ users[0]['pub_key'] }}"
+
 - name: Add ansible service key to authorized users file in root
-  remote_user: root
   ansible.posix.authorized_key:
     user: "{{ ansible.domain_user }}"
     key: "{{ ansible.pub_key }}"
+
+# users_ssh_key_directory: .ssh
+# users_shell: /bin/zsh
+# users_cron_allow: true
+# users_create_home: true
+# users_group_list:
+#   - name: "{{ ansible.domain_user }}"
+#     state: present
+# users_user_list:
+#   - name: "{{ ansible.domain_user }}"
+#     shell: /bin/zsh
+#     password: "{{ ansible.password | password_hash }}"
+#     comment: "Service User"
+#     create_home: true
+#     generate_ssh_key: true
+#     ssh_key_type: ed25519
+#     groups:
+#       - "{{ ansible.domain_user }}"
+#       - tty
+#       - man
+#       - users
+#       - adm
+#       - sudo
+#

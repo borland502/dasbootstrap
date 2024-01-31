@@ -16,6 +16,7 @@ package_update_cache: false
 package_list:
   - name: zsh
   - name: systemd-cron
+  - name: git
   - name: curl
   - name: realmd
   - name: sssd-tools
@@ -26,29 +27,7 @@ package_list:
   - name: packagekit
   - name: python3-full
   - name: python3-pexpect
+  - name: python3-proxmoxer
   - name: qemu-guest-agent
   - name: vim
   - name: rsync
-
-users_ssh_key_directory: .ssh
-users_shell: /bin/zsh
-users_cron_allow: true
-users_create_home: true
-users_group_list:
-  - name: "{{ ansible.domain_user }}"
-    state: present
-users_user_list:
-  - name: "{{ ansible.domain_user }}"
-    shell: /bin/zsh
-    password: "{{ ansible.password | password_hash }}"
-    comment: "Service User"
-    create_home: true
-    generate_ssh_key: true
-    ssh_key_type: ed25519
-    groups:
-      - "{{ ansible.domain_user }}"
-      - tty
-      - man
-      - users
-      - adm
-      - sudo

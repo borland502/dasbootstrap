@@ -32,3 +32,20 @@
     value: 1
     state: present
   when: ansible_virtualization_type != 'lxc'
+
+- name: Append line to .zshenv if not present so that brew is available to interactive and non-interactive sessions
+  ansible.builtin.lineinfile:
+    path: $HOME/.zshenv
+    line: "eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    mode: "0644"
+    create: true
+    state: present
+- name: Add service account to passwordless sudo
+  become: true
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    regexp: "^{{ ansible.domain_user }}"
+    line: "{{ ansible.domain_user }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+    validate: "visudo -cf %s"
+    mode: "0644"

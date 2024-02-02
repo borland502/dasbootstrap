@@ -58,7 +58,10 @@ parser_definition_install() {
 	msg -- '' './dbs install scmplayer' ''
 	msg -- 'Options:'
 	# FLAG init -- initialize the underlying image as well as install the application
-	cmd artifactory -- "Install Ansible control node"
+	cmd artifactory -- "Install artifactory repository"
+	cmd harbor -- "Install harbor container repository"
+	cmd gitea -- "Install gitea scm repository"
+	cmd technitium -- "Install technitium dns"
 }
 
 # shellcheck disable=SC1083
@@ -113,6 +116,17 @@ if [ $# -gt 0 ]; then
 				case $cmd in
 					artifactory)
 						install_artifactory_oss_cmd "$cmd" "$@"
+						;;
+					harbor)
+						install_harbor_cmd "$cmd" "$@"
+						;;
+					gitea)
+						INFO "Installing gitea"
+						install_gitea_cmd "$cmd" "$@"
+						;;
+					technitium)
+						INFO "Installing technitium"
+						install_technitium_cmd "$cmd" "$@"
 						;;
 					*)
 						# perform bootstrap and common prep to all containers

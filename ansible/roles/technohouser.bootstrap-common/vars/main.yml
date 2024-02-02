@@ -18,6 +18,7 @@ package_list:
   - name: systemd-cron
   - name: git
   - name: curl
+  - name: p7zip-full
   - name: realmd
   - name: sssd-tools
   - name: sssd

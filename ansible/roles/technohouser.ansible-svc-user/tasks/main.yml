@@ -16,6 +16,13 @@
     validate: "visudo -cf %s"
     mode: "0444"
 
+- name: Set shell for user
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible.domain_user }}"
+    shell: /bin/zsh
+    comment: "Service User"
+
 # tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible-svc-user
 - name: Install homebrew
   ansible.builtin.import_role:
@@ -68,3 +75,9 @@
   ansible.builtin.user:
     name: root
     password_lock: true
+
+- name: Switch service account to zsh
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible.domain_user }}"
+    shell: "/home/linuxbrew/.linuxbrew/bin/zsh"

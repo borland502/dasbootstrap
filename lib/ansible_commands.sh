@@ -8,10 +8,14 @@ declare -r COLLECTION_RDB_URL=https://github.com/robertdebock/ansible-collection
 
 declare -r ABI_ROLE="ansible.builtin.import_role"
 declare -r ABSetup="ansible.builtin.setup"
-declare -r ABSshell="ansible.builtin.shell"
+declare -r ABShell="ansible.builtin.shell"
+declare -r ABCommand="ansible.builtin.command"
+declare -r ABScript="ansible.builtin.script"
+declare -r ABW_Connection="ansible.builtin.wait_for_connection"
 declare -r ABA_Host="ansible.builtin.add_host"
 declare -r ABT_YAML="ansible.builtin.to_yaml"
 declare -r ABT_JSON="ansible.builtin.to_json"
+declare -r ABG_URL="ansible.builtin.get_url"
 
 # [ansible env config variables](https://docs.ansible.com/ansible/latest/reference_appendices/config.html)
 ## home location for env params that don't exist or I'm too lazy to look up
@@ -19,6 +23,9 @@ declare -rx ANSIBLE_CONFIG=~/.ansible.cfg
 
 # Called each and every time to either create the lxc, or bring it up to date according to personal preferences -- always assume the container exists at this point
 function _setup_or_upgrade_lxc(){
+  # Give time for the ole proxmox to spin up lxc before proceeding
+  ansible "${APP_NAME}" -m "${ABW_Connection}" -a "connect_timeout=5 delay=10 sleep=5 timeout=120" -i "${A_HOSTS}" -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user root || exit 5
+
   # need to refresh inventory so that the cache is aware of the new container
   ansible-inventory all --export --list --yaml --inventory "${INVENTORY}" --output ${A_INVENTORY}/hosts.yaml || exit 5
 
@@ -43,13 +50,37 @@ function init_role_cmd(){
   ansible-galaxy role init "${AROOT}/roles/${_ROLE_NAME}"
 }
 
+# function init_kvm_cmd(){
+#   if ! [[ -f ${A_INVENTORY}/host_vars/${APP_NAME}.yaml ]]; then
+#       ERROR "No hostvars exist for the lxc app you intend to install.  Copying template to ${A_INVENTORY}/host_vars/${APP_NAME}.yaml"
+
+#       # copy customized sensitive defaults to sensitive host defaults for app, replace any existing
+#       cat "${GLOBAL_VARS_DIR}/all.yaml" "${GLOBAL_VARS_DIR}/pve.yaml" "${GLOBAL_VARS_DIR}/pve_lxc.yaml" > ${A_INVENTORY}/host_vars/${APP_NAME}.yaml
+
+#       yq -i '.pve_hostname = strenv(APP_NAME)' "${A_INVENTORY}/host_vars/${APP_NAME}.yaml" || exit 7
+
+#       ERROR "Customize the template and run again" && exit 2
+#     else
+#       INFO "Host vars detected.  Installing ${APP_NAME}"
+#     fi
+    
+#     ansible-galaxy collection install -r "${AROOT}/collections/requirements.yml"
+#     ansible-galaxy role install -r "${AROOT}/roles/requirements.yml"
+
+#     # Host does not exist at this point -- no facts that influence connection should be set.  Creation of an lxc/kvm always requires a proxmox control node
+#     ansible localhost -m "${ABI_ROLE}" -a name=technohouser.proxmox.create_lxc -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" || exit 5
+#     _setup_or_upgrade_lxc
+#   }
+# }
+
 function init_lxc_cmd(){
     # TODO: check that required values have been populated
+    # TODO: hostname verification
     if ! [[ -f ${A_INVENTORY}/host_vars/${APP_NAME}.yaml ]]; then
       ERROR "No hostvars exist for the lxc app you intend to install.  Copying template to ${A_INVENTORY}/host_vars/${APP_NAME}.yaml"
 
       # copy customized sensitive defaults to sensitive host defaults for app, replace any existing
-      cat "${GLOBAL_VARS_DIR}/all.yaml" "${GLOBAL_VARS_DIR}/pve.yaml" "${GLOBAL_VARS_DIR}/pve_lxc.yaml" "${GLOBAL_VARS_DIR}/host.yaml" > ${A_INVENTORY}/host_vars/${APP_NAME}.yaml
+      cat "${GLOBAL_VARS_DIR}/all.yaml" "${GLOBAL_VARS_DIR}/pve.yaml" "${GLOBAL_VARS_DIR}/pve_lxc.yaml" > ${A_INVENTORY}/host_vars/${APP_NAME}.yaml
 
       yq -i '.pve_hostname = strenv(APP_NAME)' "${A_INVENTORY}/host_vars/${APP_NAME}.yaml" || exit 7
 
@@ -62,6 +93,7 @@ function init_lxc_cmd(){
     ansible-galaxy role install -r "${AROOT}/roles/requirements.yml"
 
     # Host does not exist at this point -- no facts that influence connection should be set.  Creation of an lxc/kvm always requires a proxmox control node
+    INFO "Setting up ${APP_NAME} using values in ${A_INVENTORY}/host_vars/${APP_NAME}.yaml"
     ansible localhost -m "${ABI_ROLE}" -a name=technohouser.proxmox.create_lxc -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" || exit 5
     _setup_or_upgrade_lxc
 }
@@ -75,7 +107,7 @@ function destroy_lxc_cmd(){
 
 function install_generic_cmd(){
   local APP_NAME="${1}"
-  init_lxc_cmd
+  init_lxc_cmd "${1}"
 }
 
 ## Single shot application installs.  Presumes existing lxc/kvm image with the application name.  Defaults from role are defined in host vars yaml.  all vars is presumed to be passed
@@ -83,4 +115,48 @@ function install_artifactory_oss_cmd(){
   local APP_NAME=${1}
   install_generic_cmd ${1}
   ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.artifactory' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+}
+
+# function install_cloudflare_cmd(){
+
+# }
+
+# function install_gitbackup_cmd(){
+
+# }
+
+function install_gitea_cmd(){
+  local APP_NAME=${1}
+  install_generic_cmd ${1}
+
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.gitea' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+}
+
+function install_harbor_cmd(){
+  local APP_NAME=${1}
+  install_generic_cmd ${1}
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.epel' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become  
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.docker_ce' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become  
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.docker_compose' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.selinux' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.harbor' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+}
+
+function install_redis_cmd(){
+  local APP_NAME=${1}
+  install_generic_cmd ${1}
+
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.epel' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.apt_autostart' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.sys_ctl' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.apt_autostart' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a 'name=robertdebock.roles.apt_autostart' -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user $(whoami) --become
+}
+
+function install_technitium_cmd(){
+  local APP_NAME=${1}
+  install_generic_cmd ${1}
+
+  ansible localhost -m "${ABG_URL}" -a 'url=https://download.technitium.com/dns/install.sh dest=/tmp/technitium_install.sh mode="0700"'
+  ansible "${APP_NAME}" -m "${ABScript}" -a '/tmp/technitium_install.sh creates=/opt/technitium/dns' --user $(whoami) --become
 }

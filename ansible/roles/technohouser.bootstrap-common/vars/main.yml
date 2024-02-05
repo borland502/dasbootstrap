@@ -12,7 +12,7 @@ locale_timezone: "America/New_York"
 auto_update_apply_updates: true
 
 package_state: latest
-package_update_cache: false
+package_update_cache: true
 package_list:
   - name: zsh
   - name: systemd-cron
@@ -32,3 +32,4 @@ package_list:
   - name: qemu-guest-agent
   - name: vim
   - name: rsync
+  - name: apt-transport-https

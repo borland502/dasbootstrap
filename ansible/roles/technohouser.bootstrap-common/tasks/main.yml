@@ -9,9 +9,65 @@
     sleep: 5
     timeout: 120
 
-- name: Setup apt-cacher proxy
-  ansible.builtin.import_role:
-    name: debops.debops.apt_proxy
+- name: Remove any apt-cacher-ng proxy settings
+  ansible.builtin.file:
+    path: /etc/apt/apt.conf.d/00aptproxy
+    state: absent
+
+- name: Set up nexus apt proxy
+  ansible.builtin.apt_repository:
+    filename: nexus-bookworm-proxy
+    repo: deb {{ nexus_proxy }}/bookworm-apt-proxy/ bookworm main contrib
+    state: present
+    update_cache: false
+  when: ansible_distribution_release == 'bookworm'
+
+- name: Set up the nexus apt updates proxy
+  ansible.builtin.apt_repository:
+    filename: nexus-bookworm-proxy
+    repo: deb {{ nexus_proxy }}/bookworm-apt-proxy/ bookworm-updates main contrib
+    state: present
+    update_cache: false
+  when: ansible_distribution_release == 'bookworm'
+
+- name: Set up the nexus security patches proxy
+  ansible.builtin.apt_repository:
+    filename: nexus-bookworm-proxy
+    repo: deb {{ nexus_proxy }}/security-bookworm-apt-proxy/ bookworm-security main contrib
+    state: present
+    update_cache: false
+  when: ansible_distribution_release == 'bookworm'
+
+- name: Set up the nexus proxy repo for docker packages
+  ansible.builtin.apt_repository:
+    filename: nexus-bookworm-proxy
+    repo: deb [trusted=yes] {{ nexus_proxy }}/docker-bookworm-apt-proxy/ bookworm InRelease
+    state: present
+    update_cache: false
+  when: ansible_distribution_release == 'bookworm'
+
+- name: Assume apt proxies are good and delete the sources.list file
+  ansible.builtin.file:
+    path: /etc/apt/sources.list
+    state: absent
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Set up backports repo
+  ansible.builtin.apt_repository:
+    repo: deb [trusted=yes] http://deb.debian.org/debian bookworm-backports main contrib
+    state: present
+    update_cache: false
+  when: ansible_distribution_release == 'bullseye'
+
+- name: Set up backports src repo
+  ansible.builtin.apt_repository:
+    repo: deb-src [trusted=yes] http://deb.debian.org/debian bookworm-backports main contrib
+    state: present
+    update_cache: false
+  when: ansible_distribution_release == 'bullseye'
 
 - name: Set up timesyncd
   ansible.builtin.import_role:
@@ -20,6 +76,7 @@
 - name: Configure locale for en_us.utf8
   ansible.builtin.import_role:
     name: robertdebock.roles.locale
+  when: ansible_distribution_release != 'bullseye'
 
 - name: Prep to be managed by ansible
   ansible.builtin.import_role:
@@ -50,15 +107,15 @@
 
 - name: Add ansible service key to authorized users file in service account
   ansible.posix.authorized_key:
-    user: "{{ ansible.domain_user }}"
+    user: "{{ ansible.user }}"
     key: "{{ ansible.pub_key }}"
 
 - name: Add administrator pub key
   ansible.posix.authorized_key:
-    user: "{{ ansible.domain_user }}"
+    user: "{{ ansible.user }}"
     key: "{{ users[0]['pub_key'] }}"
 
 - name: Add ansible service key to authorized users file in root
   ansible.posix.authorized_key:
-    user: "{{ ansible.domain_user }}"
+    user: "{{ ansible.user }}"
     key: "{{ ansible.pub_key }}"

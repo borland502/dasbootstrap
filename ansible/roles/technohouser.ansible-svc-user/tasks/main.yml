@@ -10,8 +10,8 @@
   become: true
   ansible.builtin.lineinfile:
     dest: /etc/sudoers
-    regexp: "^{{ ansible.domain_user }}"
-    line: "{{ ansible.domain_user }} ALL=(ALL) NOPASSWD: ALL"
+    regexp: "^{{ ansible.user }}"
+    line: "{{ ansible.user }} ALL=(ALL) NOPASSWD: ALL"
     state: present
     validate: "visudo -cf %s"
     mode: "0444"
@@ -19,14 +19,28 @@
 - name: Set shell for user
   become: true
   ansible.builtin.user:
-    name: "{{ ansible.domain_user }}"
+    name: "{{ ansible.user }}"
     shell: /bin/zsh
     comment: "Service User"
 
-# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible-svc-user
+- name: Set linux brew directory to service user
+  become: true
+  ansible.builtin.file:
+    path: "/home/linuxbrew"
+    mode: "0775"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
+    state: directory
+    recurse: true
+
+# Variable expected by this role will collide with a role used to bootstrap users, so define here
 - name: Install homebrew
   ansible.builtin.import_role:
     name: professormanhattan.homebrew
+  vars:
+    # noqa: var-naming[no-role-prefix]
+    user:
+      username: "{{ ansible.user }}"
 
 - name: Install some common service / user brew packages
   community.general.homebrew:
@@ -52,19 +66,19 @@
   become: true
   ansible.builtin.file:
     state: directory
-    path: "/home/{{ ansible.domain_user }}/bin"
+    path: "/home/{{ ansible.user }}/bin"
     mode: "0750"
-    owner: "{{ ansible.domain_user }}"
-    group: "{{ ansible.domain_user }}"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
 
 - name: Copy the age key over to ~/bin
   become: true
   ansible.builtin.copy:
     content: "{{ users[0]['age_key'] }}"
-    dest: "/home/{{ ansible.domain_user }}/bin/key.txt"
+    dest: "/home/{{ ansible.user }}/bin/key.txt"
     mode: "0600"
-    owner: "{{ ansible.domain_user }}"
-    group: "{{ ansible.domain_user }}"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
 
 - name: Initialize the chezmoi repo and apply the configuration
   ansible.builtin.import_role:
@@ -79,5 +93,6 @@
 - name: Switch service account to zsh
   become: true
   ansible.builtin.user:
-    name: "{{ ansible.domain_user }}"
+    name: "{{ ansible.user }}"
     shell: "/home/linuxbrew/.linuxbrew/bin/zsh"
+  when: ansible_facts['user_shell'] != '/home/linuxbrew/.linuxbrew/bin/zsh'

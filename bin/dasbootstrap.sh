@@ -22,7 +22,8 @@ parser_definition() {
 	param NODE -n --node init:="noctis" -- "Target Proxmox Node"
 	disp    :usage  -h --help
 	disp    VERSION    --version
-
+	# msg -- '' 'Flags:'
+	# FLAG DEBUG +d on:1 init:@unset
 	msg -- '' 'Commands:'
 	cmd init -- "Subcommands of init are not assured to be idepotent, but may be, as part of initializing a system"
 	cmd install -- "Subcommands of install are usually application level, either system or user focused"
@@ -38,7 +39,7 @@ parser_definition_init() {
 	msg -- 'Options:'
 	cmd ansible-controller -- "Initialize the ansible controller"
 	cmd role -- "Initialize a new role within dasbootstrap"
-	cmd lxc -- "Initialize lxc template"
+	cmd lxc -- "Initialize lxc hostvars template"
 	disp    :usage  -h --help
 }
 
@@ -103,7 +104,7 @@ if [ $# -gt 0 ]; then
 						init_role_cmd "$ROLE"
 						;;
 					lxc)
-						init_lxc_cmd
+						init_lxc_cmd "$1"
 						;;
 					--)
 				esac
@@ -116,6 +117,9 @@ if [ $# -gt 0 ]; then
 				case $cmd in
 					artifactory)
 						install_artifactory_oss_cmd "$cmd" "$@"
+						;;
+					docker)
+						install_generic_docker_cmd "$cmd" "$@"
 						;;
 					harbor)
 						install_harbor_cmd "$cmd" "$@"

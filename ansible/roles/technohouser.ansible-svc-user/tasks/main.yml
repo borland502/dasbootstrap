@@ -54,6 +54,7 @@
       - zinit
       - chezmoi
       - starship
+      - pyenv
       - fzf
       - rg
       - fd

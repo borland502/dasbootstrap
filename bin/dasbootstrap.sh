@@ -26,7 +26,7 @@ parser_definition() {
 	# FLAG DEBUG +d on:1 init:@unset
 	msg -- '' 'Commands:'
 	cmd init -- "Subcommands of init are not assured to be idepotent, but may be, as part of initializing a system"
-	cmd install -- "Subcommands of install are usually application level, either system or user focused"
+	cmd setup -- "Subcommands of setup are usually application level, either system or user focused"
 	cmd destroy -- ""
 	# param :'shortcuts_cmd "$1" mod' --mod var:param
 }
@@ -53,16 +53,16 @@ parser_definition_init_role() {
 }
 
 # shellcheck disable=SC1083
-parser_definition_install() {
+parser_definition_setup() {
 	setup   REST help:usage abbr:true -- \
-		"Usage: ${2##*/} install [options...] [arguments...]"
-	msg -- '' './dbs install scmplayer' ''
+		"Usage: ${2##*/} setup [options...] [arguments...]"
+	msg -- '' './dbs setup scmplayer' ''
 	msg -- 'Options:'
-	# FLAG init -- initialize the underlying image as well as install the application
-	cmd artifactory -- "Install artifactory repository"
-	cmd harbor -- "Install harbor container repository"
-	cmd gitea -- "Install gitea scm repository"
-	cmd technitium -- "Install technitium dns"
+	# FLAG init -- initialize the underlying image as well as setup the application
+	cmd artifactory -- "setup artifactory repository"
+	cmd harbor -- "setup harbor container repository"
+	cmd gitea -- "setup gitea scm repository"
+	cmd technitium -- "setup technitium dns"
 }
 
 # shellcheck disable=SC1083
@@ -110,31 +110,31 @@ if [ $# -gt 0 ]; then
 				esac
 			fi
 			;;
-		install)
+		setup)
 			if [ $# -gt 0 ]; then
 				cmd=$1
 				shift
 				case $cmd in
 					artifactory)
-						install_artifactory_oss_cmd "$cmd" "$@"
+						setup_artifactory_oss_cmd "$cmd" "$@"
 						;;
 					docker)
-						install_generic_docker_cmd "$cmd" "$@"
+						setup_generic_docker_cmd "$cmd" "$@"
 						;;
 					harbor)
-						install_harbor_cmd "$cmd" "$@"
+						setup_harbor_cmd "$cmd" "$@"
 						;;
 					gitea)
-						INFO "Installing gitea"
-						install_gitea_cmd "$cmd" "$@"
+						INFO "Setting up gitea"
+						setup_gitea_cmd "$cmd" "$@"
 						;;
 					technitium)
-						INFO "Installing technitium"
-						install_technitium_cmd "$cmd" "$@"
+						INFO "Setting up technitium"
+						setup_technitium_cmd "$cmd" "$@"
 						;;
 					*)
 						# perform bootstrap and common prep to all containers
-						install_generic_cmd "$cmd" "$@"
+						setup_generic_cmd "$cmd" "$@"
 						;;
 				esac
 			fi		

@@ -26,9 +26,6 @@ package_list:
   - name: libpam-sss
   - name: adcli
   - name: packagekit
-  - name: python3-full
-  - name: python3-pexpect
-  - name: python3-proxmoxer
   - name: qemu-guest-agent
   - name: vim
   - name: rsync

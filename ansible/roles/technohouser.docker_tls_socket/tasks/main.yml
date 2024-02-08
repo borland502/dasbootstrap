@@ -1,0 +1,85 @@
+---
+
+
+    # - role: robertdebock.roles.bootstrap
+    # - role: robertdebock.roles.buildtools
+    # - role: robertdebock.roles.epel
+    # - role: robertdebock.roles.python_pip
+    # - role: robertdebock.roles.openssl
+    #   openssl_items:
+    #     - name: apache-httpd
+    #       common_name: "{{ ansible_fqdn }}"
+    # - role: robertdebock.roles.httpd
+
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    delay: 10
+    sleep: 5
+    timeout: 120
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Install pip module packaging
+  ansible.builtin.pip:
+    name:
+      - packaging
+
+- name: Install pip
+  ansible.builtin.import_role:
+    name: robertdebock.roles.python_pip
+
+- name: Import the required openssl role
+  ansible.builtin.import_role:
+    name: robertdebock.roles.openssl
+  vars:
+    openssl_items:
+      - name: apache-httpd
+        common_name: "{{ ansible_fqdn }}"
+    openssl_key_directory: /etc/docker/tls
+    openssl_csr_directory: /etc/docker/tls
+    openssl_crt_directory: /etc/docker/tls
+
+- name: Import the required httpd role
+  ansible.builtin.import_role:
+    name: robertdebock.roles.httpd
+
+- name: Generate the Internal CA file
+  ansible.builtin.import_role:
+    name: robertdebock.roles.ca
+
+# - name: Copy client certificate and key to user home directory
+#   copy:
+#     src: /etc/docker/tls/client-cert.pem
+#     dest: /home/{{ ansible_user }}/.docker/cert.pem
+#     mode: 0600
+
+# - name: Copy client certificate and key to user home directory
+#   copy:
+#     src: /etc/docker/tls/client-key.pem
+#     dest: /home/{{ ansible_user }}/.docker/key.pem
+#     mode: 0600
+
+# - name: Update Docker daemon configuration
+#   template:
+#     src: docker-daemon.json.j2
+#     dest: /etc/docker/daemon.json
+#     owner: root
+#     group: root
+#     mode: 0600
+
+# - name: Restart Docker daemon
+#   service:
+#     name: docker
+#     state: restarted
+
+# # Note: This is for demonstration only. Remove this task when done
+# - name: Test connecting to Docker daemon with TLS (using a container)
+#   community.docker.docker_container_exec:
+#     container: "ubuntu:latest"  # Replace with a suitable container image
+#     command: ps
+#     tls: true
+#     tls_ca_cert: /etc/docker/tls/ca.pem
+#     tls_cert: /home/{{ ansible_user }}/.docker/cert.pem
+#     tls_key: /home/{{ ansible_user }}/.docker/key.pem

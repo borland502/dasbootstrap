@@ -12,6 +12,9 @@ collections:
   - name: "community.docker"
     version: "*"
 
+  - name: "community.crypto"
+    version: "*"
+
   - name: "robertdebock.roles"
     version: "*"
 

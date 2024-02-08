@@ -10,3 +10,5 @@ roles:
   - name: buluma.vim
   - name: buluma.auto_update
   - name: buluma.hosts
+  - name: ome.python3_virtualenv
+  - name: staticdev.pyenv

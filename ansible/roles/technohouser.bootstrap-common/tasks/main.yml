@@ -9,6 +9,14 @@
     sleep: 5
     timeout: 120
 
+- name: Install missing packaging module in venv or ansible pip will fail
+  ansible.builtin.command:
+    cmd: pip install packaging
+    creates: /usr/local/pyenv/versions/3.12.1/lib/python3.12/site-packages/packaging
+
+- name: Gather facts again
+  ansible.builtin.setup:
+
 - name: Remove any apt-cacher-ng proxy settings
   ansible.builtin.file:
     path: /etc/apt/apt.conf.d/00aptproxy
@@ -72,11 +80,6 @@
 - name: Set up timesyncd
   ansible.builtin.import_role:
     name: stuvusIT.systemd-timesyncd
-
-- name: Configure locale for en_us.utf8
-  ansible.builtin.import_role:
-    name: robertdebock.roles.locale
-  when: ansible_distribution_release != 'bullseye'
 
 - name: Prep to be managed by ansible
   ansible.builtin.import_role:

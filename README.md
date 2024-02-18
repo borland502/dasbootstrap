@@ -12,11 +12,14 @@ Even cowboy-style DevOps needs some focal points at least, and those are:
 
 After playing around for a long time with other efforts Proxmox hits the sweet spot between professional grade and approachable as a hypervisor OS.  
 
-## TODO
+TODO: A ton
 
-1. Automatic Domain Sign On
-2. Modify proxmox lxc containers to allow unpriviledged domain users
-3. Fix or remove molecule tests
+## Example
+
+```bash
+./dbs setup test
+./dbs destroy lxc test
+```
 
 ## Links
 

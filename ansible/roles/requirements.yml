@@ -1,14 +1,12 @@
 roles:
   - name: Comcast.sdkman
   - name: GROG.package
-  - name: EddyH85.linux_domain_mgmt
-  - name: buluma.bootstrap
-  - name: buluma.buildtools
-  - name: buluma.core_dependencies
-  - name: buluma.locale
-  - name: buluma.auto_update
-  - name: buluma.vim
-  - name: buluma.auto_update
-  - name: buluma.hosts
-  - name: ome.python3_virtualenv
   - name: staticdev.pyenv
+  - name: stuvusIT.systemd-timesyncd
+  - name: professormanhattan.homebrew
+    src: https://github.com/borland502/ansible-homebrew.git
+    version: main
+    scm: git
+  - name: hussainweb.chezmoi
+  - name: geerlingguy.nodejs
+  - name: morbidick.semaphore

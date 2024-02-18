@@ -1,0 +1,9 @@
+- name: Install Harbor
+  hosts: harbor
+  remote_user: "{{ ansible.user }}"
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  roles:
+    - robertdebock.roles.selinux
+    - robertdebock.roles.harbor

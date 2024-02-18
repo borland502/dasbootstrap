@@ -16,20 +16,21 @@
     validate: "visudo -cf %s"
     mode: "0444"
 
-- name: Set shell for user
+- name: Set shell for ansible user
   become: true
   ansible.builtin.user:
     name: "{{ ansible.user }}"
     shell: /bin/zsh
     comment: "Service User"
 
-- name: Set linux brew directory to service user
+# This takes care of two things.  Creating a common homebrew directory and retrofitting any that aren't
+- name: Set linux brew directory to homebrew user
   become: true
   ansible.builtin.file:
     path: "/home/linuxbrew"
     mode: "0775"
-    owner: "{{ ansible.user }}"
-    group: "{{ ansible.user }}"
+    owner: "homebrew"
+    group: "homebrew"
     state: directory
     recurse: true
 
@@ -40,7 +41,7 @@
   vars:
     # noqa: var-naming[no-role-prefix]
     user:
-      username: "{{ ansible.user }}"
+      username: "homebrew"
 
 - name: Install some common service / user brew packages
   community.general.homebrew:

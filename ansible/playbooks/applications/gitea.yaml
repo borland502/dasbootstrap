@@ -1,0 +1,6 @@
+- name: Install gitea
+  hosts: gitea
+  remote_user: "{{ ansible.user }}"
+  become: true
+  roles:
+    - robertdebock.roles.gitea

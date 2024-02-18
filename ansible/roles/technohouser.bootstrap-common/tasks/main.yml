@@ -7,12 +7,17 @@
     connect_timeout: 5
     delay: 10
     sleep: 5
-    timeout: 120
+    timeout: 240
 
 - name: Install missing packaging module in venv or ansible pip will fail
   ansible.builtin.command:
     cmd: pip install packaging
     creates: /usr/local/pyenv/versions/3.12.1/lib/python3.12/site-packages/packaging
+
+- name: Install python modules needed for downstream roles
+  ansible.builtin.pip:
+    name:
+      - cryptography
 
 - name: Gather facts again
   ansible.builtin.setup:
@@ -46,11 +51,11 @@
     update_cache: false
   when: ansible_distribution_release == 'bookworm'
 
-- name: Set up the nexus proxy repo for docker packages
+- name: Remove the nexus proxy repo for docker packages
   ansible.builtin.apt_repository:
     filename: nexus-bookworm-proxy
     repo: deb [trusted=yes] {{ nexus_proxy }}/docker-bookworm-apt-proxy/ bookworm InRelease
-    state: present
+    state: absent
     update_cache: false
   when: ansible_distribution_release == 'bookworm'
 
@@ -76,6 +81,30 @@
     state: present
     update_cache: false
   when: ansible_distribution_release == 'bullseye'
+
+- name: Add nexus proxy to .npmrc
+  ansible.builtin.blockinfile:
+    path: "/etc/npmrc"
+    owner: root
+    group: root
+    mode: "0644"
+    create: true
+    block: |
+      {{ npm.registry }}
+      {{ npm.auth }}
+    state: present
+
+- name: Add nexus proxy to /etc/pip.conf
+  ansible.builtin.blockinfile:
+    path: "/etc/pip.conf"
+    owner: root
+    group: root
+    mode: "0644"
+    create: true
+    block: |
+      [global]
+      {{ pip.registry }}
+
 
 - name: Set up timesyncd
   ansible.builtin.import_role:

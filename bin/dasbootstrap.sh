@@ -3,6 +3,7 @@
 # path to script root -- presumes execution from the root dir (either dasbootstrap or ./bin/dasbootstrap.sh)
 declare -rx PROOT="${XDG_DATA_HOME}/dasbootstrap"
 declare -rx AROOT="${PROOT}/ansible"
+declare -rx PLAY_ROOT="${AROOT}/playbooks"
 declare -rx SCROOT="${PROOT}/bin"
 declare -rx LIBROOT="${PROOT}/lib"
 
@@ -27,6 +28,7 @@ parser_definition() {
 	msg -- '' 'Commands:'
 	cmd init -- "Subcommands of init are not assured to be idepotent, but may be, as part of initializing a system"
 	cmd setup -- "Subcommands of setup are usually application level, either system or user focused"
+	cmd update -- "Update one or more containers with the assumption that those containers exist"
 	cmd destroy -- ""
 	# param :'shortcuts_cmd "$1" mod' --mod var:param
 }
@@ -58,17 +60,16 @@ parser_definition_setup() {
 		"Usage: ${2##*/} setup [options...] [arguments...]"
 	msg -- '' './dbs setup scmplayer' ''
 	msg -- 'Options:'
-	# FLAG init -- initialize the underlying image as well as setup the application
-	cmd artifactory -- "setup artifactory repository"
+	# FLAG M_TEST -t --molecule-test -- "Use moledule to test installation"
 	cmd harbor -- "setup harbor container repository"
 	cmd gitea -- "setup gitea scm repository"
-	cmd technitium -- "setup technitium dns"
+	cmd cronicle -- "setup cronicle cron manager"
 }
 
 # shellcheck disable=SC1083
 parser_definition_destroy() {
 	setup   REST help:usage abbr:true -- \
-		"Usage: ${2##*/} exec [options...] [arguments...]"
+		"Usage: ${2##*/} destroy [options...] [arguments...]"
 	msg -- '' './dbs destroy lxc scmplayer' ''
 	msg -- 'Options:'
 	cmd lxc -- "Destroy the bootstrap lxc container"
@@ -115,22 +116,25 @@ if [ $# -gt 0 ]; then
 				cmd=$1
 				shift
 				case $cmd in
-					artifactory)
-						setup_artifactory_oss_cmd "$cmd" "$@"
-						;;
 					docker)
-						setup_generic_docker_cmd "$cmd" "$@"
+						INFO "Setting up docker"
+						setup_generic_cmd "$cmd" "$@"
+						_run_playbook ansible/playbooks/applications/docker.yaml
 						;;
 					harbor)
-						setup_harbor_cmd "$cmd" "$@"
+						INFO "Setting up harbor"
+						setup_generic_cmd "$cmd" "$@"
+						_run_playbook ansible/playbooks/applications/harbor.yaml
 						;;
 					gitea)
 						INFO "Setting up gitea"
-						setup_gitea_cmd "$cmd" "$@"
+						setup_generic_cmd "$cmd" "$@"
+						_run_playbook ansible/playbooks/applications/gitea.yaml
 						;;
-					technitium)
-						INFO "Setting up technitium"
-						setup_technitium_cmd "$cmd" "$@"
+					technitiumdns)
+						INFO "Setting up Technitium DNS"
+						setup_generic_cmd "$cmd" "$@"
+						_run_playbook ansible/playbooks/applications/technitium.yaml
 						;;
 					*)
 						# perform bootstrap and common prep to all containers
@@ -138,6 +142,10 @@ if [ $# -gt 0 ]; then
 						;;
 				esac
 			fi		
+			;;
+		update)
+				# TODO: add flags and params for 1..N lxc, 1..N qemu
+				_run_playbook ansible/playbooks/maintenance/update_running_lxcs.yaml 
 			;;
 		destroy)
 			eval "$(getoptions parser_definition_destroy parse "$0")"

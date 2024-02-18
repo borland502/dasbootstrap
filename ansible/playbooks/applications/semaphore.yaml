@@ -1,0 +1,14 @@
+- name: Dasbootstrap the container if needed
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Dasbootstrap the container if necessary
+      ansible.builtin.script: "{{ lookup('ansible.builtin.env', 'XDG_DATA_HOME') }}/dasbootstrap/dbs setup semaphore"
+
+- name: Install semaphore application
+  hosts: semaphore
+  remote_user: "{{ ansible.user }}"
+  become: true
+  gather_facts: true
+  roles:
+    - morbidick.semaphore

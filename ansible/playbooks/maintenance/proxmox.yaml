@@ -1,14 +1,26 @@
 - name: Update Proxmox Nodes
   hosts: proxmox_nodes
+  remote_user: root
+  gather_facts: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   pre_tasks:
-
     - name: Make github directory
       ansible.builtin.file:
         path: /srv/github/Proxmox
-        mode: "0644"
+        mode: "0700"
         owner: "root"
         group: "root"
         state: directory
+
+    - name: Make all .sh files executable recursively
+      ansible.builtin.file:
+        path: "/srv/github/Proxmox"
+        recurse: true
+        owner: root
+        group: root
+        mode: "0700"
+
 
     - name: Clone Proxmox VE Helper-Scripts
       ansible.builtin.git:
@@ -17,35 +29,13 @@
         clone: true
         update: true
         force: true
-
-    - name: Download KVM ISOs if not already present or update them
-      ansible.builtin.uri:
-        url: "{{ item.url }}"
-        dest: "/mnt/pve/templates/template/iso/{{ item.filename }}"
-        creates: "/mnt/pve/templates/template/iso/{{ item.filename }}"
-        mode: "0644"
-      with_items:
-        - {
-            url: "https://mirror.vtti.vt.edu/almalinux/9.1/isos/x86_64/AlmaLinux-9-latest-x86_64-dvd.iso",
-            filename: "AlmaLinux-9-latest-x86_64-dvd.iso",
-          }
-        - {
-            url: "https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/latest-virtio/virtio-win.iso",
-            filename: "virtio-win.iso",
-          }
-        - {
-            url: "https://mirrors.gigenet.com/endeavouros/iso/EndeavourOS_Galileo-Neo-2024.01.25.iso",
-            filename: "EndeavourOS_Galileo-Neo-2024.01.25.iso",
-          }
-        - {
-            url: "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-arm64.qcow2",
-            filename: "debian-12-genericcloud-arm64.qcow2"
-        }
+        single_branch: true
+        version: main
 
   tasks:
     - name: Update apt
       ansible.builtin.apt:
         update_cache: true
         upgrade: true
-        autoremove: true
-        autoclean: true
+        autoremove: false
+        autoclean: false

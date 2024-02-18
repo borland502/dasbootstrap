@@ -1,0 +1,9 @@
+- name: Install docker on lxc/qemu container
+  hosts: "{{ app_name }}"
+  become: true
+  remote_user: "{{ ansible.user }}"
+  roles:
+    - robertdebock.roles.ca
+    - robertdebock.roles.epel
+    - robertdebock.roles.docker_ce
+    - robertdebock.roles.docker_compose

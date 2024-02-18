@@ -1,10 +1,6 @@
 #-- DebOps project environment
 # See https://docs.debops.org/en/master/user-guide/project-directories.html
 
-# Don't include Ansible Collections in git, but include requirements file
-/ansible/collections/*
-!/ansible/collections/requirements.yml
-
 #-- Local environment configuration
 .env
 
@@ -57,3 +53,6 @@ logs/
 /ansible/tmp/**/*
 /ansible/inventory/**/*.yaml
 /ansible/collections/ansible_collections/**/*
+# Don't include roles that aren't in my repository
+/ansible/roles/**/*
+!/ansible/roles/technohouser*/**/*

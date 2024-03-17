@@ -1,5 +1,0 @@
----
-- hosts: localhost
-  remote_user: root
-  roles:
-    - /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.destroy_lxc

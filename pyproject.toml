@@ -23,6 +23,9 @@ molecule = "^6.0.3"
 molecule-plugins = {extras = ["docker"], version = "^23.5.0"}
 paramiko = "^3.4.0"
 redis = "^5.0.1"
+playwright = "^1.41.2"
+pyautogui = "^0.9.54"
+pynput = "^1.7.6"
 
 [tool.poetry.group.dev.dependencies]
 jmespath = "1.0.1"

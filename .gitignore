@@ -49,10 +49,3 @@ config.json
 
 *.log
 logs/
-
-/ansible/tmp/**/*
-/ansible/inventory/**/*.yaml
-/ansible/collections/ansible_collections/**/*
-# Don't include roles that aren't in my repository
-/ansible/roles/**/*
-!/ansible/roles/technohouser*/**/*

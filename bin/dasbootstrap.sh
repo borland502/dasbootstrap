@@ -7,6 +7,11 @@ declare -rx PLAY_ROOT="${AROOT}/playbooks"
 declare -rx SCROOT="${PROOT}/bin"
 declare -rx LIBROOT="${PROOT}/lib"
 
+declare -A -rx GITHUB_URLS=(
+	  [proxmox-helpers]="https://github.com/tteck/Proxmox"
+    [proxmox-automation]="https://github.com/fdcastel/Proxmox-Automation"
+)
+
 # https://github.com/ko1nksm/getoptions
 source "${LIBROOT}/getoptions.sh"
 # https://github.com/jeliasson/zsh-logging
@@ -115,37 +120,21 @@ if [ $# -gt 0 ]; then
 			if [ $# -gt 0 ]; then
 				cmd=$1
 				shift
-				case $cmd in
-					docker)
-						INFO "Setting up docker"
-						setup_generic_cmd "$cmd" "$@"
-						_run_playbook ansible/playbooks/applications/docker.yaml
-						;;
-					harbor)
-						INFO "Setting up harbor"
-						setup_generic_cmd "$cmd" "$@"
-						_run_playbook ansible/playbooks/applications/harbor.yaml
-						;;
-					gitea)
-						INFO "Setting up gitea"
-						setup_generic_cmd "$cmd" "$@"
-						_run_playbook ansible/playbooks/applications/gitea.yaml
-						;;
-					technitiumdns)
-						INFO "Setting up Technitium DNS"
-						setup_generic_cmd "$cmd" "$@"
-						_run_playbook ansible/playbooks/applications/technitium.yaml
-						;;
-					*)
-						# perform bootstrap and common prep to all containers
-						setup_generic_cmd "$cmd" "$@"
-						;;
-				esac
+
+				# perform bootstrap and common prep to all containers
+				setup_generic_cmd "$cmd" "$@"
+
+				# only proceed with a playbook if one exists
+				if [[ -f "ansible/playbooks/applications/${cmd}.yaml" ]]; then
+					_run_playbook "ansible/playbooks/applications/${cmd}.yaml"
+				else
+					WARN "No playbook configured for ${cmd} after generic image creation"
+				fi
 			fi		
 			;;
 		update)
-				# TODO: add flags and params for 1..N lxc, 1..N qemu
-				_run_playbook ansible/playbooks/maintenance/update_running_lxcs.yaml 
+			# TODO: add flags and params for 1..N lxc, 1..N qemu
+			_run_playbook ansible/playbooks/maintenance/update_running_lxcs.yaml 
 			;;
 		destroy)
 			eval "$(getoptions parser_definition_destroy parse "$0")"

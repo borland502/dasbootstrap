@@ -1,0 +1,15 @@
+---
+# defaults file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible-create-lxc
+
+# nfs mount directory for qemu images and lxc archives
+template_home: /mnt/pve/templates
+ansible_home: "{{ lookup('env', 'HOME') }}/.ansible"
+
+# lxc templates for various operating systems.
+os_template:
+  debian: "{{ template_home }}/template/cache/debian-12-standard_12.2-1_amd64.tar.zst"
+  ubuntu: "{{ template_home }}/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
+
+github_repos:
+  - https://github.com/borland502/Proxmox-Automation.git
+  - https://github.com/tteck/Proxmox.git

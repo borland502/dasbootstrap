@@ -1,0 +1,7 @@
+- name: Dump dynamic proxmox inventory to static file
+  hosts: "localhost"
+  tasks:
+    - name: Dump proxmox inventory to $HOME/.ansible/inventory/hosts.yaml
+      ansible.builtin.command:
+        cmd: ansible-inventory all --export --list --yaml --inventory "{{ ansible_home }}/inventory/proxmox.yaml" --output "{{ ansible_home }}/inventory/hosts.yaml"
+        creates: "{{ ansible_home }}/inventory/hosts.yaml"

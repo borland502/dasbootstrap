@@ -1,7 +1,0 @@
----
-# defaults file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.destroy_lxc
-pve_lxc_vmid: 2000
-node: wtfo
-api_host: wtfo.local
-api_user: foo
-api_password: bar

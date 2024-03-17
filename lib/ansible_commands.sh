@@ -24,17 +24,17 @@ declare -r SYS_PYTHON="{'ansible_python_interpreter': '/usr/bin/python3'}"
 ## home location for env params that don't exist or I'm too lazy to look up
 declare -rx ANSIBLE_CONFIG=~/.ansible.cfg
 
-function _remove_app_host_key(){
+function _remove_app_host_key() {
   # remove any eisting host key from known hosts
   ansible localhost -m ansible.builtin.known_hosts -a "name=${APP_NAME} state=absent"
   ansible localhost -m ansible.builtin.known_hosts -a "name=${APP_NAME}.${ALT_DOMAIN_NAME} state=absent"
 }
 
-function _dump_inventory(){
+function _dump_inventory() {
   ansible-inventory all --export --list --yaml --inventory "${INVENTORY}" --output ${A_INVENTORY}/hosts.yaml || exit 5
 }
 
-function _add_to_inventory(){
+function _add_to_inventory() {
   local APP_NAME="${1}"
 
   # add container to localhost hosts file so that the new container can be "found" -- use ansible variables rather than shell
@@ -45,7 +45,7 @@ function _add_to_inventory(){
 }
 
 # Called each and every time to either create the lxc, or bring it up to date according to personal preferences -- always assume the container exists at this point
-function _setup_or_upgrade_lxc(){
+function _setup_or_upgrade_lxc() {
   local APP_NAME="${1}"
 
   if ! [[ -f ${A_INVENTORY}/host_vars/${APP_NAME}.yaml ]]; then
@@ -74,43 +74,43 @@ function _setup_or_upgrade_lxc(){
   ansible "${APP_NAME}" -m "${ABI_ROLE}" -a name="staticdev.pyenv" --user root -e "${SYS_PYTHON}" || exit 5
 
   # bypass cache here by using the exported inventory as well as the global sources
-  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a name="robertdebock.roles.locale"  -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user root || exit 5
-  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a name="technohouser.bootstrap-common"  -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user root || exit 5
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a name="robertdebock.roles.locale" -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user root || exit 5
+  ansible "${APP_NAME}" -m "${ABI_ROLE}" -a name="technohouser.bootstrap-common" -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user root || exit 5
   ansible "${APP_NAME}" -m "${ABI_ROLE}" -a name="technohouser.ansible-svc-user" -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" --user ansible || exit 5
 }
 
-function _run_playbook(){
+function _run_playbook() {
   local _playbook="${1}"
 
   _dump_inventory
 
-  ansible-playbook ${_playbook} -i "${A_HOSTS}" --user ansible --become
+  ansible-playbook "${_playbook}" -i "${A_HOSTS}" --user ansible --become
 }
 
-function init_lxc_cmd(){
+function init_lxc_cmd() {
   local APP_NAME="${1}"
 
-    # TODO: check that required values have been populated
-    # TODO: hostname verification
-    if ! [[ -f ${A_INVENTORY}/host_vars/${APP_NAME}.yaml ]]; then
-      ERROR "No hostvars exist for the lxc app you intend to setup.  Copying template to ${A_INVENTORY}/host_vars/${APP_NAME}.yaml"
+  # TODO: check that required values have been populated
+  # TODO: hostname verification
+  if ! [[ -f ${A_INVENTORY}/host_vars/${APP_NAME}.yaml ]]; then
+    ERROR "No hostvars exist for the lxc app you intend to setup.  Copying template to ${A_INVENTORY}/host_vars/${APP_NAME}.yaml"
 
-      # copy the typical customizations for an lxc for the new hosts (primarily ip, vmid, and hostname)
-      cp ${A_INVENTORY}/host_vars/sample-lxc.yml ${A_INVENTORY}/host_vars/${APP_NAME}.yaml
+    # copy the typical customizations for an lxc for the new hosts (primarily ip, vmid, and hostname)
+    cp "${A_INVENTORY}/host_vars/sample-lxc.yml" "${A_INVENTORY}/host_vars/${APP_NAME}.yaml"
 
-      yq -i '.pve_hostname = strenv(APP_NAME)' "${A_INVENTORY}/host_vars/${APP_NAME}.yaml" || exit 7
+    yq -i '.pve_hostname = strenv(APP_NAME)' "${A_INVENTORY}/host_vars/${APP_NAME}.yaml" || exit 7
 
-      exit 2
-    fi
+    exit 2
+  fi
 }
 
-function init_role_cmd(){
+function init_role_cmd() {
   local _ROLE_NAME=$1
   ansible-galaxy role init "${AROOT}/roles/${_ROLE_NAME}"
 }
 
-# Create/delete/modify with containers should always be against the ansible control node as the target for the proxmox module is the api 
-function destroy_lxc_cmd(){
+# Create/delete/modify with containers should always be against the ansible control node as the target for the proxmox module is the api
+function destroy_lxc_cmd() {
   local APP_NAME="${1}"
   _remove_app_host_key "${1}"
   ansible localhost -m "${ABI_ROLE}" -a name=technohouser.destroy_lxc -e @"${A_INVENTORY}/host_vars/${APP_NAME}.yaml" -e "${SYS_PYTHON}" || exit 5
@@ -118,7 +118,7 @@ function destroy_lxc_cmd(){
   _dump_inventory
 }
 
-function setup_generic_cmd(){
+function setup_generic_cmd() {
   local APP_NAME="${1}"
   _remove_app_host_key "${1}"
   _setup_or_upgrade_lxc "${1}"

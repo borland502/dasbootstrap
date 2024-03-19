@@ -1,0 +1,114 @@
+---
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    delay: 10
+    sleep: 5
+    timeout: 120
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Create XDG Hidden Directories
+  ansible.builtin.file:
+    recurse: true
+    path: "{{ ansible_env.HOME }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - '.config'
+    - '.local/share'
+    - '.local/state'
+    - '.cache'
+
+- name: Install homebrew
+  ansible.builtin.import_role:
+    name: professormanhattan.homebrew
+  vars:
+    # noqa: var-naming[no-role-prefix]
+    user:
+      username: "{{ ansible.user }}"
+
+- name: Install pyenv
+  ansible.builtin.import_role:
+    name: staticdev.pyenv
+
+- name: Install python tools
+  ansible.builtin.import_role:
+    name: staticdev.python-developer
+
+- name: Install some common service / user brew packages
+  community.general.homebrew:
+    name:
+      - zsh
+      - gcc
+      - curl
+      - git
+      - vim
+      - fzf
+      - bat
+      - zinit
+      - chezmoi
+      - starship
+      - fzf
+      - rg
+      - fd
+      - eza
+      - prettyping
+      - nmap
+      - rsync
+
+- name: Make ~/bin
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "/{{ ansible_env.HOME }}/bin"
+    mode: "0750"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
+
+- name: Copy the age key over to ~/bin
+  become: true
+  ansible.builtin.copy:
+    content: "{{ users[0]['age_key'] }}"
+    dest: "/{{ ansible_env.HOME }}/bin/key.txt"
+    mode: "0600"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
+
+- name: Initialize the chezmoi repo and apply the configuration
+  ansible.builtin.import_role:
+    name: hussainweb.chezmoi
+
+- name: Disable root login by passwd
+  become: true
+  ansible.builtin.user:
+    name: root
+    password_lock: true
+
+- name: Switch service account to zsh
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible.user }}"
+    shell: "/home/linuxbrew/.linuxbrew/bin/zsh"
+  when: ansible_facts['user_shell'] != '/home/linuxbrew/.linuxbrew/bin/zsh'
+
+# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible
+- name: Create Development Directory for Repos
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/github"
+    state: directory
+    mode: "0700"
+    owner: ansible
+    group: ansible
+
+- name: Looping over github_repos var, clone each entry
+  ansible.builtin.git:
+    repo: "{{ item['url'] }}"
+    dest: /{{ ansible_env.HOME }}/github/{{ item.split('/')[-1].replace('.git', '') }} # extract repo name
+    update: true
+    single_branch: true
+    clone: true
+    force: true
+    version: "{{ item['branch'] }}"
+  loop: "{{ github_repos }}"

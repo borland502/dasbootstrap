@@ -1,0 +1,15 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+platforms:
+  - name: instance
+    image: python:bookworm
+    command: /sbin/init
+    privileged: true
+    pre_build_image: true
+    capabilities:
+      - SYS_ADMIN
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro

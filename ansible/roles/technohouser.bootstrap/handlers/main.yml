@@ -1,0 +1,6 @@
+---
+# handlers file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.bootstrap
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 120
+    connect_timeout: 60

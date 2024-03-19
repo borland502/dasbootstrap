@@ -1,0 +1,22 @@
+---
+service_user: ansible
+
+redis_connection: localhost:6379:0
+
+github_repos:
+  - url: https://github.com/tteck/Proxmox.git
+    branch: main
+  - url: https://github.com/borland502/dotfiles.git
+    branch: main
+  - url: https://github.com/borland502/dasbootstrap.git
+    branch: daily
+  - url: https://github.com/borland502/Proxmox-Automation.git
+    branch: master
+  - url: https://github.com/borland502/ansible-homebrew.git
+    branch: main
+  - url: https://github.com/borland502/proxmox-ansible.git
+    branch: main
+  - url: https://gitea.npm.technohouser.com/jhettenh/secrets.git
+    branch: main
+  - url: https://gitea.npm.technohouser.com/jhettenh/markdownnotes
+    branch: main

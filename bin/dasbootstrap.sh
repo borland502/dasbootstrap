@@ -2,8 +2,6 @@
 
 # path to script root -- presumes execution from the root dir (either dasbootstrap or ./bin/dasbootstrap.sh)
 declare -rx PROOT="${XDG_DATA_HOME}/dasbootstrap"
-declare -rx AROOT="${PROOT}/ansible"
-declare -rx PLAY_ROOT="${AROOT}/playbooks"
 declare -rx SCROOT="${PROOT}/bin"
 declare -rx LIBROOT="${PROOT}/lib"
 
@@ -125,11 +123,11 @@ if [ $# -gt 0 ]; then
 				setup_generic_cmd "$cmd" "$@"
 
 				# only proceed with a playbook if one exists
-				if [[ -f "ansible/playbooks/applications/${cmd}.yaml" ]]; then
-					_run_playbook "ansible/playbooks/applications/${cmd}.yaml"
-				else
-					WARN "No playbook configured for ${cmd} after generic image creation"
-				fi
+				# if [[ -f "ansible/playbooks/applications/${cmd}.yaml" ]]; then
+				# 	_run_playbook "ansible/playbooks/applications/${cmd}.yaml"
+				# else
+				# 	WARN "No playbook configured for ${cmd} after generic image creation"
+				# fi
 			fi		
 			;;
 		update)

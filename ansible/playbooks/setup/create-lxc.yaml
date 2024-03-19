@@ -1,7 +1,40 @@
-- name: Dump dynamic proxmox inventory to static file
+---
+- name: Create LXC
   hosts: "localhost"
-  tasks:
-    - name: Dump proxmox inventory to $HOME/.ansible/inventory/hosts.yaml
-      ansible.builtin.command:
-        cmd: ansible-inventory all --export --list --yaml --inventory "{{ ansible_home }}/inventory/proxmox.yaml" --output "{{ ansible_home }}/inventory/hosts.yaml"
-        creates: "{{ ansible_home }}/inventory/hosts.yaml"
+  gather_facts: true
+  vars_files:
+    # TODO: Sample variables
+    - "{{ lookup('env', 'HOME') }}/.ansible/inventory/global_vars/pve.yaml"
+    - "{{ lookup('env', 'HOME') }}/.ansible/inventory/global_vars/pve_lxc.yaml"
+  roles:
+    - name: technohouser.proxmox.create_lxc
+      remote_user: root
+  post_tasks:
+    # - name: Remove the static hosts file and use dynamic inventory to pick up the new container
+    #   ansible.builtin.file:
+    #     path: "{{ lookup('env', 'HOME') }}/.ansible/inventory/hosts.yaml"
+    #     state: absent
+    # - name: Dump proxmox inventory to $HOME/.ansible/inventory/hosts.yaml
+    #   ansible.builtin.command:
+    #     cmd: >-
+    #       ansible-inventory all --export --list --yaml
+    #        --inventory "{{ lookup('env', 'HOME') }}/.ansible/inventory/proxmox.yaml"
+    #        --output "{{ lookup('env', 'HOME') }}/.ansible/inventory/hosts.yaml"
+    #     creates: "{{ lookup('env', 'HOME') }}/.ansible/inventory/hosts.yaml"
+    - name: Add the new host to the output
+      vars:
+        ansible_ssh_host: "{{ pve_hostname }}"
+        ansible_ssh_port: 22
+      ansible.builtin.add_host:
+        name: "{{ pve_lxc_net_interfaces[0].ip4 }}"
+
+
+- name: Provision new LXC
+  hosts: "{{ pve_lxc_net_interfaces[0].ip4 }}"
+  gather_facts: true
+  vars_files:
+    # TODO: Sample variables
+    - "{{ lookup('env', 'HOME') }}/.ansible/inventory/global_vars/all.yaml"
+    - "{{ lookup('env', 'HOME') }}/.ansible/inventory/global_vars/pve_lxc.yaml"
+  roles:
+    - name: technohouser.bootstrap

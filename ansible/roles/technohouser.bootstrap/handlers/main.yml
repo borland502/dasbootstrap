@@ -4,3 +4,9 @@
   ansible.builtin.reboot:
     reboot_timeout: 120
     connect_timeout: 60
+
+- name: Restart systemd-timesyncd
+  ansible.builtin.systemd_service:
+    name: systemd-timesyncd
+    daemon_reload: true
+    state: restarted

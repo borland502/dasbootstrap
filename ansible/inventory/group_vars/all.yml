@@ -5,7 +5,6 @@ ansible:
   user_shell: /bin/zsh
   password: I1cannot2simply3write4p@ssw0rd!
   home: "{{ lookup('env', 'HOME') }}/.ansible"
-  config: "{{ ansible.home }}/ansible.cfg"
 
 # nfs mount directory for qemu images and lxc archives
 template_home: /mnt/pve/templates
@@ -22,3 +21,29 @@ github_repos_master:
 
 github_repos_main:
   - https://github.com/borland502/dasbootstrap
+
+systemd_sleep:
+  allow_suspend: false
+  allow_hibernation: false
+  allow_suspend_then_hibernate: false
+  allow_hybrid_sleep: false
+
+# https://github.com/bodsch/ansible-collection-systemd/blob/main/roles/resolved/defaults/main.yml
+systemd_resolved:
+  dns:
+    - 1.1.1.1
+    - 8.8.8.8
+
+# https://github.com/bodsch/ansible-collection-systemd/blob/main/roles/timesyncd/defaults/main.yml
+systemd_timesyncd:
+  ntp:
+    - 0.us.pool.ntp.org
+    - 1.us.pool.ntp.org
+    - 2.us.pool.ntp.org
+    - 3.us.pool.ntp.org
+  fallback_ntp:
+    - time-a-g.nist.gov
+    - time-b-g.nist.gov
+    - time-c-g.nist.gov
+    - time-d-g.nist.gov
+    - time-e-g.nist.gov

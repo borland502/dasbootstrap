@@ -17,8 +17,8 @@ TODO: A ton
 ## Example
 
 ```bash
-./dbs setup test
-./dbs destroy lxc test
+poetry run ./dbs setup test
+poetry run ./dbs destroy lxc test
 ```
 
 ## Links

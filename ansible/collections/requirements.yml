@@ -1,1 +1,35 @@
+---
 collections:
+  - name: "ansible.posix"
+    version: "*"
+
+  - name: "community.general"
+    version: "*"
+
+  - name: "microsoft.ad"
+    version: "*"
+
+  - name: "community.docker"
+    version: "*"
+
+  - name: "robertdebock.roles"
+    version: "*"
+
+  - name: "buluma.roles"
+    version: "*"
+
+  - name: "debops.debops"
+    version: "*"
+
+  - name: "linuxhq.linux"
+    version: "*"
+
+  - name: "linuxhq.cloudflare"
+    version: "*"
+
+  - name: "bodsch.systemd"
+    version: "*"
+
+  - name: git+https://github.com/borland502/proxmox-ansible.git
+    type: git
+    version: "*"

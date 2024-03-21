@@ -23,6 +23,14 @@
   notify: Reboot
   tags: molecule-notest
 
+- name: Install pyenv
+  ansible.builtin.import_role:
+    name: staticdev.pyenv
+
+- name: Install python tools
+  ansible.builtin.import_role:
+    name: staticdev.python-developer
+
 - name: Ensure apt proxy configuration
   ansible.builtin.copy:
     content: |
@@ -62,22 +70,6 @@
   ansible.builtin.import_role:
     name: robertdebock.roles.buildtools
 
-- name: Install pyenv
-  ansible.builtin.import_role:
-    name: staticdev.pyenv
-
-- name: Install python tools
-  ansible.builtin.import_role:
-    name: staticdev.python-developer
-
-- name: Change root password
-  ansible.builtin.user:
-    name: "root"
-    update_password: on_create
-    password: "{{ ansible.password | ansible.builtin.password_hash }}"
-    state: present
-  tags: molecule-idempotence-notest
-
 - name: Create service account user
   become: true
   ansible.builtin.import_role:
@@ -88,9 +80,26 @@
   ansible.posix.authorized_key:
     user: "{{ ansible.user }}"
     key: "{{ ansible.pub_key }}"
+  tags: molecule-notest
+
+- name: Setup systemd-resolved
+  ansible.builtin.import_role:
+    name: bodsch.systemd.resolved
+
+- name: Setup sleep settings -- relaying on groups to use the right variables
+  ansible.builtin.import_role:
+    name: bodsch.systemd.sleep
 
 - name: Setup ntp servers
   ansible.builtin.import_role:
-    name: stuvusIT.systemd-timesyncd
-  tags: molecule-notest
+    name: bodsch.systemd.timesyncd
   notify: Reboot
+  tags: molecule-notest
+
+- name: Change root password
+  ansible.builtin.user:
+    name: "root"
+    update_password: on_create
+    password: "{{ ansible.password | ansible.builtin.password_hash }}"
+    state: present
+  tags: molecule-idempotence-notest

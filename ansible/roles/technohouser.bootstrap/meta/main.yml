@@ -48,7 +48,7 @@ galaxy_info:
     #       Maximum 20 tags per role.
 
   namespace: technohouser
-  role_name: ansible_bootstrap
+  role_name: bootstrap
 
 dependencies:
   []

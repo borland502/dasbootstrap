@@ -49,3 +49,6 @@ config.json
 
 *.log
 logs/
+
+hosts.yaml
+hosts.yml

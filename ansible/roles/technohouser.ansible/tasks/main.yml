@@ -48,6 +48,7 @@
       - fzf
       - bat
       - zinit
+      - direnv
       - chezmoi
       - starship
       - fzf
@@ -105,5 +106,4 @@
 - name: Configure github access and clone projects
   ansible.builtin.import_role:
     name: robertdebock.roles.git
-
 # TODO: Postfix

@@ -42,23 +42,8 @@
 
 - name: Install minimal Personal favorite packages for root user
   become: true
-  ansible.builtin.apt:
-    name:
-      - zsh
-      - systemd
-      - systemd-cron
-      - systemd-resolved
-      - systemd-timesyncd
-      - vim
-      - git
-      - curl
-      - p7zip-full
-      - packagekit
-      - rsync
-      - apt-transport-https
-      - fonts-firacode
-    state: present
-    update_cache: true
+  ansible.builtin.import_role:
+    name: GROG.package
   tags: molecule-idempotence-notest
 
 - name: Configure package manager to auto-update

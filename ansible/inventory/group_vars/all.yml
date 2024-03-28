@@ -47,3 +47,18 @@ systemd_timesyncd:
     - time-c-g.nist.gov
     - time-d-g.nist.gov
     - time-e-g.nist.gov
+
+package_list:
+  - name: zsh
+  - name: systemd
+  - name: systemd-cron
+  - name: systemd-resolved
+  - name: systemd-timesyncd
+  - name: vim
+  - name: git
+  - name: curl
+  - name: p7zip-full
+  - name: packagekit
+  - name: rsync
+  - name: apt-transport-https
+  - name: fonts-firacode

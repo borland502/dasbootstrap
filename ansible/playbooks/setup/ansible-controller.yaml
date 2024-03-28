@@ -1,4 +1,0 @@
-- name: Provision ansible controller
-  host: "{{ ansible_host }}"
-  roles:
-    - technohouser.bootstrap

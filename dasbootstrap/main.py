@@ -1,4 +1,6 @@
 from dasbootstrap.dasmenu import DasMenu,Actions
+from dasbootstrap_actions.database_actions import DatabaseActions
 
 if __name__ == '__main__':
-    dasmenu = DasMenu()
+    db_actions = DatabaseActions()
+    # dasmenu = DasMenu()

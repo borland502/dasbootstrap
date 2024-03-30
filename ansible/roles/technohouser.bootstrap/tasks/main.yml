@@ -18,9 +18,9 @@
     name: robertdebock.roles.bootstrap
 
 - name: Configure locale
+  become: true
   ansible.builtin.import_role:
     name: robertdebock.roles.locale
-  notify: Reboot
   tags: molecule-notest
 
 - name: Install pyenv
@@ -32,6 +32,7 @@
     name: staticdev.python-developer
 
 - name: Ensure apt proxy configuration
+  become: true
   ansible.builtin.copy:
     content: |
       Acquire::http { Proxy "{{ apt_cacher_ng }}"; }
@@ -62,6 +63,7 @@
   tags: molecule-idempotence-notest
 
 - name: Add ansible service key to authorized users file in service account
+  become: true
   ansible.posix.authorized_key:
     user: "{{ ansible.user }}"
     key: "{{ ansible.pub_key }}"

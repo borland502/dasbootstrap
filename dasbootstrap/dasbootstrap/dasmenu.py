@@ -3,7 +3,7 @@ from pathlib import Path
 from cursesmenu import CursesMenu
 from cursesmenu.items import *
 from xdg_base_dirs import *
-from ansible_actions.ansible_actions import Actions
+from dasbootstrap_actions.ansible_actions import Actions
 
 def find_yaml_files(path):
     """

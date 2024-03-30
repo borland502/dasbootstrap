@@ -3,14 +3,10 @@ from unittest.mock import patch
 from pathlib import Path
 from xdg_base_dirs import xdg_data_home
 
-import codecs
-
 import yaml
 
-from ansible.parsing.yaml.loader import AnsibleLoader
-from ansible.parsing.yaml.dumper import AnsibleDumper
-from ansible.plugins.cache import BaseFileCacheModule
-from ansible_actions.ansible_actions import Actions, Paths
+from dasbootstrap_actions.ansible_actions import Actions
+from dasbootstrap_actions.paths import Paths
 
 class TestActions(unittest.TestCase):
     actions = Actions()

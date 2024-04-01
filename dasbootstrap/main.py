@@ -1,6 +1,6 @@
-from dasbootstrap.dasmenu import DasMenu,Actions
-from dasbootstrap_actions.database_actions import DatabaseActions
+import sys, fire, json
+from strip_ansi import strip_ansi
+from dasbootstrap.dasmenu import DasMenu, Actions
 
 if __name__ == '__main__':
-    db_actions = DatabaseActions()
-    # dasmenu = DasMenu()
+    fire.Fire(Actions, name="dasbootstrap")

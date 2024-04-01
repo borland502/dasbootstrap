@@ -27,15 +27,7 @@
   vars:
     # noqa: var-naming[no-role-prefix]
     user_configs:
-      - username: "{{ ansible.user }}"
-
-# - name: Install pyenv
-#   ansible.builtin.import_role:
-#     name: staticdev.pyenv
-
-# - name: Install python tools
-#   ansible.builtin.import_role:
-#     name: staticdev.python-developer
+      - username: "{{ g_ansible.g_user }}"
 
 - name: Install some common service / user brew packages
   community.general.homebrew:
@@ -55,6 +47,7 @@
       - rg
       - fd
       - eza
+      - atuin
       - prettyping
       - nmap
       - rsync
@@ -65,8 +58,8 @@
     state: directory
     path: "/{{ ansible_env.HOME }}/bin"
     mode: "0750"
-    owner: "{{ ansible.user }}"
-    group: "{{ ansible.user }}"
+    owner: "{{ g_ansible.g_user }}"
+    group: "{{ g_ansible.g_user }}"
 
 - name: Copy the age key over to ~/bin
   become: true
@@ -74,8 +67,8 @@
     content: "{{ users[0]['age_key'] }}"
     dest: "/{{ ansible_env.HOME }}/bin/key.txt"
     mode: "0600"
-    owner: "{{ ansible.user }}"
-    group: "{{ ansible.user }}"
+    owner: "{{ g_ansible.g_user }}"
+    group: "{{ g_ansible.g_user }}"
 
 - name: Initialize the chezmoi repo and apply the configuration
   ansible.builtin.import_role:
@@ -90,7 +83,7 @@
 - name: Switch service account to zsh
   become: true
   ansible.builtin.user:
-    name: "{{ ansible.user }}"
+    name: "{{ g_ansible.g_user }}"
     shell: "/home/linuxbrew/.linuxbrew/bin/zsh"
   when: ansible_facts['user_shell'] != '/home/linuxbrew/.linuxbrew/bin/zsh'
 

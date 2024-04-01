@@ -18,55 +18,8 @@
     name: robertdebock.roles.bootstrap
 
 - name: Configure locale
-  become: true
   ansible.builtin.import_role:
     name: robertdebock.roles.locale
-  tags: molecule-notest
-
-- name: Install pyenv
-  ansible.builtin.import_role:
-    name: staticdev.pyenv
-
-- name: Install python tools
-  ansible.builtin.import_role:
-    name: staticdev.python-developer
-
-- name: Ensure apt proxy configuration
-  become: true
-  ansible.builtin.copy:
-    content: |
-      Acquire::http { Proxy "{{ apt_cacher_ng }}"; }
-    dest: /etc/apt/apt.conf.d/proxy
-    owner: root
-    group: root
-    mode: "0644"
-
-- name: Install minimal Personal favorite packages for root user
-  become: true
-  ansible.builtin.import_role:
-    name: GROG.package
-  tags: molecule-idempotence-notest
-
-- name: Configure package manager to auto-update
-  ansible.builtin.import_role:
-    name: robertdebock.roles.auto_update
-  tags: molecule-notest
-
-- name: Install build tools for homebrew and other downstream dependencies
-  ansible.builtin.import_role:
-    name: robertdebock.roles.buildtools
-
-- name: Create service account user
-  become: true
-  ansible.builtin.import_role:
-    name: buluma.roles.users
-  tags: molecule-idempotence-notest
-
-- name: Add ansible service key to authorized users file in service account
-  become: true
-  ansible.posix.authorized_key:
-    user: "{{ ansible.user }}"
-    key: "{{ ansible.pub_key }}"
   tags: molecule-notest
 
 - name: Setup systemd-resolved
@@ -80,8 +33,105 @@
 - name: Setup ntp servers
   ansible.builtin.import_role:
     name: bodsch.systemd.timesyncd
-  notify: Reboot
   tags: molecule-notest
+
+- name: Ensure apt proxy configuration
+  ansible.builtin.copy:
+    content: |
+      Acquire::http { Proxy "{{ apt_cacher_ng }}"; }
+    dest: /etc/apt/apt.conf.d/proxy
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install pyenv
+  ansible.builtin.import_role:
+    name: staticdev.pyenv
+
+- name: Install python tools
+  ansible.builtin.import_role:
+    name: staticdev.python-developer
+
+- name: Install minimal Personal favorite packages for root user
+  remote_user: root
+  ansible.builtin.import_role:
+    name: GROG.package
+  tags: molecule-idempotence-notest
+
+- name: Configure package manager to auto-update
+  ansible.builtin.import_role:
+    name: robertdebock.roles.auto_update
+  tags: molecule-notest
+
+- name: Install build tools for homebrew and other downstream dependencies
+  ansible.builtin.import_role:
+    name: robertdebock.roles.buildtools
+
+- name: Create the user group
+  ansible.builtin.group:
+    name: users
+    gid: 100
+    state: present 
+
+- name: Create the service user group
+  ansible.builtin.group:
+    name: "{{ ansible.user }}"
+    state: present
+
+- name: Create the wheel admin group
+  ansible.builtin.group:
+    name: wheel
+    state: present
+    system: true
+
+- name: Modify the nobody group
+  ansible.builtin.group:
+    name: nobody
+    state: present
+
+- name: Modify the nobody user
+  ansible.builtin.user:
+    name: nobody
+    uid: 99
+    state: present
+
+- name: Create the service user account
+  remote_user: root
+  ansible.builtin.user:
+    name: "{{ ansible.user }}"
+    create_home: true
+    shell: "{{ users_shell }}"
+    password: "{{ ansible.password }}"
+    generate_ssh_key: true
+    ssh_key_type: ed25519
+    state: present
+    force: true
+    groups:
+      - "{{ ansible.user }}"
+      - users
+      - wheel
+      - sudo
+
+- name: Add ansible service key to authorized users file in service account
+  ansible.posix.authorized_key:
+    user: "{{ g_ansible.g_user }}"
+    key: "{{ g_ansible.g_pub_key }}"
+  tags: molecule-notest
+
+- name: Ensure sudo group exists
+  group:
+    name: sudo
+    state: present
+
+- name: Ensure users in sudo group can sudo without password
+  remote_user: root
+  ansible.builtin.copy:
+    content: |
+      %wheel ALL=(ALL) NOPASSWD:ALL
+    owner: root
+    group: root
+    dest: /etc/sudoers.d/95-sudo-group
+    mode: "0644"
 
 - name: Change root password
   ansible.builtin.user:

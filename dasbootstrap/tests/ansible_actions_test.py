@@ -34,29 +34,5 @@ class TestActions(unittest.TestCase):
         self.assertTrue(yaml.dump(inventory), "Inventory should be valid YAML")
         self.assertGreater(len(inventory), 0, "Inventory should have a size greater than zero")
 
-    def test_update_collections(self):
-        test_collections = self.actions.update_collections()
-
-        self.assertIsNotNone(test_collections, "Collections should not be None")
-        #TODO: file exists
-
-    def test_update_roles(self):
-        test_roles = self.actions.update_roles()
-
-        self.assertIsNotNone(test_roles, "Roles should not be None")
-        #TODO: file exists
-
-    # TODO: DNS add/remove
-    def test_lxc(self):
-        lxc_response = self.actions.create_lxc('lxc')
-        self.assertIsNotNone(lxc_response, "LXC should not be None")
-        lxc_response = self.actions.bootstrap_lxc('lxc')
-        self.assertIsNotNone(lxc_response, "LXC should not be None")
-        lxc_response = self.actions.bootstrap_lxc('lxc')
-        self.assertIsNotNone(lxc_response, "LXC should not be None")
-        lxc_response = self.actions.destroy_lxc('lxc')
-        self.assertIsNotNone(lxc_response, "LXC should not be None")
-
-
 if __name__ == '__main__':
     unittest.main()

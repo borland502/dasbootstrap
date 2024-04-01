@@ -12,7 +12,7 @@ chezmoi_init_url: https://github.com/borland502/dotfiles
 git_username: borland502
 
 # The group to own directories.
-git_groupname: "{{ ansible.user }}"
+git_groupname: "{{ g_ansible.g_user }}"
 
 # Settings for git configuration.
 git_user_email: jhettenh@gmail.com

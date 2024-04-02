@@ -110,7 +110,6 @@
       - "{{ ansible.user }}"
       - users
       - wheel
-      - sudo
 
 - name: Add ansible service key to authorized users file in service account
   ansible.posix.authorized_key:
@@ -123,7 +122,7 @@
     name: sudo
     state: present
 
-- name: Ensure users in sudo group can sudo without password
+- name: Ensure users in wheel group can sudo without password
   remote_user: root
   ansible.builtin.copy:
     content: |

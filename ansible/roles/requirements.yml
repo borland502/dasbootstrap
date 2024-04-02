@@ -8,3 +8,5 @@ roles:
     scm: git
   - name: hussainweb.chezmoi
   - name: geerlingguy.nodejs
+  - name: gantsign.golang
+  - name: cimon-io.systemd-service

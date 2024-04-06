@@ -1,0 +1,9 @@
+- name: Set apt-cache-ng proxy for debian
+  hosts: all
+  gather_facts: false
+  pre_tasks:
+    - name: Gather facts about Debian hosts
+      ansible.builtin.setup:
+        gather_subset: "!all,!min"
+        filter: ansible_distribution == "Debian"
+      register: debian_hosts

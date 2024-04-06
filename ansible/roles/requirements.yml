@@ -1,0 +1,12 @@
+roles:
+  - name: Comcast.sdkman
+  - name: GROG.package
+  - name: staticdev.pyenv
+  - name: professormanhattan.homebrew
+    src: https://github.com/borland502/ansible-homebrew.git
+    version: main
+    scm: git
+  - name: hussainweb.chezmoi
+  - name: geerlingguy.nodejs
+  - name: gantsign.golang
+  - name: cimon-io.systemd-service

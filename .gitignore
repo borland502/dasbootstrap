@@ -1,0 +1,54 @@
+#-- DebOps project environment
+# See https://docs.debops.org/en/master/user-guide/project-directories.html
+
+#-- Local environment configuration
+.env
+
+#-- python
+*.py[co]
+
+#-- vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+#-- Emacs
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+#-- SublimeText
+*.sublime-workspace
+#*.sublime-project
+
+#-- sftp configuration file
+sftp-config.json
+
+#-- vscode
+*.vscode
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# alias secrets to a directory that's never checked in
+**/secret/*
+
+# IntelliJ
+*.idea
+
+config.json
+
+*.log
+logs/
+
+hosts.yaml
+hosts.yml

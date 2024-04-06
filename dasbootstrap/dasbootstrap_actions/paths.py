@@ -9,6 +9,7 @@ class Paths:
     SCROOT: Path = Path.joinpath(PROOT, "bin")
     LROOT: Path = Path.joinpath(PROOT, "lib")
     CROOT: Path = Path.joinpath(xdg_cache_home(), "ansible")
+    PBROOT: Path = Path.joinpath(PROOT, "ansible/playbooks")
 
     AHOME: Path = Path.joinpath(Path.home(), ".ansible")
     CHOME: Path = Path.joinpath(AHOME, "collections")

@@ -12,13 +12,60 @@ Even cowboy-style DevOps needs some focal points at least, and those are:
 
 After playing around for a long time with other efforts Proxmox hits the sweet spot between professional grade and approachable as a hypervisor OS.  
 
-TODO: A ton
+## Languages
+
+The language used is primarily python and executed via ansible runners.  [Google's Fire Project](https://github.com/google/python-fire) provides a quick and easy cli wrapper.
+
+## Design
+
+This project houses mostly templates with only the playbooks and roles executed locally.  Inventory, Collections, Roles, Vars, etc are in ~/.ansible.  Each host var file has enough info in it to create the lxc/qemu container as well as the intended app to install afterwards.
+
+This project also checks out my dotfiles project and sets up that config with chezmoi
+
+# TODO: Lots
 
 ## Example
 
 ```bash
-poetry run ./dbs setup test
-poetry run ./dbs destroy lxc test
+./dbs setup_lxc "sample-lxc"
+./dbs destroy_lxc "sample-lxc"
+```
+
+```text
+NAME
+    dasbootstrap
+
+SYNOPSIS
+    dasbootstrap - COMMAND | VALUE
+
+COMMANDS
+    COMMAND is one of the following:
+
+     ansible_user_lxc
+
+     bootstrap_lxc
+
+     create_lxc
+
+     destroy_lxc
+
+     dump_inventory
+
+     setup_lxc
+
+     setup_playbook
+
+     update_collections
+
+     update_facts
+
+     update_roles
+
+VALUES
+    VALUE is one of the following:
+
+     app_name
+
 ```
 
 ## Links

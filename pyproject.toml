@@ -15,7 +15,6 @@ ansible-lint = { version = "^6.22.1", markers = "platform_system != 'Windows'" }
 proxmoxer = "2.0.1"
 cryptography = "41.0.7"
 urllib3 = "2.1.0"
-lxc = "^3.0.4.0"
 pexpect = "4.9.0"
 ipaddr = "^2.2.0"
 ansible-compat = "^4.1.10"
@@ -37,8 +36,8 @@ sqlite-utils = "^3.36"
 pass-import = "^3.5"
 fire = "^0.6.0"
 strip-ansi = "^0.1.1"
-httpie = "^3.2.2"
 pyyaml = "^6.0.1"
+pytest = "^8.1.1"
 
 [tool.poetry.group.dev.dependencies]
 jmespath = "1.0.1"

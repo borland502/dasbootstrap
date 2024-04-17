@@ -23,6 +23,7 @@ Session.vim
 auto-save-list
 tramp
 .\#*
+dist
 
 #-- SublimeText
 *.sublime-workspace

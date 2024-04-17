@@ -20,6 +20,7 @@
     - ".local/share"
     - ".local/state"
     - ".cache"
+  ignore_errors: true
 
 - name: Install homebrew
   ansible.builtin.import_role:

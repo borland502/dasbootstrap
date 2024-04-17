@@ -1,10 +1,103 @@
 [tool.poetry]
 name = "dasbootstrap"
-version = "0.1.0"
+version = "0.1.1"
 description = "System installer using ansible"
 authors = ["Jeremy Hettenhouser <jhettenh@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "shared" }
+]
+
+# https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
+[tool.poe.tasks]
+test = "poetry run pytest"
+
+[tool.poe.tasks.integration]
+shell = """
+poetry run ./dbs update-collections &&
+poetry run ./dbs update-roles &&
+poetry run ./dbs destroy --app-name lxc &&
+poetry run ./dbs create --app-name lxc &&
+poetry run ./dbs destroy --app-name lxc &&
+poetry run ./dbs update-facts
+"""
+
+[tool.poe.tasks.check]
+shell = "ruff check pyprojects shared && bandit -c pyproject.toml -r pyprojects shared"
+
+[tool.poe.tasks.format]
+shell = """
+pyupgrade --py311-plus $(find pyprojects/**/*.py) &&
+pyright ./pyprojects ./shared &&
+ruff check --fix pyprojects shared && ruff format pyprojects shared
+"""
+
+[tool.ruff]
+target-version = "py311"
+line-length = 128
+
+exclude = [
+    ".eggs",
+    ".git",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    "tests",
+    "__pypackages__",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = ["A", "B", "C4", "D", "E", "F", "G", "I", "N", "Q", "W", "COM", "DTZ", "FA", "ICN", "INP", "PIE", "PD", "PL", "RSE", "RET", "RUF", "SIM", "SLF", "UP"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "src.*"]
+section-order = ["future", "standard-library", "third-party", "first-party", "tests", "local-folder"]
+
+[tool.ruff.lint.isort.sections]
+"tests" = ["tests"]
+
+[tool.pyright]
+include = ["src"]
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "dasbootstrap/experimental",
+    "dasbootstrap/typestubs"
+]
+
+defineConstant = { DEBUG = true }
+stubPath = "dasbootstrap/stubs"
+
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+pythonVersion = "3.11.8"
+pythonPlatform = "Linux"
+
+[tool.pytest.ini_options]
+testpaths=[
+    "shared/tests",
+    "pyprojects/dasbootstrap/tests"
+]
+minversion = "6.0"
+addopts = "--disable-warnings"
+markers = ["slow"]
+srcpaths = "."
+
+[tool.poetry.plugins]
+
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -27,17 +120,20 @@ pynput = "^1.7.6"
 tdnss = "^0.2.1"
 httpx = "^0.27.0"
 xdg-base-dirs = "^6.0.1"
-curses-menu = "^0.8.1"
-plumbum = "^1.8.2"
 ansible-runner = "^2.3.6"
 python-nmap = "^0.7.1"
 types-python-nmap = "^0.7.1.20240106"
 sqlite-utils = "^3.36"
 pass-import = "^3.5"
-fire = "^0.6.0"
 strip-ansi = "^0.1.1"
 pyyaml = "^6.0.1"
-pytest = "^8.1.1"
+
+typer = "^0.12.3"
+pyright = "^1.1.358"
+plumbum = "^1.8.2"
+passlib = "^1.7.4"
+docker = "^7.0.0"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 jmespath = "1.0.1"
@@ -53,6 +149,14 @@ certifi = "^2023.11.17"
 dnspython = "2.4.2"
 pyspnego = {extras = ["kerberos"], version = "0.10.2"}
 sansldap = "0.1.0"
+poethepoet = "^0.25.0"
+ruff = "^0.3.7"
+pyupgrade = "^3.15.2"
+bandit = "^1.7.8"
+pytest = "^8.1.1"
+pytest-docker = "^3.1.1"
+pytest-ansible = "^24.1.2"
+pytest-srcpaths = "^1.2.1"
 
 [build-system]
 requires = ["poetry-core"]

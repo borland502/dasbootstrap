@@ -14,7 +14,7 @@ After playing around for a long time with other efforts Proxmox hits the sweet s
 
 ## Languages
 
-The language used is primarily python and executed via ansible runners.  [Google's Fire Project](https://github.com/google/python-fire) provides a quick and easy cli wrapper.
+The language used is primarily python and executed via ansible runners.  [Typer](https://github.com/tiangolo/typer) provides a quick and easy cli wrapper.
 
 ## Design
 
@@ -27,66 +27,37 @@ This project also checks out my dotfiles project and sets up that config with ch
 ## Example
 
 ```bash
-./dbs setup_lxc "sample-lxc"
-./dbs destroy_lxc "sample-lxc"
+./dbs create --app-name "sample-lxc"
+./dbs destroy --app-name "sample-lxc"
 ```
 
 ```text
-NAME
-    dasbootstrap
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --install-completion          Install completion for the current shell.                                         │
+│ --show-completion             Show completion for the current shell, to copy it or customize the installation.  │
+│ --help                        Show this message and exit.                                                       │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ create               Creates and sets up a new LXC container, installing favorites, and creating a service user │
+│ destroy              Destroys an existing LXC container.                                                        │
+│ dump-inventory       Dump the inventory to hosts.yaml                                                           │
+│ update-collections   Updates Ansible collections from requirements.                                             │
+│ update-facts         Updates facts for all managed hosts.                                                       │
+│ update-roles         Updates Ansible roles from requirements.                                                   │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
 
-SYNOPSIS
-    dasbootstrap - COMMAND | VALUE
+## Development Commands
 
-COMMANDS
-    COMMAND is one of the following:
-
-     ansible_user_lxc
-
-     bootstrap_lxc
-
-     create_lxc
-
-     destroy_lxc
-
-     dump_inventory
-
-     setup_lxc
-
-     setup_playbook
-
-     update_collections
-
-     update_facts
-
-     update_roles
-
-VALUES
-    VALUE is one of the following:
-
-     app_name
-
+```
+poe 
 ```
 
 ## Links
 
-[Bootware](https://github.com/scruffaluff/bootware)
-[Buluma Roles](https://galaxy.ansible.com/ui/repo/published/buluma/roles/docs/)
-[Linux Domain Management](https://github.com/EddyMaestroDev/linux_domain_mgmt)
-[Proxmox VE Helper-Scripts](https://tteck.github.io/Proxmox/)
-[Robert Debock Roles](https://robertdebock.nl/ansible.html)
-[cielito.proxmox](https://galaxy.ansible.com/ui/repo/published/cielito/proxmox/content/role/create_lxc/)
-
-## Sandbox 
-
-arensb.truenas
-debops.debops
-linuxhq.linux
-manala.roles
-robertdebock.roles
-buluma.roles
-https://github.com/mullholland?tab=repositories
-https://github.com/agaffney/ansible-synology-dsm/tree/master/tasks
-https://github.com/BrynardSecurity-Ansible/ansible-role-domain-join/blob/main/tasks/main.yml
-https://github.com/sgargel/linux_joindomain
-https://github.com/schneidr/linux_joindomain
+* [Bootware](https://github.com/scruffaluff/bootware)
+* [Buluma Roles](https://galaxy.ansible.com/ui/repo/published/buluma/roles/docs/)
+* [Linux Domain Management](https://github.com/EddyMaestroDev/linux_domain_mgmt)
+* [Proxmox VE Helper-Scripts](https://tteck.github.io/Proxmox/)
+* [Robert Debock Roles](https://robertdebock.nl/ansible.html)
+* [cielito.proxmox](https://galaxy.ansible.com/ui/repo/published/cielito/proxmox/content/role/create_lxc/)

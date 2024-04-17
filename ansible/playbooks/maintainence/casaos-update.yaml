@@ -1,0 +1,4 @@
+# curl -fsSL https://get.casaos.io/update/v0.4.5 | sudo bash
+- name: Update CasaOS
+  hosts: casaos:office
+  

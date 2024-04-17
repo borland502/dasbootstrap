@@ -1,0 +1,16 @@
+- name: Update netdata clients on all hosts
+  hosts: proxmox_all_running:!proxmox_nodes
+  become: true
+  tasks:
+    - name: Download netdata script
+      ansible.builtin.get_url:
+        url: https://get.netdata.cloud/kickstart.sh
+        dest: /tmp/netdata-kickstart.sh
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Execute the netdata update script
+      ansible.builtin.shell:
+        cmd: /tmp/netdata-kickstart.sh
+      

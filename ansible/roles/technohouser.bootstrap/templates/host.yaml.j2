@@ -1,0 +1,16 @@
+pve_node: "{{ pve_node }}"
+# FQDN or IP of the Proxmox API endpoint where we manage the cluster or node
+pve_api_host: "{{ pve_api_host }}"
+pve_ansible_user: "{{ pve_ansible_user }}"
+
+pve_hostname: "{{ pve_hostname }}"
+pve_lxc_searchdomain: "{{ pve_search_domain }}"
+pve_lxc_vmid: {{ pve_vmid }}
+pve_lxc_net_interfaces:
+  - id: net0
+    name: eth0
+    ip4: "{{ ipv4 }}"
+    netmask4: 24
+    gw4: "{{ gateway }}"
+    bridge: vmbr0
+    firewall: false

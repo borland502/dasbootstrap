@@ -12,26 +12,33 @@ packages = [
 # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
 [tool.poe.tasks]
 test = "poetry run pytest"
+test_full = ["check", "format", "test", "integration"]
 
 [tool.poe.tasks.integration]
-shell = """
-poetry run ./dbs update-collections &&
-poetry run ./dbs update-roles &&
-poetry run ./dbs destroy --app-name lxc &&
-poetry run ./dbs create --app-name lxc &&
-poetry run ./dbs destroy --app-name lxc &&
-poetry run ./dbs update-facts
-"""
+shell = "bin/integration_test.zsh"
 
 [tool.poe.tasks.check]
 shell = "ruff check pyprojects shared && bandit -c pyproject.toml -r pyprojects shared"
 
 [tool.poe.tasks.format]
-shell = """
-pyupgrade --py311-plus $(find pyprojects/**/*.py) &&
-pyright ./pyprojects ./shared &&
-ruff check --fix pyprojects shared && ruff format pyprojects shared
-"""
+shell = "bin/project_format.zsh"
+
+[tool.bandit]
+exclude_dirs = [
+    ".eggs",
+    ".git",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    "tests",
+    "__pypackages__",
+    "__pycache__",
+    "build",
+    "dist",
+]
 
 [tool.ruff]
 target-version = "py311"
@@ -54,7 +61,10 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["A", "B", "C4", "D", "E", "F", "G", "I", "N", "Q", "W", "COM", "DTZ", "FA", "ICN", "INP", "PIE", "PD", "PL", "RSE", "RET", "RUF", "SIM", "SLF", "UP"]
+select = [
+    "A", "B", "C4", "D", "E", "F", "G", "I", "N", "Q", "W", "COM", "DTZ", "FA", "ICN", "INP", "PIE", "PD", "PL", "RSE",
+    "RET", "RUF", "SIM", "SLF", "UP"
+]
 
 [tool.ruff.format]
 line-ending = "lf"
@@ -70,17 +80,18 @@ section-order = ["future", "standard-library", "third-party", "first-party", "te
 "tests" = ["tests"]
 
 [tool.pyright]
-include = ["src"]
+include = ["pyprojects/dasbootstrap","shared/config"]
 exclude = ["**/node_modules",
     "**/__pycache__",
-    "dasbootstrap/experimental",
-    "dasbootstrap/typestubs"
+    "pyprojects/**/experimental",
+    "pyprojects/**/typestubs",
+    "**/tests"
 ]
 
 defineConstant = { DEBUG = true }
 stubPath = "dasbootstrap/stubs"
 
-reportMissingImports = true
+reportMissingImports = false
 reportMissingTypeStubs = false
 
 pythonVersion = "3.11.8"
@@ -136,6 +147,7 @@ docker = "^7.0.0"
 requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
+typer = "^0.12.3"
 jmespath = "1.0.1"
 docker = "7.0.0"
 jq = "1.6.0"

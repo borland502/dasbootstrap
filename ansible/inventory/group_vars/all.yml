@@ -1,38 +1,15 @@
-# defaults file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible-create-lxc
-ansible:
-  user: ansible
-  user_home: ansible
-  user_shell: /bin/zsh
-  password: I1cannot2simply3write4p@ssw0rd!
-  home: "{{ lookup('env', 'HOME') }}/.ansible"
-
-# nfs mount directory for qemu images and lxc archives
-template_home: /mnt/pve/templates
-ansible_home: "{{ lookup('env', 'HOME') }}/.ansible"
-
-# lxc templates for various operating systems.
-os_template:
-  debian: "{{ template_home }}/template/cache/debian-12-standard_12.2-1_amd64.tar.zst"
-  ubuntu: "{{ template_home }}/template/cache/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"
-
-github_repos_master:
-  - https://github.com/borland502/Proxmox-Automation.git
-  - https://github.com/tteck/Proxmox.git
-
-github_repos_main:
-  - https://github.com/borland502/dasbootstrap
-
-systemd_sleep:
-  allow_suspend: false
-  allow_hibernation: false
-  allow_suspend_then_hibernate: false
-  allow_hybrid_sleep: false
-
 # https://github.com/bodsch/ansible-collection-systemd/blob/main/roles/resolved/defaults/main.yml
 systemd_resolved:
   dns:
-    - 1.1.1.1
-    - 8.8.8.8
+    - "1.1.1.1"
+    - "8.8.8.8"
+  domains:
+    - "best.example.com"
+  multicast_dns: resolve
+  llmnr: resolve
+  cache: false
+  cache_from_localhost: false
+  dns_stub_listener: true
 
 # https://github.com/bodsch/ansible-collection-systemd/blob/main/roles/timesyncd/defaults/main.yml
 systemd_timesyncd:
@@ -48,6 +25,166 @@ systemd_timesyncd:
     - time-d-g.nist.gov
     - time-e-g.nist.gov
 
+cidr: "10.10.10.10/24"
+
+systemd_sleep:
+  allow_suspend: false
+  allow_hibernation: false
+  allow_suspend_then_hibernate: false
+  allow_hybrid_sleep: false
+
+virtualenvs_in_project: true
+ansible_password: ""
+ansible_become_password: ""
+default_password: ""
+domain:
+  name: ""
+  alt: ""
+  realm: ""
+  admin: ""
+  admin_password: ""
+  ou: ""
+  server: ""
+ansible:
+  hostname: ""
+  alt_hostname: ""
+  pub_key: ""
+  user: ""
+  groups:
+    - ""
+  domain_user: ""
+  password: ""
+homebrew_temporary_passwordless_sudo: ""
+homebrew:
+  user: ""
+users:
+  - name:
+    age_key: ""
+    pub_key: ""
+users_group_list:
+  - name: ""
+    state: present
+  - name: homebrew
+    state: present
+  - name: users
+    gid: 100
+    state: present
+users_user_list:
+  - name: homebrew
+    cron_allow: true
+    users_shell: /usr/sbin/nologin
+    groups:
+    state: present
+  - name: ""
+    cron_allow: true
+    sudo_options: "ALL=(ALL) NOPASSWD: ALL"
+    groups:
+    password: ""
+    authorized_keys:
+      - ""
+    state: present
+  - name: nobody
+    uid: 99
+
+locale_timezone: America/New_York
+
+# python settings -- override local controller with poetry venv
+pyenv_version: "HEAD"
+pyenv_virtualenv_version: "HEAD"
+pyenv_update_version: "HEAD"
+pyenv_env: "system"
+pyenv_path: "{% if pyenv_env == 'user' %}{{ ansible_env.HOME }}/pyenv{% else %}/usr/local/pyenv{% endif %}"
+pyenvrc_path: "{{ g_pyenv_path }}"
+pyenv_owner: "root"
+pyenv_owner_group: "root"
+pyenv_shellrc_file: "{% if pyenv_env == 'user' %}~/.bashrc{% else %}/etc/profile.d/pyenv.sh{% endif %}"
+pyenv_update_git_install: true
+pyenv_enable_autocompletion: true
+pyenv_enable_virtualenvs: true
+pyenv_python_versions:
+  - 3.12.1
+pyenv_global:
+  - 3.12.1
+pyenv_virtualenvs:
+  - { venv_name: "ansible", py_version: "3.12.1" }
+pyenv_init_options: "{% if pyenv_env != 'user' %}--no-rehash{% endif %}"
+pyenv_update: true
+
+# homebrew role parameter that doesn't respect --user flag
+user_configs:
+  - username: "{{ g_ansible.g_user }}"
+
+apt_cacher_ng: "{{ g_apt_cacher_ng }}"
+auto_update_download_updates: true
+auto_update_apply_updates: true
+
+users_shell: /bin/zsh
+
+chezmoi_init_url: https://github.com/borland502/dotfiles
+
+#########################################################
+### Proxmox API connection and authentication section ###
+#########################################################
+
+# Flag to determine the behavior of the variables default values
+# Various module options used to have default values. This cause problems when user expects different behavior from proxmox
+# by default or fill options which cause problems when they have been set. The default value is "compatibility", which will
+# ensure that the default values are used when the values are not explicitly specified by the user.From community.general
+# 4.0.0 on, the default value will switch to "no_defaults". To avoid deprecation warnings, please set proxmox_default_behavior
+# to an explicit value. This affects the disk, cores, cpus, memory, onboot, swap, cpuunits options.
+# See https://docs.ansible.com/ansible/latest/collections/community/general/proxmox_module.html#parameter-proxmox_default_behavior
+# Choices: compatibility - no_defaults
+# pve_default_behavior: no_defaults
+pve_py_pckg_mgmt: apt
+# Proxmox node hostname where we create or manage an LXC container
+# pve_node: "{{ g_pve_node }}"
+# FQDN or IP of the Proxmox API endpoint where we manage the cluster or node
+# pve_api_host: "{{ g_pve_api_host }}"
+# pve_ansible_user: "{{ g_ansible.g_user }}"
+# # User to use to connect to the Proxmox cluster API
+pve_api_user: "{{ g_pve_api_user }}"
+# Password for the previous API user (BETTER PUT THIS IN A VAULT, this dummy example can cause security issues)
+pve_api_password: "{{ g_pve_api_password }}"
+is_password_setup: true
+
+dns:
+  key_algorithm: hmac-sha512
+  key_name: "{{ g_dns.key_name }}"
+  key_secret: "{{ g_dns.key_secret }}"
+  port: 53
+  server: "{{ g_dns.g_server }}"
+  zone: "{{ g_dns.g_zone }}"
+
+# https://galaxy.ansible.com/ui/standalone/roles/robertdebock/git/documentation/
+# defaults file for git
+
+# The system username in /home where to place the gitconfig file.
+git_username: "{{ g_git_username }}"
+
+# The group to own directories.
+git_groupname: "{{ g_ansible.g_user }}"
+
+# Settings for git configuration.
+git_user_email: jhettenh@gmail.com
+git_user_name: Jeremy Hettenhouser
+
+# Where to place the copies of the repositories.
+git_repository_destination: /home/{{ username | default('unset') }}/Documents/github.com/{{ username | default('unset') }}
+
+# Should git force (overwrite locally changed) clone? (Can also be controlled
+# per repository, see below.
+# git_force: yes
+# The repositories to check out, bootstrap is pinned to a version, java will get HEAD/latest.
+git_repositories:
+  - repo: "https://github.com/borland502/Proxmox-Automation.git"
+    dest: "{{ ansible_env.HOME }}/github/proxmox-automation"
+    version: "master"
+    force: true
+  - repo: "https://github.com/borland502/proxmox-ansible.git"
+    dest: "{{ ansible_env.HOME }}/github/proxmox-ansible"
+    version: "main"
+    force: true
+
 package_list:
   - name: zsh
   - name: systemd
@@ -62,3 +199,4 @@ package_list:
   - name: rsync
   - name: apt-transport-https
   - name: fonts-firacode
+  - name: jq

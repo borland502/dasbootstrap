@@ -1,3 +1,5 @@
+"""Ansible Commands module."""
+
 import os
 
 import ansible_runner
@@ -6,13 +8,16 @@ from shared.config.resources.paths import Directories, Inventory, Requirements, 
 from shared.config.utils import find_playbook
 
 INVENTORY: list[str] = ["-i", str(Directories.IHOME)]
-VARS: list[str] = INVENTORY + [
-    "-e",
-    "@" + str(Variables.ALL_SECURE_VARS),
-    "-e",
-    "@" + str(Variables.ALL_VARS),
-    "-e",
-    "@" + str(Variables.ALL_LXC_VARS),
+VARS: list[str] = [
+    *INVENTORY,
+    *[
+        "-e",
+        "@" + str(Variables.ALL_SECURE_VARS),
+        "-e",
+        "@" + str(Variables.ALL_VARS),
+        "-e",
+        "@" + str(Variables.ALL_LXC_VARS),
+    ],
 ]
 
 
@@ -55,7 +60,10 @@ class Actions:
                 "name=technohouser.proxmox.create_lxc",
                 "-e",
                 self.app_path,
-                *VARS, "--user", "root"],
+                *VARS,
+                "--user",
+                "root",
+            ],
         )
 
     def destroy_lxc(self):
@@ -74,7 +82,10 @@ class Actions:
                 "name=technohouser.destroy_lxc",
                 "-e",
                 self.app_path,
-                *VARS, "--user", "root"],
+                *VARS,
+                "--user",
+                "root",
+            ],
         )
 
     def bootstrap_lxc(self, app):
@@ -93,7 +104,11 @@ class Actions:
                 "-a",
                 "name=technohouser.bootstrap",
                 *VARS,
-                "-e", self.app_path, "--user", "root"],
+                "-e",
+                self.app_path,
+                "--user",
+                "root",
+            ],
         )
 
     def ansible_user_lxc(self, app):
@@ -113,11 +128,18 @@ class Actions:
                 "name=technohouser.ansible",
                 "-e",
                 self.app_path,
-                *VARS, "--user", "ansible"],
+                *VARS,
+                "--user",
+                "ansible",
+            ],
         )
 
     @classmethod
     def dump_inventory(cls):
+        """Convert dynamic inventory sources into a single static host file.
+
+        :return:
+        """
         ansible_runner.run_command(
             executable_cmd="ansible-inventory",
             cmdline_args=["all", "--export", "--list", "--yaml", *VARS, "--output", str(Inventory.STATIC_HOSTS)],
@@ -125,6 +147,10 @@ class Actions:
 
     @classmethod
     def update_collections(cls):
+        """Update galaxy collections for Dasbootstrap.
+
+        :return:
+        """
         ansible_runner.run_command(
             executable_cmd="ansible-galaxy",
             cmdline_args=[
@@ -138,6 +164,7 @@ class Actions:
 
     @classmethod
     def update_facts(cls):
+        """Run the ansible.builtin.setup module against all hosts with the service user."""
         ansible_runner.run_command(
             executable_cmd="ansible",
             cmdline_args=["all", "-m", "setup", *VARS, "--user", "ansible"],
@@ -145,6 +172,10 @@ class Actions:
 
     @classmethod
     def update_roles(cls):
+        """Update galaxy roles for Dasbootstrap.
+
+        :return:
+        """
         ansible_runner.run_command(
             executable_cmd="ansible-galaxy",
             cmdline_args=["role", "install", "-r", str(Requirements.ROLES_REQS), "--force"],
@@ -152,6 +183,7 @@ class Actions:
 
     @classmethod
     def setup_playbook(cls, app) -> None:
+        """Find and execute an ansible playbook using the service user."""
         playbook = find_playbook(app)
 
         if playbook is None:
@@ -164,8 +196,7 @@ class Actions:
 
     @classmethod
     def purge_cache(cls):
-        """Erases all files within the ~/.cache/ansible directory.
-        """
+        """Erases all files within the ~/.cache/ansible directory."""
         if os.path.exists(Directories.CHOME):
             for filename in os.listdir(Directories.CHOME):
                 file_path = os.path.join(Directories.CHOME, filename)
@@ -176,6 +207,3 @@ class Actions:
             print(f"Contents of Ansible cache directory '{Directories.CHOME}' erased successfully.")
         else:
             print("Ansible cache directory not found.")
-
-    def get_inventory_for_host(self, app):
-        return ansible_runner.get_inventory(host=app, inventories=[self.app_path], action="host")

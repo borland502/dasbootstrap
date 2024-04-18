@@ -1,6 +1,5 @@
 """Main module for Dasbootstrap."""
 
-
 from typer import Option, Typer
 
 from shared.config.resources.paths import OperatingSystemFiles
@@ -13,7 +12,7 @@ app = Typer()
 
 @app.command()
 def create(app_name: str = Option("lxc", help="Application to manage (defaults to lxc)")):
-    """Creates and sets up a new LXC container, installing favorites, and creating a service user"""
+    """Creates and sets up a new LXC container, installing favorites, and creating a service user."""
     actions = Actions(app_name)
     actions.create_lxc()
     # preemptively delete the host key
@@ -46,7 +45,7 @@ def update_collections():
 
 @app.command()
 def dump_inventory():
-    """Dump the inventory to hosts.yaml"""
+    """Dump the inventory to hosts.yaml."""
     Actions.dump_inventory()
 
 

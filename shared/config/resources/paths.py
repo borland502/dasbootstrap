@@ -1,3 +1,5 @@
+"""Paths Module."""
+
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -29,12 +31,16 @@ class Directories:
 
 @dataclass
 class Requirements:
+    """Ansible requirements yaml for collections and roles."""
+
     COLLECTIONS_REQS: str = Directories.CHOME + "/requirements.yml"
     ROLES_REQS: str = Directories.RHOME + "/requirements.yml"
 
 
 @dataclass
 class Variables:
+    """Extra variables to pass to Ansible runners."""
+
     ALL_SECURE_VARS: str = Directories.SVHOME + "/all.yaml"
     ALL_VARS: str = Directories.GVHOME + "/all.yaml"
     ALL_LXC_VARS: str = Directories.GVHOME + "/proxmox_all_lxc.yaml"
@@ -42,9 +48,13 @@ class Variables:
 
 @dataclass
 class Inventory:
+    """Source/Target for Inventory Actions."""
+
     STATIC_HOSTS: str = Directories.IHOME + "/hosts.yaml"
 
 
 @dataclass
 class OperatingSystemFiles:
+    """Operating System files used by Dasbootstrap."""
+
     KNOWN_HOSTS: str = str(Path.home()) + "/.ssh/known_hosts"

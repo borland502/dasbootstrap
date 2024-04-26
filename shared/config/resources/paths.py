@@ -24,7 +24,6 @@ class Directories:
     CHOME: str = AHOME + "/collections"
     RHOME: str = AHOME + "/roles"
     IHOME: str = AHOME + "/inventory"
-    SVHOME: str = AHOME + "/global_vars"
     GVHOME: str = IHOME + "/group_vars"
     HVHOME: str = IHOME + "/host_vars"
 
@@ -41,7 +40,6 @@ class Requirements:
 class Variables:
     """Extra variables to pass to Ansible runners."""
 
-    ALL_SECURE_VARS: str = Directories.SVHOME + "/all.yaml"
     ALL_VARS: str = Directories.GVHOME + "/all.yaml"
     ALL_LXC_VARS: str = Directories.GVHOME + "/proxmox_all_lxc.yaml"
 

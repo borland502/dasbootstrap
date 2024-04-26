@@ -30,7 +30,7 @@ def find_yaml_files(path) -> list[str]:
     return yaml_files
 
 
-def find_playbook(app_name: str) -> str:
+def find_playbook(app_name: str) -> str | None:
     """Searches for a playbook file named after the given application name.
 
     Args:
@@ -39,12 +39,8 @@ def find_playbook(app_name: str) -> str:
     Returns:
         str: The full path to the playbook file if found, otherwise None.
 
-    Raises:
-        FileNotFoundError: If no playbook file matching the app_name is found.
-
     This function iterates through all playbooks (obtained using `find_playbooks()`)
     and returns the first one whose filename starts with the provided `app_name`.
-    If no matching playbook is found, it raises a `FileNotFoundError`.
     """
     try:
         for playbook in find_playbooks():

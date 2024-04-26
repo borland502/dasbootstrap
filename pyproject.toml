@@ -1,16 +1,20 @@
 [tool.poetry]
 name = "dasbootstrap"
 version = "0.1.1"
-description = "System installer using ansible"
+description = "System installer for an ansible control node"
 authors = ["Jeremy Hettenhouser <jhettenh@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/borland502/dasbootstrap"
 packages = [
-    { include = "shared" }
+    { include = "utils", from = "./shared" },
+    { include = "config", from = "./shared" },
 ]
 
 # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
+
 [tool.poe.tasks]
+build = "bin/build.zsh"
 test = "poetry run pytest"
 test_full = ["check", "format", "test", "integration"]
 
@@ -18,10 +22,41 @@ test_full = ["check", "format", "test", "integration"]
 shell = "bin/integration_test.zsh"
 
 [tool.poe.tasks.check]
-shell = "ruff check pyprojects shared && bandit -c pyproject.toml -r pyprojects shared"
+shell = "bandit -c pyproject.toml -r ./pyprojects ./shared"
 
 [tool.poe.tasks.format]
 shell = "bin/project_format.zsh"
+
+[tool.poe.tasks.docs]
+help = "Generate this app's docs"
+cmd = """
+  pdoc
+    --docformat $docformat
+    --output-directory $outputdirectory
+    dasbootstrap
+  """
+
+  [[tool.poe.tasks.docs.args]]
+  help = "The docstring style (default: numpy)"
+  name = "docformat"
+  options = ["--docformat"]
+  default = "google"
+
+  [[tool.poe.tasks.docs.args]]
+  help = "The output directory (default: docs)"
+  name = "outputdirectory"
+  options = ["--output-directory"]
+  default = "docs"
+
+[tool.poe.tasks.lint]
+help = "Lint this app"
+
+  [[tool.poe.tasks.lint.sequence]]
+  cmd = """
+    pre-commit run
+      --all-files
+      --color always
+    """
 
 [tool.bandit]
 exclude_dirs = [
@@ -60,11 +95,10 @@ exclude = [
     "dist",
 ]
 
-[tool.ruff.lint]
-select = [
-    "A", "B", "C4", "D", "E", "F", "G", "I", "N", "Q", "W", "COM", "DTZ", "FA", "ICN", "INP", "PIE", "PD", "PL", "RSE",
-    "RET", "RUF", "SIM", "SLF", "UP"
-]
+ignore-init-module-imports = true
+select = ["A", "ASYNC", "B", "C4", "C90", "D", "DTZ", "E", "F", "FLY", "FURB", "I", "ISC", "LOG", "N", "NPY", "PERF", "PGH", "PIE", "PL", "PT", "Q", "RET", "RUF", "RSE", "SIM", "TID", "UP", "W", "YTT"]
+ignore = ["D203", "D213", "E501", "PGH002", "PGH003", "RET504", "S101", "S307", "D205"]
+unfixable = ["F401", "F841"]
 
 [tool.ruff.format]
 line-ending = "lf"
@@ -80,11 +114,11 @@ section-order = ["future", "standard-library", "third-party", "first-party", "te
 "tests" = ["tests"]
 
 [tool.pyright]
-include = ["pyprojects/dasbootstrap","shared/config"]
+include = ["pyprojects/dasbootstrap", "pyprojects/semaphore_client", "shared/config","shared/utils"]
 exclude = ["**/node_modules",
     "**/__pycache__",
-    "pyprojects/**/experimental",
-    "pyprojects/**/typestubs",
+    "src/**/experimental",
+    "src/**/typestubs",
     "**/tests"
 ]
 
@@ -98,27 +132,50 @@ pythonVersion = "3.11.8"
 pythonPlatform = "Linux"
 
 [tool.pytest.ini_options]
+addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=2 --junitxml=reports/pytest.xml"
 testpaths=[
-    "shared/tests",
-    "pyprojects/dasbootstrap/tests"
+    "tests", "pyprojects/dasbootstrap/tests", "pyprojects/semaphore_client/tests"
+]
+norecursedirs = [
+  "testing/example_scripts",
+  ".*",
+  "build",
+  "dist",
 ]
 minversion = "6.0"
-addopts = "--disable-warnings"
 markers = ["slow"]
 srcpaths = "."
+filterwarnings = [
+    'ignore:AnsibleCollectionFinder has already been configured',
+]
 
 [tool.poetry.plugins]
 
+[tool.coverage.report]  # https://coverage.readthedocs.io/en/latest/config.html#report
+precision = 1
+show_missing = true
+skip_covered = true
+
+[tool.coverage.run]  # https://coverage.readthedocs.io/en/latest/config.html#run
+branch = true
+command_line = "--module pytest"
+data_file = "reports/.coverage"
+source = ["src"]
+
+[tool.coverage.xml]  # https://coverage.readthedocs.io/en/latest/config.html#xml
+output = "reports/coverage.xml"
 
 [tool.poetry.dependencies]
 python = "^3.11"
 wheel = "0.42.0"
-setuptools = "69.0.3"
 ansible = "^9.1.0"
 ansible-lint = { version = "^6.22.1", markers = "platform_system != 'Windows'" }
 proxmoxer = "2.0.1"
-cryptography = "41.0.7"
-urllib3 = "2.1.0"
+coloredlogs = ">=15.0.1"
+fastapi = { extras = ["all"], version = ">=0.110.1" }
+gunicorn = ">=21.2.0"
+uvicorn = { extras = ["standard"], version = ">=0.29.0" }
+urllib3 = "<2.1.0"
 pexpect = "4.9.0"
 ipaddr = "^2.2.0"
 ansible-compat = "^4.1.10"
@@ -138,7 +195,7 @@ sqlite-utils = "^3.36"
 pass-import = "^3.5"
 strip-ansi = "^0.1.1"
 pyyaml = "^6.0.1"
-
+semaphore-api = "2.9.45"
 typer = "^0.12.3"
 pyright = "^1.1.358"
 plumbum = "^1.8.2"
@@ -157,18 +214,18 @@ paramiko = "3.4.0"
 requests = "2.31.0"
 argparse = "1.4.0"
 virtualenv-pyenv = "^0.4.0"
-certifi = "^2023.11.17"
-dnspython = "2.4.2"
 pyspnego = {extras = ["kerberos"], version = "0.10.2"}
 sansldap = "0.1.0"
 poethepoet = "^0.25.0"
-ruff = "^0.3.7"
 pyupgrade = "^3.15.2"
 bandit = "^1.7.8"
 pytest = "^8.1.1"
 pytest-docker = "^3.1.1"
 pytest-ansible = "^24.1.2"
 pytest-srcpaths = "^1.2.1"
+pre-commit = ">=3.7.0"
+pytest-mock = ">=3.14.0"
+pytest-xdist = ">=3.5.0"
 
 [build-system]
 requires = ["poetry-core"]

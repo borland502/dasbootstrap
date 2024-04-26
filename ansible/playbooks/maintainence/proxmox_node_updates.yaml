@@ -18,21 +18,3 @@
     - name: Remove dependencies that are no longer required
       ansible.builtin.apt:
         autoremove: true
-
-    - name: Download netdata script if checksum mismatch or absent
-      ansible.builtin.get_url:
-        url: https://get.netdata.cloud/kickstart.sh
-        dest: /tmp/netdata-kickstart.sh
-        owner: root
-        group: root
-        mode: "0755"
-
-    # Only execute the script if downloaded due to checksum mismatch
-    - name: Execute the netdata update script (if downloaded)
-      ansible.builtin.shell:
-        cmd: /tmp/netdata-kickstart.sh
-
-    - name: Restart the netdata service
-      ansible.builtin.systemd_service:
-        name: netdata
-        state: restarted

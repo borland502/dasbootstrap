@@ -1,0 +1,141 @@
+---
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    delay: 10
+    sleep: 5
+    timeout: 120
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Get home directory
+  ansible.builtin.set_fact:
+    home_dir: "{{ ansible_env.HOME }}"
+
+- name: Prep to be managed by ansible
+  ansible.builtin.import_role:
+    name: robertdebock.roles.bootstrap
+
+- name: Configure locale
+  ansible.builtin.import_role:
+    name: robertdebock.roles.locale
+  tags: molecule-notest
+
+- name: Setup systemd-resolved
+  ansible.builtin.import_role:
+    name: bodsch.systemd.resolved
+
+- name: Setup sleep settings -- relaying on groups to use the right variables
+  ansible.builtin.import_role:
+    name: bodsch.systemd.sleep
+
+- name: Setup ntp servers
+  ansible.builtin.import_role:
+    name: bodsch.systemd.timesyncd
+  tags: molecule-notest
+
+- name: Ensure apt proxy configuration
+  ansible.builtin.copy:
+    content: |
+      Acquire::http { Proxy "{{ apt_cacher_ng }}"; }
+    dest: /etc/apt/apt.conf.d/proxy
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install pyenv
+  ansible.builtin.import_role:
+    name: staticdev.pyenv
+
+- name: Install python tools
+  ansible.builtin.import_role:
+    name: staticdev.python-developer
+
+- name: Install minimal Personal favorite packages for root user
+  remote_user: root
+  ansible.builtin.import_role:
+    name: GROG.package
+  tags: molecule-idempotence-notest
+
+- name: Configure package manager to auto-update
+  ansible.builtin.import_role:
+    name: robertdebock.roles.auto_update
+  tags: molecule-notest
+
+- name: Install build tools for homebrew and other downstream dependencies
+  ansible.builtin.import_role:
+    name: robertdebock.roles.buildtools
+
+- name: Create the user group
+  ansible.builtin.group:
+    name: users
+    gid: 100
+    state: present
+
+- name: Create the service user group
+  ansible.builtin.group:
+    name: "ansible"
+    state: present
+
+- name: Create the wheel admin group
+  ansible.builtin.group:
+    name: wheel
+    state: present
+    system: true
+
+- name: Modify the nobody group
+  ansible.builtin.group:
+    name: nobody
+    state: present
+
+- name: Modify the nobody user
+  ansible.builtin.user:
+    name: nobody
+    uid: 99
+    state: present
+
+- name: Create the service user account
+  remote_user: root
+  ansible.builtin.user:
+    name: "ansible"
+    create_home: true
+    shell: "{{ users_shell }}"
+    password: "{{ ansible.password }}"
+    generate_ssh_key: true
+    ssh_key_type: ed25519
+    state: present
+    force: true
+    groups:
+      - "ansible"
+      - users
+      - wheel
+
+- name: Add ansible service key to authorized users file in service account
+  ansible.posix.authorized_key:
+    user: "{{ ansible.user }}"
+    key: "{{ ansible.pub_key }}"
+  tags: molecule-notest
+
+- name: Ensure sudo group exists
+  group:
+    name: sudo
+    state: present
+
+- name: Ensure users in wheel group can sudo without password
+  remote_user: root
+  ansible.builtin.copy:
+    content: |
+      %wheel ALL=(ALL) NOPASSWD:ALL
+    owner: root
+    group: root
+    dest: /etc/sudoers.d/95-sudo-group
+    mode: "0644"
+
+- name: Change root password
+  ansible.builtin.user:
+    name: "root"
+    update_password: on_create
+    password: "{{ ansible.password | ansible.builtin.password_hash }}"
+    state: present
+  tags: molecule-idempotence-notest

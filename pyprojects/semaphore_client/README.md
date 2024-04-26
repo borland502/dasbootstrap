@@ -1,15 +1,15 @@
 [![Open in Dev Containers](https://img.shields.io/static/v1?label=Dev%20Containers&message=Open&color=blue&logo=visualstudiocode)](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/borland502/dasbootstrap)
 
-# Dasbootstrap
+# Semaphore Client
 
-System installer for an ansible control node
+An adapter implementation of Ansible Semaphore Api
 
 ## Installing
 
 To install this package, run:
 
 ```sh
-pip install dasbootstrap
+pip install semaphore-client
 ```
 
 ## Using
@@ -17,7 +17,7 @@ pip install dasbootstrap
 To view the CLI help information, run:
 
 ```sh
-dasbootstrap --help
+semaphore-client --help
 ```
 
 ## Contributing

@@ -132,9 +132,9 @@ pythonVersion = "3.11.8"
 pythonPlatform = "Linux"
 
 [tool.pytest.ini_options]
-addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=2 --junitxml=reports/pytest.xml"
+addopts = "--cache-clear --color=yes --doctest-modules --exitfirst --failed-first --verbosity=2 --junitxml=reports/pytest.xml"
 testpaths=[
-    "tests", "pyprojects/dasbootstrap/tests", "pyprojects/semaphore_client/tests"
+    "tests", "pyprojects/**/tests", "ansible/collections/ansible_collections/**/tests"
 ]
 norecursedirs = [
   "testing/example_scripts",

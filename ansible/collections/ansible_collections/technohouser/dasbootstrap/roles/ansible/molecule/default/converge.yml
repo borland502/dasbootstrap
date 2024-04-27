@@ -33,7 +33,7 @@
           apt: python3-passlib
         - name: python3 cython
           state: present
-          apt: python3-passlib  
+          apt: python3-passlib
     - name: Run bootstrap task
       ansible.builtin.import_role:
         name: bootstrap

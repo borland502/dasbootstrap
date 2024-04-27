@@ -65,3 +65,21 @@ timesync_ntp_hosts:
   - 1.us.pool.ntp.org
   - 2.us.pool.ntp.org
   - 3.us.pool.ntp.org
+
+package_list:
+  - name: zsh
+  - name: systemd
+  - name: systemd-cron
+  - name: systemd-resolved
+  - name: systemd-timesyncd
+  - name: python3-full
+  - name: python3-virtualenv
+  - name: vim
+  - name: git
+  - name: curl
+  - name: p7zip-full
+  - name: packagekit
+  - name: rsync
+  - name: apt-transport-https
+  - name: fonts-firacode
+  - name: jq

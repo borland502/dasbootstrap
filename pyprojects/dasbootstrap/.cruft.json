@@ -1,0 +1,29 @@
+{
+  "template": "https://github.com/radix-ai/poetry-cookiecutter",
+  "commit": "27b6ceb652a41df9b7bdb91e2664daa445d1ac40",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_type": "app",
+      "project_name": "Dasbootstrap",
+      "project_description": "System installer for an ansible control node",
+      "project_url": "https://github.com/borland502/dasbootstrap",
+      "author_name": "Jeremy Hettenhouser",
+      "author_email": "jhettenh@gmail.com",
+      "python_version": "3.11",
+      "development_environment": "simple",
+      "with_conventional_commits": "1",
+      "with_fastapi_api": "1",
+      "with_typer_cli": "1",
+      "continuous_integration": "GitHub",
+      "private_package_repository_name": "",
+      "private_package_repository_url": "",
+      "__docker_image": "python:$PYTHON_VERSION-slim",
+      "__docstring_style": "NumPy",
+      "__project_name_kebab_case": "dasbootstrap",
+      "__project_name_snake_case": "dasbootstrap",
+      "_template": "https://github.com/radix-ai/poetry-cookiecutter"
+    }
+  },
+  "directory": null
+}

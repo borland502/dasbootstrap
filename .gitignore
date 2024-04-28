@@ -1,55 +1,67 @@
-#-- DebOps project environment
-# See https://docs.debops.org/en/master/user-guide/project-directories.html
+# Ansible
+.cache
 
-#-- Local environment configuration
+# Coverage.py
+htmlcov/
+reports/
+
+# cruft
+*.rej
+
+# Data
+*.csv*
+*.dat*
+*.pickle*
+*.xls*
+*.zip*
+data/
+
+# direnv
+.envrc
+
+# dotenv
 .env
 
-#-- python
-*.py[co]
+# Hypothesis
+.hypothesis/
 
-#-- vim
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-*.un~
-Session.vim
-.netrwhist
-*~
+# Jupyter
+*.ipynb
+.ipynb_checkpoints/
+notebooks/
 
-#-- Emacs
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-dist
+# macOS
+.DS_Store
 
-#-- SublimeText
-*.sublime-workspace
-#*.sublime-project
+# mypy
+.dmypy.json
+.mypy_cache/
 
-#-- sftp configuration file
-sftp-config.json
+# Node.js
+node_modules/
 
-#-- vscode
-*.vscode
-# Ignore Gradle project-specific cache directory
-.gradle
+# Poetry
+.venv/
+dist/
 
-# Ignore Gradle build output directory
-build
+# PyCharm
+.idea/
 
-# alias secrets to a directory that's never checked in
-**/secret/*
+# pyenv
+.python-version
 
-# IntelliJ
-*.idea
+# pytest
+.pytest_cache/
 
-config.json
+# Python
+__pycache__/
+*.py[cdo]
 
-*.log
-logs/
+# Ruff
+.ruff_cache/
 
-hosts.yaml
-hosts.yml
+# Terraform
+.terraform/
+
+# VS Code
+.vscode/

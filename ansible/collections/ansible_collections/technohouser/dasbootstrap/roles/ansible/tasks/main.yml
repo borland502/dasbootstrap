@@ -1,0 +1,126 @@
+---
+- name: Wait for connection
+  ansible.builtin.wait_for_connection:
+    connect_timeout: 5
+    delay: 10
+    sleep: 5
+    timeout: 120
+
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Install pyenv
+  ansible.builtin.import_role:
+    name: staticdev.pyenv
+
+- name: Install python tools
+  ansible.builtin.import_role:
+    name: staticdev.python-developer
+
+- name: Install essential python modules
+  ansible.builtin.pip:
+    name:
+      - setuptools
+      - wheel
+      - cython
+      - passlib
+    virtualenv: "{{ ansible_env.HOME }}/.pyenv/versions/ansible"
+    virtualenv_python: "python3"
+
+
+- name: Create XDG Hidden Directories
+  ansible.builtin.file:
+    recurse: true
+    path: "{{ ansible_env.HOME }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - ".config"
+    - ".local/share"
+    - ".local/state"
+    - ".cache"
+  ignore_errors: true
+
+- name: Install homebrew
+  ansible.builtin.import_role:
+    name: professormanhattan.homebrew
+  vars:
+    # noqa: var-naming[no-role-prefix]
+    user_configs:
+      - username: "{{ ansible.user }}"
+
+- name: Install some common service / user brew packages
+  community.general.homebrew:
+    name:
+      - zsh
+      - gcc
+      - gcc@11
+      - pyenv
+      - poetry
+      - sshpass
+      - curl
+      - git
+      - vim
+      - fzf
+      - bat
+      - zinit
+      - direnv
+      - chezmoi
+      - starship
+      - fzf
+      - rg
+      - fd
+      - eza
+      - atuin
+      - prettyping
+      - nmap
+      - rsync
+
+- name: Make ~/bin
+  become: true
+  ansible.builtin.file:
+    state: directory
+    path: "/{{ ansible_env.HOME }}/bin"
+    mode: "0750"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
+
+- name: Copy the age key over to ~/bin
+  become: true
+  ansible.builtin.copy:
+    content: "{{ users[0]['age_key'] }}"
+    dest: "/{{ ansible_env.HOME }}/bin/key.txt"
+    mode: "0600"
+    owner: "{{ ansible.user }}"
+    group: "{{ ansible.user }}"
+
+- name: Initialize the chezmoi repo and apply the configuration
+  ansible.builtin.import_role:
+    name: hussainweb.chezmoi
+
+- name: Disable root login by passwd
+  become: true
+  ansible.builtin.user:
+    name: root
+    password_lock: true
+
+- name: Switch service account to zsh
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible.user }}"
+    shell: "/home/linuxbrew/.linuxbrew/bin/zsh"
+  when: ansible_facts['user_shell'] != '/home/linuxbrew/.linuxbrew/bin/zsh'
+
+# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible
+- name: Create Development Directory for Repos
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/github"
+    state: directory
+    mode: "0700"
+    owner: ansible
+    group: ansible
+
+- name: Configure github access and clone projects
+  ansible.builtin.import_role:
+    name: robertdebock.roles.git
+# TODO: Postfix

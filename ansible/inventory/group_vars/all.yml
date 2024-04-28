@@ -49,6 +49,7 @@ ansible:
   hostname: ""
   alt_hostname: ""
   pub_key: ""
+  priv_key: ""
   user: ""
   groups:
     - ""
@@ -94,7 +95,7 @@ pyenv_virtualenv_version: "HEAD"
 pyenv_update_version: "HEAD"
 pyenv_env: "system"
 pyenv_path: "{% if pyenv_env == 'user' %}{{ ansible_env.HOME }}/pyenv{% else %}/usr/local/pyenv{% endif %}"
-pyenvrc_path: "{{ g_pyenv_path }}"
+pyenvrc_path: "{{ pyenv_path }}"
 pyenv_owner: "root"
 pyenv_owner_group: "root"
 pyenv_shellrc_file: "{% if pyenv_env == 'user' %}~/.bashrc{% else %}/etc/profile.d/pyenv.sh{% endif %}"
@@ -112,9 +113,9 @@ pyenv_update: true
 
 # homebrew role parameter that doesn't respect --user flag
 user_configs:
-  - username: "{{ g_ansible.g_user }}"
+  - username: "{{ ansible.user }}"
 
-apt_cacher_ng: "{{ g_apt_cacher_ng }}"
+apt_cacher_ng: "{{ apt_cacher_ng }}"
 auto_update_download_updates: true
 auto_update_apply_updates: true
 
@@ -137,32 +138,32 @@ chezmoi_init_url: https://github.com/borland502/dotfiles
 # pve_default_behavior: no_defaults
 pve_py_pckg_mgmt: apt
 # Proxmox node hostname where we create or manage an LXC container
-# pve_node: "{{ g_pve_node }}"
+# pve_node: "{{ pve_node }}"
 # FQDN or IP of the Proxmox API endpoint where we manage the cluster or node
-# pve_api_host: "{{ g_pve_api_host }}"
-# pve_ansible_user: "{{ g_ansible.g_user }}"
+# pve_api_host: "{{ pve_api_host }}"
+# pve_ansible_user: "{{ ansible.user }}"
 # # User to use to connect to the Proxmox cluster API
-pve_api_user: "{{ g_pve_api_user }}"
+pve_api_user: "{{ pve_api_user }}"
 # Password for the previous API user (BETTER PUT THIS IN A VAULT, this dummy example can cause security issues)
-pve_api_password: "{{ g_pve_api_password }}"
+pve_api_password: "{{ pve_api_password }}"
 is_password_setup: true
 
 dns:
   key_algorithm: hmac-sha512
-  key_name: "{{ g_dns.key_name }}"
-  key_secret: "{{ g_dns.key_secret }}"
+  key_name: "{{ dns.key_name }}"
+  key_secret: "{{ dns.key_secret }}"
   port: 53
-  server: "{{ g_dns.g_server }}"
-  zone: "{{ g_dns.g_zone }}"
+  server: "{{ dns.server }}"
+  zone: "{{ dns.zone }}"
 
 # https://galaxy.ansible.com/ui/standalone/roles/robertdebock/git/documentation/
 # defaults file for git
 
 # The system username in /home where to place the gitconfig file.
-git_username: "{{ g_git_username }}"
+git_username: "{{ git_username }}"
 
 # The group to own directories.
-git_groupname: "{{ g_ansible.g_user }}"
+git_groupname: "{{ ansible.user }}"
 
 # Settings for git configuration.
 git_user_email: jhettenh@gmail.com

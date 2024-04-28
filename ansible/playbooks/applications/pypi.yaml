@@ -1,0 +1,5 @@
+- name: Setup Pypi server
+  hosts: pypi
+  become: true
+  roles:
+    - role: comcast.pypi

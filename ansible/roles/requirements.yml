@@ -2,7 +2,7 @@ roles:
   - name: Comcast.sdkman
   - name: GROG.package
   - name: staticdev.pyenv
-  - name: professormanhattan.homebrew
+  - name: technohouser.homebrew
     src: https://github.com/borland502/ansible-homebrew.git
     version: main
     scm: git

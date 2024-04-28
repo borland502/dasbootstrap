@@ -1,0 +1,44 @@
+- name: Set apt-cache-ng proxy for debian
+  hosts: all
+  gather_facts: true
+  remote_user: root
+  pre_tasks:
+    - name: Ensure that /etc/apt/apt.conf.d/proxy exists
+      ansible.builtin.file:
+        state: directory
+        path: /etc/apt/apt.conf.d/proxy
+        owner: root
+        group: root
+        mode: "0744"
+
+    - name: Ensure apt proxy configuration
+      ansible.builtin.copy:
+        content: |
+          Acquire::http { Proxy "{{ apt_cacher_ng }}"; }
+        dest: /etc/apt/apt.conf.d/proxy
+        owner: root
+        group: root
+        mode: "0644"
+
+  tasks:
+
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+      when: ansible_facts['os_family'] == "Debian"
+
+    - name: Upgrade the OS (apt-get dist-upgrade)
+      ansible.builtin.apt:
+        upgrade: dist
+      when: ansible_facts['os_family'] == "Debian"     
+
+    - name: Remove useless packages from the cache
+      ansible.builtin.apt:
+        autoclean: true
+      when: ansible_facts['os_family'] == "Debian"    
+
+    - name: Remove dependencies that are no longer required
+      ansible.builtin.apt:
+        autoremove: true
+      when: ansible_facts['os_family'] == "Debian"

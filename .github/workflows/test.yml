@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master
+      - daily
+      - semaphore-api
   pull_request:
 
 jobs:
@@ -14,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11"]
 
     name: Python ${{ matrix.python-version }}
 

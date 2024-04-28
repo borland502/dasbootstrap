@@ -20,7 +20,7 @@ ENV PATH $VIRTUAL_ENV/bin:$PATH
 RUN python -m venv $VIRTUAL_ENV
 
 # Set the working directory.
-WORKDIR /workspaces/
+WORKDIR /workspaces/dasbootstrap
 
 
 
@@ -47,7 +47,7 @@ USER user
 # Install the run time Python dependencies in the virtual environment.
 COPY --chown=user:user poetry.lock* pyproject.toml /workspaces/dasbootstrap/
 RUN mkdir -p /home/user/.cache/pypoetry/ && mkdir -p /home/user/.config/pypoetry/ && \
-    mkdir -p src/dasbootstrap/ && touch src/dasbootstrap/__init__.py && touch README.md
+    mkdir -p pyprojects/dasbootstrap/ && touch pyprojects/dasbootstrap/__init__.py && touch README.md
 RUN --mount=type=cache,uid=$UID,gid=$GID,target=/home/user/.cache/pypoetry/ \
     poetry install --only main --all-extras --no-interaction
 

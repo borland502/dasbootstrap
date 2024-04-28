@@ -20,7 +20,7 @@ ENV PATH $VIRTUAL_ENV/bin:$PATH
 RUN python -m venv $VIRTUAL_ENV
 
 # Set the working directory.
-WORKDIR /workspaces/dasbootstrap/
+WORKDIR /workspaces/
 
 
 

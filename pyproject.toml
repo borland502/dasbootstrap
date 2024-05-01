@@ -13,51 +13,6 @@ packages = [
 
 # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
 
-[tool.poe.tasks]
-build = "bin/build.zsh"
-test = "poetry run pytest"
-test_full = ["check", "format", "test", "integration"]
-
-[tool.poe.tasks.integration]
-shell = "bin/integration_test.zsh"
-
-[tool.poe.tasks.check]
-shell = "bandit -c pyproject.toml -r ./pyprojects ./shared"
-
-[tool.poe.tasks.format]
-shell = "bin/project_format.zsh"
-
-[tool.poe.tasks.docs]
-help = "Generate this app's docs"
-cmd = """
-  pdoc
-    --docformat $docformat
-    --output-directory $outputdirectory
-    dasbootstrap
-  """
-
-  [[tool.poe.tasks.docs.args]]
-  help = "The docstring style (default: numpy)"
-  name = "docformat"
-  options = ["--docformat"]
-  default = "google"
-
-  [[tool.poe.tasks.docs.args]]
-  help = "The output directory (default: docs)"
-  name = "outputdirectory"
-  options = ["--output-directory"]
-  default = "docs"
-
-[tool.poe.tasks.lint]
-help = "Lint this app"
-
-  [[tool.poe.tasks.lint.sequence]]
-  cmd = """
-    pre-commit run
-      --all-files
-      --color always
-    """
-
 [tool.bandit]
 exclude_dirs = [
     ".eggs",
@@ -95,10 +50,10 @@ exclude = [
     "dist",
 ]
 
-ignore-init-module-imports = true
-select = ["A", "ASYNC", "B", "C4", "C90", "D", "DTZ", "E", "F", "FLY", "FURB", "I", "ISC", "LOG", "N", "NPY", "PERF", "PGH", "PIE", "PL", "PT", "Q", "RET", "RUF", "RSE", "SIM", "TID", "UP", "W", "YTT"]
-ignore = ["D203", "D213", "E501", "PGH002", "PGH003", "RET504", "S101", "S307", "D205"]
-unfixable = ["F401", "F841"]
+lint.ignore-init-module-imports = true
+lint.select = ["A", "ASYNC", "B", "C4", "C90", "D", "DTZ", "E", "F", "FLY", "I", "ISC", "LOG", "N", "NPY", "PERF", "PGH", "PIE", "PL", "PT", "Q", "RET", "RUF", "RSE", "SIM", "TID", "UP", "W", "YTT"]
+lint.ignore = ["D203", "D213", "E501", "PGH003", "RET504", "S101", "S307", "D205"]
+lint.unfixable = ["F401", "F841"]
 
 [tool.ruff.format]
 line-ending = "lf"
@@ -128,7 +83,7 @@ stubPath = "dasbootstrap/stubs"
 reportMissingImports = false
 reportMissingTypeStubs = false
 
-pythonVersion = "3.11.8"
+pythonVersion = "3.11"
 pythonPlatform = "Linux"
 
 [tool.pytest.ini_options]
@@ -202,6 +157,7 @@ plumbum = "^1.8.2"
 passlib = "^1.7.4"
 docker = "^7.0.0"
 requests = "^2.31.0"
+bandit = "^1.7.8"
 
 [tool.poetry.group.dev.dependencies]
 typer = "^0.12.3"

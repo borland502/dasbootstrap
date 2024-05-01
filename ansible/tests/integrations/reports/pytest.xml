@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="641.625" timestamp="2024-04-25T20:03:55.534970" hostname="automation"><testcase classname="ansible.tests.integrations.test_integration" name="test_integration[bootstrap-default]" time="640.751"><failure message="AssertionError: assert 1 == 0&#10; +  where 1 = CompletedProcess(args=['/home/ansible/.local/share/dasbootstrap/.venv/bin/python3', '-m', 'molecule', 'test', '-s', 'default'], returncode=1).returncode">molecule_scenario = &lt;pytest_ansible.molecule.MoleculeScenario object at 0x716064009610&gt;
+
+    def test_integration(molecule_scenario: MoleculeScenario) -&gt; None:
+        """Run molecule for each scenario.
+    
+        :param molecule_scenario: The molecule scenario object
+        """
+        proc = molecule_scenario.test()
+        print(proc.stdout)
+        print(proc.stderr)
+&gt;       assert proc.returncode == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/ansible/.local/share/dasbootstrap/.venv/bin/python3', '-m', 'molecule', 'test', '-s', 'default'], returncode=1).returncode
+
+test_integration.py:15: AssertionError</failure></testcase></testsuite></testsuites>

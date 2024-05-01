@@ -56,6 +56,10 @@ poe check
 poe format
 ```
 
+## License
+
+MIT unless attributed to another author
+
 ## Links
 
 * [Buluma Roles](https://galaxy.ansible.com/ui/repo/published/buluma/roles/docs/)
@@ -66,3 +70,4 @@ poe format
 * [ansible-role-pyenv](https://github.com/staticdev/ansible-role-pyenv)
 * [ansible-role-python-developer](https://github.com/staticdev/ansible-role-python-developer)
 * [ansible-role-package](https://github.com/GROG/ansible-role-package)
+* [install.doctor](https://github.com/megabyte-labs/install.doctor/tree/master)

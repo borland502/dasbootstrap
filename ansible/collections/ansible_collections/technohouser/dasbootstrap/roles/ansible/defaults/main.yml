@@ -26,11 +26,23 @@ git_repository_destination: /home/{{ git_username | default('unset') }}/Document
 # git_force: yes
 # The repositories to check out, bootstrap is pinned to a version, java will get HEAD/latest.
 git_repositories:
-  - repo: "https://github.com/borland502/Proxmox-Automation.git"
-    dest: "{{ ansible_env.HOME }}/github/proxmox-automation"
+  - repo: "https://github.com/megabyte-labs/install.doctor.git"
+    dest: "{{ ansible_env.XDG_DATA_HOME }}/automation/install.doctor"
     version: "master"
     force: true
-  - repo: "https://github.com/borland502/proxmox-ansible.git"
-    dest: "{{ ansible_env.HOME }}/github/proxmox-ansible"
+  - repo: "https://github.com/tteck/Proxmox.git"
+    dest: "{{ ansible_env.XDG_DATA_HOME }}/automation/Proxmox"
+    version: "main"
+    force: true
+  - repo: "https://github.com/scruffaluff/bootware.git"
+    dest: "{{ ansible_env.XDG_DATA_HOME }}/automation/bootware"
+    version: "main"
+    force: true
+  - repo: "https://github.com/borland502/dasbootstrap.git"
+    dest: "{{ ansible_env.XDG_DATA_HOME }}/automation/dasbootstrap"
+    version: "main"
+    force: true
+  - repo: "https://gitea.npm.technohouser.com/jhettenh/secrets.git"
+    dest: "{{ ansible_env.HOME }}/.ansible"
     version: "main"
     force: true

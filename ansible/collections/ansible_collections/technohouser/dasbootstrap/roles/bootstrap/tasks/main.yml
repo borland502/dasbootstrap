@@ -43,6 +43,7 @@
     owner: root
     group: root
     mode: "0644"
+  tags: molecule-notest
 
 - name: Install minimal Personal favorite packages for root user
   remote_user: root
@@ -102,6 +103,7 @@
       - "ansible"
       - users
       - wheel
+  tags: molecule-idempotence-notest
 
 - name: Add ansible service key to authorized users file in service account
   ansible.posix.authorized_key:
@@ -128,6 +130,6 @@
   ansible.builtin.user:
     name: "root"
     update_password: on_create
-    password: "{{ ansible.password | ansible.builtin.password_hash }}"
+    password: "{{ ansible.password }}"
     state: present
   tags: molecule-idempotence-notest

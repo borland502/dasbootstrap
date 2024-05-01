@@ -14,26 +14,8 @@
 
 - name: Converge
   hosts: molecule
-  # We disable gather facts because it would fail due to our container not
-  # having python installed. This will not prevent use from running 'raw'
-  # commands. Most molecule users are expected to use containers that already
-  # have python installed in order to avoid notable delays installing it.
   gather_facts: false
   tasks:
-    - name: Install minimal packages for test user
-      remote_user: root
-      ansible.builtin.import_role:
-        name: GROG.package
-      vars:
-        - name: python3
-          state: present
-          apt: python3-full
-        - name: python3 passlib
-          state: present
-          apt: python3-passlib
-        - name: python3 cython
-          state: present
-          apt: python3-passlib  
     - name: Run bootstrap task
       ansible.builtin.import_role:
         name: bootstrap

@@ -6,7 +6,8 @@ auto_update_apply_updates: true
 
 ansible:
   user: ansible
-  password: "{{ 'I1cannot2simply3write4p@ssw0rd!' | ansible.builtin.password_hash }}"
+  # password: "{{ 'I1cannot2simply3write4p@ssw0rd!' | ansible.builtin.password_hash }}"
+  password: "$6$3c3Hbjqy.Yzg6ydJ$Ekdcal55rhmPO6RzieONLv9irEaEWgpxF0dt.rmQKa9Df/XBTwLCQzFqYg9X8xw4leXkVDq2g7Q9pGjkxvOpf1"
   pub_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
   priv_key: "{{ lookup('file', '~/.ssh/id_ed25519') }}"
 
@@ -25,7 +26,8 @@ users_user_list:
     cron_allow: true
     sudo_options: "ALL=(ALL) NOPASSWD: ALL"
     groups: users,sudo,ansible
-    password: "{{ 'I1cannot2simply3write4p@ssw0rd!' | ansible.builtin.password_hash }}"
+    # password: "{{ 'I1cannot2simply3write4p@ssw0rd!' | ansible.builtin.password_hash }}"
+    password: "$6$3c3Hbjqy.Yzg6ydJ$Ekdcal55rhmPO6RzieONLv9irEaEWgpxF0dt.rmQKa9Df/XBTwLCQzFqYg9X8xw4leXkVDq2g7Q9pGjkxvOpf1"
     authorized_keys:
       - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALzGWy6qw19XSq1HWQm1CmnpecUOA0iynCbcBzPjAqz test@example.com"
     state: present
@@ -72,9 +74,8 @@ package_list:
   - name: systemd-cron
   - name: systemd-resolved
   - name: systemd-timesyncd
-  - name: python3-full
-  - name: python3-virtualenv
   - name: vim
+  - name: virtualenv
   - name: git
   - name: curl
   - name: p7zip-full

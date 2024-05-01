@@ -6,7 +6,6 @@ on:
       - main
       - master
       - daily
-      - semaphore-api
   pull_request:
 
 jobs:
@@ -36,14 +35,3 @@ jobs:
         run: |
           git config --global init.defaultBranch main
           PYTHON_VERSION=${{ matrix.python-version }} devcontainer up --workspace-folder .
-
-      # - name: Lint app
-      #   run: devcontainer exec --workspace-folder . poe lint
-
-      # - name: Test app
-      #   run: devcontainer exec --workspace-folder . poe test
-
-      # - name: Upload coverage
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: reports/coverage.xml

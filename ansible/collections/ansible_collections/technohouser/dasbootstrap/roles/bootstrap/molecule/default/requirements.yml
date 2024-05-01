@@ -7,3 +7,4 @@ roles:
   - name: staticdev.pyenv
   - src: https://github.com/staticdev/ansible-role-python-developer
     name: staticdev.python-developer
+  - name: GROG.package

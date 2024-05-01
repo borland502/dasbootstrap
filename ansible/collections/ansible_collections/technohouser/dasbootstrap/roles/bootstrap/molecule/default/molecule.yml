@@ -14,7 +14,7 @@ platforms:
     image: python:bookworm
     dockerfile: Dockerfile.j2
     pull: true
-    pre_build_image: false
+    pre_build_image: true
     command: /sbin/init
     privileged: true
     capabilities:

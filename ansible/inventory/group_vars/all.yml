@@ -50,7 +50,7 @@ ansible:
   alt_hostname: ""
   pub_key: ""
   priv_key: ""
-  user: ""
+  user: "ansible"
   groups:
     - ""
   domain_user: ""
@@ -59,8 +59,8 @@ homebrew_temporary_passwordless_sudo: ""
 homebrew:
   user: ""
 users:
-  - name:
-    age_key: ""
+  - name: ansible
+    age_key: "ABC12345"
     pub_key: ""
 users_group_list:
   - name: ""
@@ -113,9 +113,9 @@ pyenv_update: true
 
 # homebrew role parameter that doesn't respect --user flag
 user_configs:
-  - username: "{{ ansible.user }}"
+  - username: "ansible"
 
-apt_cacher_ng: "{{ apt_cacher_ng }}"
+apt_cacher_ng: "http://10.10.10.57:3142"
 auto_update_download_updates: true
 auto_update_apply_updates: true
 
@@ -201,3 +201,6 @@ package_list:
   - name: apt-transport-https
   - name: fonts-firacode
   - name: jq
+  - name: python3-virtualenvwrapper
+  - name: python3-virtualenv
+  - name: python3-venv

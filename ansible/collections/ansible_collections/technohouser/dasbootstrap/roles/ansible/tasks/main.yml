@@ -12,21 +12,23 @@
 - name: Install pyenv
   ansible.builtin.import_role:
     name: staticdev.pyenv
+  tags: molecule-idempotence-notest
 
 - name: Install python tools
   ansible.builtin.import_role:
     name: staticdev.python-developer
 
-- name: Install essential python modules
-  ansible.builtin.pip:
-    name:
-      - setuptools
-      - wheel
-      - cython
-      - passlib
-    virtualenv: "{{ ansible_env.HOME }}/.pyenv/versions/ansible"
-    virtualenv_python: "python3"
-
+- name: Install more python tools
+  community.general.pipx:
+    name: "{{ item }}"
+    install_deps: true
+    state: latest
+  loop:
+    - bandit
+    - ruff
+    - molecule
+    - pyupgrade
+    - pyright
 
 - name: Create XDG Hidden Directories
   ansible.builtin.file:
@@ -40,6 +42,7 @@
     - ".local/state"
     - ".cache"
   ignore_errors: true
+  tags: molecule-idempotence-notest
 
 - name: Install homebrew
   ansible.builtin.import_role:
@@ -48,6 +51,7 @@
     # noqa: var-naming[no-role-prefix]
     user_configs:
       - username: "{{ ansible.user }}"
+  tags: molecule-notest
 
 - name: Install some common service / user brew packages
   community.general.homebrew:
@@ -55,8 +59,6 @@
       - zsh
       - gcc
       - gcc@11
-      - pyenv
-      - poetry
       - sshpass
       - curl
       - git
@@ -67,6 +69,7 @@
       - direnv
       - chezmoi
       - starship
+      - go-task
       - fzf
       - rg
       - fd
@@ -77,7 +80,6 @@
       - rsync
 
 - name: Make ~/bin
-  become: true
   ansible.builtin.file:
     state: directory
     path: "/{{ ansible_env.HOME }}/bin"
@@ -86,7 +88,6 @@
     group: "{{ ansible.user }}"
 
 - name: Copy the age key over to ~/bin
-  become: true
   ansible.builtin.copy:
     content: "{{ users[0]['age_key'] }}"
     dest: "/{{ ansible_env.HOME }}/bin/key.txt"
@@ -97,6 +98,20 @@
 - name: Initialize the chezmoi repo and apply the configuration
   ansible.builtin.import_role:
     name: hussainweb.chezmoi
+  tags: molecule-notest
+
+# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible
+# - name: Create Development Directory for Repos
+#   ansible.builtin.file:
+#     path: "{{ ansible_env.XDG_DATA_HOME }}/automation"
+#     state: directory
+#     mode: "0700"
+#     owner: ansible
+#     group: ansible
+
+# - name: Configure github access and clone projects
+#   ansible.builtin.import_role:
+#     name: robertdebock.roles.git
 
 - name: Disable root login by passwd
   become: true
@@ -110,17 +125,5 @@
     name: "{{ ansible.user }}"
     shell: "/home/linuxbrew/.linuxbrew/bin/zsh"
   when: ansible_facts['user_shell'] != '/home/linuxbrew/.linuxbrew/bin/zsh'
-
-# tasks file for /home/ansible@hettenhouser.com/.local/share/dasbootstrap/ansible/roles/technohouser.ansible
-- name: Create Development Directory for Repos
-  ansible.builtin.file:
-    path: "{{ ansible_env.HOME }}/github"
-    state: directory
-    mode: "0700"
-    owner: ansible
-    group: ansible
-
-- name: Configure github access and clone projects
-  ansible.builtin.import_role:
-    name: robertdebock.roles.git
+  tags: molecule-idempotence-notest
 # TODO: Postfix

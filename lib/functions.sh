@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-if ! [[ ${DBS_SCROOT+x} ]]; then
-  # shellcheck disable=SC2155
-  declare -rx DBS_SCROOT=$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")
-fi
+# shellcheck disable=SC2155
+DBS_SCROOT="${HOME}/.local/share/automation/dasbootstrap"
 
 # shellcheck disable=SC1090
 source "${DBS_SCROOT}/lib/constants.sh"

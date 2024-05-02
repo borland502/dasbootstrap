@@ -3,7 +3,7 @@
 
 if ! [[ ${DBS_SCROOT+x} ]]; then
   # shellcheck disable=SC2155
-  declare -rx DBS_SCROOT=$(dirname "$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")")
+  declare -rx DBS_SCROOT="${HOME}/.local/share/automation/dasbootstrap"
 fi
 
 ## functions from https://raw.githubusercontent.com/megabyte-labs/install.doctor/master/start.sh
@@ -199,6 +199,8 @@ function ensureLocalPath() {
     # shellcheck disable=SC2016
     PATH_STRING='export PATH="$HOME/.local/bin:$PATH"'
     mkdir -p "$HOME/.local/bin"
+    mkdir -p "${HOME}/.local/lib"
+
     if ! grep "$PATH_STRING" < "$HOME/.profile" > /dev/null; then
       echo -e "${PATH_STRING}\n" >> "$HOME/.profile"
       logger info "Updated the PATH variable to include ~/.local/bin in $HOME/.profile"
@@ -416,13 +418,12 @@ function sha256() {
   fi
 }
 
-# @description Ensures the Taskfile.yml is accessible
+# @description Ensures the install doctor task files are available
 function ensureTaskfiles() {
   local _username=${1:-'ansible'}
 
   if [ -z "$ENSURED_TASKFILES" ]; then
     # shellcheck disable=SC2030
-    task donothing || BOOTSTRAP_EXIT_CODE=$?
     mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh"
     if [ -f "${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/ensure-taskfiles" ]; then
       TASK_UPDATE_TIME="$(cat "${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/ensure-taskfiles")"
@@ -433,44 +434,24 @@ function ensureTaskfiles() {
     # shellcheck disable=SC2004
     TIME_DIFF="$(($(date +%s) - $TASK_UPDATE_TIME))"
     # Only run if it has been at least 60 minutes since last attempt
-    if [ -n "$BOOTSTRAP_EXIT_CODE" ] || [ "$TIME_DIFF" -gt 3600 ] || [ "$TIME_DIFF" -lt 5 ] || [ -n "$FORCE_TASKFILE_UPDATE" ]; then
+    if [ "$TIME_DIFF" -gt 3600 ] || [ "$TIME_DIFF" -lt 5 ] || [ -n "$FORCE_TASKFILE_UPDATE" ]; then
       logger info 'Grabbing latest Taskfiles by downloading shared-master.tar.gz'
       # shellcheck disable=SC2031
       date +%s > "${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/ensure-taskfiles"
       ENSURED_TASKFILES="true"
       if [ -d common/.config/taskfiles ]; then
         if [[ "$OSTYPE" == 'darwin'* ]]; then
-          cp -rf common/.config/taskfiles/ .config/taskfiles
+          cp -rf common/.config/taskfiles/q .config/taskfiles
         else
           cp -rT common/.config/taskfiles/ .config/taskfiles
         fi
       else
-        mkdir -p .config/taskfiles
-        curl -sSL https://gitlab.com/megabyte-labs/common/shared/-/archive/master/shared-master.tar.gz > shared-master.tar.gz
-        tar -xzf shared-master.tar.gz > /dev/null
-        rm shared-master.tar.gz
-        rm -rf .config/taskfiles
-        mv shared-master/common/.config/taskfiles .config/taskfiles
-        mv shared-master/common/.editorconfig .editorconfig
-        mv shared-master/common/.gitignore .gitignore
-        rm -rf shared-master
-      fi
-    fi
-    if [ -n "$BOOTSTRAP_EXIT_CODE" ] && ! task donothing; then
-      # task donothing still does not work so issue must be with main Taskfile.yml
-      # shellcheck disable=SC2016
-      logger warn 'Something is wrong with the Taskfile.yml - grabbing main Taskfile.yml'
-      git checkout HEAD~1 -- Taskfile.yml
-      if ! task donothing; then
-        logger error 'Error appears to be with main Taskfile.yml'
-      else
-        logger warn 'Error appears to be with one of the included Taskfiles'
-        logger info 'Removing and cloning Taskfile library from upstream repository'
-        rm -rf .config/taskfiles
-        FORCE_TASKFILE_UPDATE=true ensureTaskfiles "${_username}"
-        if task donothing; then
-          logger warn 'The issue was remedied by cloning the latest Taskfile includes'
-        fi
+        mkdir -p "${HOME}/.local/state/taskfiles"
+        curl -sSL https://gitlab.com/megabyte-labs/common/shared/-/archive/master/shared-master.tar.gz -o "${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/shared-master.tar.gz"
+        tar -xzf ${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/shared-master.tar.gz --directory=${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/
+        rm ${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/shared-master.tar.gz
+        rsync -avzPh "${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/shared-master/common/.config/taskfiles/" ${HOME}/.local/state/taskfiles/
+        rm -rf ${XDG_CACHE_HOME:-$HOME/.cache}/${_username}/start.sh/shared-master
       fi
     fi
   fi
@@ -482,13 +463,10 @@ function ensureProjectBootstrapped() {
 
  if [ ! -f start.sh ] || [ ! -f package.json ] || [ ! -f Taskfile.yml ]; then
    if [ ! -f start.sh ]; then
-     curl -sSL https://gitlab.com/megabyte-labs/common/shared/-/raw/master/common/start.sh > start.sh
+     curl -sSL https://gitlab.com/megabyte-labs/common/shared/-/raw/master/common/start.sh -o $HOME/.local/bin/start.sh
    fi
-   if [ ! -f taskfile.yaml ]; then
-     curl -sSL https://gitlab.com/megabyte-labs/common/shared/-/raw/master/Taskfile.yml > Taskfile.yml
-   fi
+
    ensureTaskfiles "${_username}"
-   task new:project
  fi
 }
 
@@ -544,6 +522,7 @@ function bootstrap_ansible_node(){
       ensurePackageInstalled "gzip"
       ensurePackageInstalled "sudo"
       ensurePackageInstalled "jq"
+      ensurePackageInstalled "rsync"
     fi
   fi
 
@@ -612,114 +591,4 @@ function bootstrap_ansible_node(){
     fi
   fi
 
-  # @description Second attempt to install yq if snap is on system but the Homebrew install was skipped
-#  if ! type yq &> /dev/null && type snap &> /dev/null; then
-#    if type sudo &> /dev/null; then
-#      sudo snap install yq
-#    else
-#      snap install yq
-#    fi
-#  fi
-
-  # @description Attempts to pull the latest changes if the folder is a git repository.
-#  if [ -d .git ] && type git &> /dev/null; then
-#    if [ -n "$GROUP_ACCESS_TOKEN" ] && [ -n "$GITLAB_CI_EMAIL" ] && [ -n "$GITLAB_CI_NAME" ] && [ -n "$GITLAB_CI" ]; then
-#      git remote set-url origin "https://root:$GROUP_ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git"
-#      git config user.email "$GITLAB_CI_EMAIL"
-#      git config user.name "$GITLAB_CI_NAME"
-#    fi
-#    mkdir -p .cache/start.sh
-#    if [ -f .cache/start.sh/git-pull-time ]; then
-#      GIT_PULL_TIME="$(cat .cache/start.sh/git-pull-time)"
-#    else
-#      GIT_PULL_TIME=$(date +%s)
-#      echo "$GIT_PULL_TIME" > .cache/start.sh/git-pull-time
-#    fi
-#    # shellcheck disable=SC2004
-#    TIME_DIFF="$(($(date +%s) - $GIT_PULL_TIME))"
-#    # Only run if it has been at least 15 minutes since last attempt
-#    if [ "$TIME_DIFF" -gt 900 ] || [ "$TIME_DIFF" -lt 5 ]; then
-#      date +%s > .cache/start.sh/git-pull-time
-#      git fetch origin
-#      GIT_POS="$(git rev-parse --abbrev-ref HEAD)"
-#      logger info 'Current branch is '"$GIT_POS"''
-#      if [ "$GIT_POS" == 'synchronize' ] || [ "$CI_COMMIT_REF_NAME" == 'synchronize' ]; then
-#
-#        git reset --hard origin/master
-#        git push --force origin synchronize || FORCE_SYNC_ERR=$?
-#
-#        if [ -n "$FORCE_SYNC_ERR" ] && type task &> /dev/null; then
-#          NO_GITLAB_SYNCHRONIZE=true task ci:synchronize || CI_SYNC_TASK_ISSUE=$?
-#          if [ -n "$CI_SYNC_TASK_ISSUE" ]; then
-#            ensureTaskfiles "${_username}"
-#
-#            NO_GITLAB_SYNCHRONIZE=true task ci:synchronize
-#          fi
-#        else
-#          DELAYED_CI_SYNC=true
-#        fi
-#      elif [ "$GIT_POS" == 'HEAD' ]; then
-#        if [ -n "$GITLAB_CI" ]; then
-#          printenv
-#        fi
-#      fi
-#
-#      git pull --force origin master --ff-only || GIT_PULL_FAIL="$?"
-#      if [ -n "$GIT_PULL_FAIL" ]; then
-#        git config url."https://gitlab.com/".insteadOf git@gitlab.com:
-#        git config url."https://github.com/".insteadOf git@github.com:
-#        git pull --force origin master --ff-only || true
-#      fi
-#      ROOT_DIR="$PWD"
-#      if ls .modules/*/ > /dev/null 2>&1; then
-#        for SUBMODULE_PATH in .modules/*/; do
-#          cd "$SUBMODULE_PATH" || (logger error "Could not cd into ${SUBMODULE_PATH}" && exit 2)
-#          DEFAULT_BRANCH=$(git remote show origin | grep 'HEAD branch' | cut -d' ' -f5)
-#          git reset --hard HEAD
-#          git checkout "$DEFAULT_BRANCH"
-#          git pull origin "$DEFAULT_BRANCH" --ff-only || true
-#          cd "$ROOT_DIR" || (logger error "Could not cd into ${SUBMODULE_PATH}" && exit 2)
-#        done
-#        # shellcheck disable=SC2016
-#        logger success 'Ensured submodules in the .modules folder are pointing to the master branch'
-#      fi
-#    fi
-#  fi
-#
-#  # @description Ensures Task is installed and properly configured
-#  ensureTaskInstalled "${_username}"
-#
-#  # @description Ensures Taskfiles are up-to-date
-#  logger info 'Ensuring Taskfile.yml files are all in good standing'
-#  ensureTaskfiles "${_username}"
-#
-#  # @description Try synchronizing again (in case Task was not available yet)
-#  if [ "$DELAYED_CI_SYNC" == 'true' ]; then
-#    logger info 'Attempting to synchronize CI..'
-#    task ci:synchronize
-#  fi
-#
-#  # @description Run the start logic, if appropriate
-#  if [ -z "$CI" ] && [ -z "$START" ] && [ -z "$INIT_CWD" ]; then
-#    if ! type pipx &> /dev/null; then
-#      task install:software:pipx
-#    fi
-#    logger info "Sourcing profile located in $HOME/.profile"
-#    # shellcheck disable=SC1091
-#    . "$HOME/.profile" &> /dev/null || true
-#    ensureProjectBootstrapped "${_username}"
-#    if task donothing &> /dev/null; then
-#      task -vvv start
-#    else
-#      FORCE_TASKFILE_UPDATE=true ensureTaskfiles "${_username}"
-#      if task donothing &> /dev/null; then
-#        task -vvv start
-#      else
-#        # shellcheck disable=SC2016
-#        logger warn 'Something appears to be wrong with the main Taskfile.yml - resetting to shared common version'
-#        rm Taskfile.yml
-#        ensureProjectBootstrapped
-#      fi
-#    fi
-#  fi
 }

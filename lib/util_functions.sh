@@ -2,7 +2,7 @@
 
 if ! [[ ${DBS_SCROOT+x} ]]; then
   # shellcheck disable=SC2155
-  declare -rx DBS_SCROOT=$(dirname "$(cd -P -- "$(dirname -- "$0")" && printf '%s\n' "$(pwd -P)")")
+  declare -rx DBS_SCROOT=${HOME}/.local/share/automation/dasbootstrap
 fi
 
 # https://blog.mphomphego.co.za/blog/2022/03/08/Note-to-self-How-to-get-a-complete-plugin-list-from-Jenkins.html

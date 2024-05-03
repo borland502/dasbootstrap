@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# https://raw.githubusercontent.com/megabyte-labs/gas-station/master/.config/log
 # @file .config/log
 # @brief Logger / prompt library that logs pretty console messages and provides several prompt methods
 # @description

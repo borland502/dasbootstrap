@@ -25,8 +25,8 @@ This project also checks out my dotfiles project and sets up that config with ch
 ## Example
 
 ```bash
-./dbs create --app-name "lxc"
-./dbs destroy --app-name "lxc"
+task -t Taskfile.yml dbs:run -- create --app-name 'lxc'
+task -t Taskfile.yml dbs:run -- destroy --app-name 'lxc'
 ```
 
 ```text
@@ -48,12 +48,15 @@ This project also checks out my dotfiles project and sets up that config with ch
 ## Development Commands
 
 ```
-poe build
-poe test
-poe test_full
-poe integration
-poe check
-poe format
+task: Available tasks for this project:
+* build:all:               Build all pyprojects and the shared libraries for them
+* dbs:run:                 General alias for `poetry run python -m dasbootstrap` <command>
+* install:all:local:       Install all pyprojects to local .venv
+* tests:functional:        Runs all actions against a live proxmox server
+* tests:integration:       Runs molecule integration and pytest unit/integration tests
+* tools:bandit:            Run bandit
+* tools:ruff:check:        Run ruff
+* tools:ruff:format:       Format code
 ```
 
 ## License

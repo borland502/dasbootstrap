@@ -117,3 +117,9 @@ venv.bak/
 yarn-error.log
 .yubi.json
 .yubi-masterkey
+.task
+.idea
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.config

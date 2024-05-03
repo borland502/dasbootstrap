@@ -1,1 +1,1 @@
-"""Semaphore client module."""
+"""Semaphore Client."""

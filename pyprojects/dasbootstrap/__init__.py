@@ -1,1 +1,1 @@
-"""Dasbootstrap module."""
+"""Dasbootstrap main module."""

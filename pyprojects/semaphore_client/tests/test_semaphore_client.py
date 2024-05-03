@@ -1,6 +1,6 @@
 from semaphore_api.models.inventory import Inventory
 
-from semaphore_client.src.semaphore_client.semaphore_client import SemaphoreActions
+from ..semaphore_client import SemaphoreActions
 
 
 class TestSemaphoreClient:

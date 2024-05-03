@@ -1,1 +1,0 @@
-"""Semaphore client source module."""

@@ -12,6 +12,7 @@ repository = "https://github.com/borland502/dasbootstrap"
 packages = [
     { include = "utils", from = "../../shared/" },
     { include = "config", from = "../../shared/" },
+    { include = "dasbootstrap", from = "../../pyprojects"}
 ]
 
 

@@ -1,0 +1,72 @@
+version: "3"
+
+# https://github.com/RDFLib/rdflib/blob/main/Taskfile.yml
+vars:
+  POETRY: poetry
+  PYTHON: python
+  PYTEST: pytest
+  PIP: pip
+  # The prefix to use when running dev commands
+  RUN_PREFIX: "{{.POETRY}} run"
+  PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
+  PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
+  BUILD_ALL_PREFIX: "{{.POETRY}} build-project"
+  # The python to use for running in the venv
+  VENV_PYTHON: "{{.RUN_PREFIX}} python"
+  RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
+
+tasks:
+  dbs:run:
+    desc: General alias for `poetry run python -m dasbootstrap` <command>
+    cmds:
+      - "{{.RUN_MODULE_PREFIX}} dasbootstrap {{.CLI_ARGS}}"
+
+  tools:ruff:check:
+    desc: Run ruff
+    cmds:
+      - "{{.RUN_PREFIX}} ruff check pyprojects shared --config pyproject.toml --fix"
+
+  tools:ruff:format:
+    desc: Format code
+    cmds:
+      - "{{.RUN_PREFIX}} ruff format ./pyprojects ./shared --config pyproject.toml --line-length 128 --target-version py311"
+
+  tools:bandit:
+    desc: Run bandit
+    cmds:
+      - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r ./pyprojects ./shared"
+
+  tests:integration:
+    deps:
+      - task: tools:bandit
+      - task: tools:ruff:check
+      - task: tools:ruff:format
+    desc: Runs molecule integration and pytest unit/integration tests
+    cmds:
+      - "{{.PYTEST_PREFIX}}"
+
+  build:all:
+    deps:
+      - task: tests:integration
+    desc: Build all pyprojects and the shared libraries for them
+    cmds:
+      - "{{.BUILD_ALL_PREFIX}}"
+
+  install:all:local:
+    deps:
+      - task: build:all
+    desc: Install all pyprojects to local .venv
+    cmds:
+      - "{{.PIP_PREFIX}} install ./dist/*.whl --force-reinstall --no-deps"
+
+  tests:functional:
+    deps:
+      - tests:integration
+    desc: Runs all actions against a live proxmox server
+    cmds:
+      - '{{.VENV_PYTHON}} -m "dasbootstrap" update-collections'
+      - '{{.VENV_PYTHON}} -m "dasbootstrap" update-roles'
+      - '{{.VENV_PYTHON}} -m "dasbootstrap" destroy --app-name lxc'
+      - '{{.VENV_PYTHON}} -m "dasbootstrap" create --app-name lxc'
+      - '{{.VENV_PYTHON}} -m "dasbootstrap" destroy --app-name lxc'
+      - '{{.VENV_PYTHON}} -m "dasbootstrap" update-facts'

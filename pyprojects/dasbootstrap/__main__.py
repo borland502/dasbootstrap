@@ -4,7 +4,7 @@ from config.resources.paths import OperatingSystemFiles
 from typer import Option, Typer
 from utils.ssh import HostKeysUtils
 
-from .ansible_commands import Actions
+from dasbootstrap.ansible_commands import Actions
 
 app = Typer()
 

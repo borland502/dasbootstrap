@@ -36,6 +36,7 @@ exclude_dirs = [
 [tool.ruff]
 target-version = "py311"
 line-length = 128
+indent-width = 2
 
 exclude = [
     ".eggs",
@@ -55,11 +56,12 @@ exclude = [
 
 lint.ignore-init-module-imports = true
 lint.select = ["A", "ASYNC", "B", "C4", "C90", "D", "DTZ", "E", "F", "FLY", "I", "ISC", "LOG", "N", "NPY", "PERF", "PGH", "PIE", "PL", "PT", "Q", "RET", "RUF", "RSE", "SIM", "TID", "UP", "W", "YTT"]
-lint.ignore = ["D203", "D213", "E501", "PGH003", "RET504", "S101", "S307", "D205","ISC001"]
+lint.ignore = ["D203", "D213", "E501", "PGH003", "RET504", "S101", "S307", "D205","ISC001","E111"]
 lint.unfixable = ["F401", "F841"]
 
 [tool.ruff.format]
 line-ending = "lf"
+
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

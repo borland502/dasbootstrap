@@ -54,6 +54,7 @@ ensurePackageInstalled git
 ensurePackageInstalled curl
 ensurePackageInstalled rsync
 ensurePackageInstalled unison
+ensurePackageInstalled gh
 
 # TODO: Create XDG spec dirs if they don't exist
 mkdir -p "${HOME}"/.local/{"bin","lib","share/automation","state"}

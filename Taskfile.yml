@@ -6,6 +6,7 @@ vars:
   PYTHON: python
   PYTEST: pytest
   PIP: pip
+  GH: gh
   # The prefix to use when running dev commands
   RUN_PREFIX: "{{.POETRY}} run"
   PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
@@ -20,6 +21,13 @@ tasks:
     desc: General alias for `poetry run python -m dasbootstrap` <command>
     cmds:
       - "{{.RUN_MODULE_PREFIX}} dasbootstrap {{.CLI_ARGS}}"
+
+  # gh:commit:
+  #   deps:
+  #     - task: install:all:local
+  #     - task: tests:functional
+  #   desc: Commit to the daily branch
+  #   cmds:
 
   tools:ruff:check:
     desc: Run ruff
@@ -60,8 +68,6 @@ tasks:
       - "{{.PIP_PREFIX}} install ./dist/*.whl --force-reinstall --no-deps"
 
   tests:functional:
-    deps:
-      - tests:integration
     desc: Runs all actions against a live proxmox server
     cmds:
       - '{{.VENV_PYTHON}} -m "dasbootstrap" update-collections'

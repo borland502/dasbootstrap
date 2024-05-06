@@ -15,8 +15,8 @@ class Directories:
   """Path constants for both the project and for the user level ansible installation at HOME/.ansible."""
 
   PROOT: str = XDG_DATA_HOME + "/dasbootstrap"
-  SCROOT: str = PROOT + "/bin"
-  LROOT: str = PROOT + "/lib"
+  XDG_DATA_BIN: str = PROOT + "/bin"
+  XDG_DATA_HOME: str = PROOT + "/lib"
   PBROOT: str = PROOT + "/ansible/playbooks"
   CROOT: str = PROOT + "/ansible"
 

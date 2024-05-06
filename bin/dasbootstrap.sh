@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
-# Essential constants
+# Essential constants -- though two of them are not actually in the XDG Spec
 # shellcheck disable=SC2155
-declare -rx LROOT=$HOME/.local/lib
+XDG_BIN_HOME="${HOME}/.local/bin"
+XDG_LIB_HOME="${HOME}/.local/lib"
+XDG_DATA_HOME="${HOME}/.local/share"
+
+declare -rx XDG_BIN_HOME
+declare -rx XDG_LIB_HOME
+declare -rx XDG_DATA_HOME
+
 # shellcheck disable=SC2155
-declare -rx SCROOT=${XDG_DATA_BIN:-${HOME}/.local/lib}
-# shellcheck disable=SC2155
-declare -rx DBS_SCROOT="/home/ansible/.local/share/automation/dasbootstrap"
-declare -rx DBS_WORKING_DIR="/home/ansible/.local/share/dasbootstrap"
+declare -rx DBS_SCROOT="${XDG_DATA_HOME}/automation/dasbootstrap"
+declare -rx DBS_WORKING_DIR="${XDG_DATA_HOME}/dasbootstrap"
 
 # @description Ensures given package is installed on a system.
 #
@@ -70,10 +75,10 @@ fi
 unison -batch=true -ignore 'Path {.git,.venv}' "${DBS_WORKING_DIR}/" "${DBS_SCROOT}/"
 
 # Copy all bin and lib files to their system homes
-rsync -avzPh "${DBS_SCROOT}/bin/" "${SCROOT}/"
-rsync -avzPh "${DBS_SCROOT}/lib/" "${LROOT}/"
+rsync -avzPh "${DBS_SCROOT}/bin/" "${XDG_BIN_HOME}/"
+rsync -avzPh "${DBS_SCROOT}/lib/" "${XDG_LIB_HOME}/"
 
-source "${DBS_SCROOT}/lib/functions.sh"
+source "${XDG_LIB_HOME}/functions.sh"
 
 bootstrap_ansible_node
 installTask

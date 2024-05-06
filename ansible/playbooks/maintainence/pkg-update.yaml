@@ -1,5 +1,5 @@
-- name: Set apt-cache-ng proxy for debian
-  hosts: all
+- name: Update all packages and set proxies where available except proxmox nodes
+  hosts: all!proxmox_nodes
   gather_facts: true
   remote_user: root
   pre_tasks:
@@ -21,22 +21,27 @@
         mode: "0644"
 
   tasks:
-
     - name: Update all packages to their latest version
-      ansible.builtin.apt:
+      ansible.builtin.package:
         name: "*"
         state: latest
-      when: ansible_facts['os_family'] == "Debian"
+        use: auto
+
+    # - name: Update all packages to their latest version
+    #   ansible.builtin.apt:
+    #     name: "*"
+    #     state: latest
+    #   when: ansible_facts['os_family'] == "Debian"
 
     - name: Upgrade the OS (apt-get dist-upgrade)
       ansible.builtin.apt:
         upgrade: dist
-      when: ansible_facts['os_family'] == "Debian"     
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Remove useless packages from the cache
       ansible.builtin.apt:
         autoclean: true
-      when: ansible_facts['os_family'] == "Debian"    
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Remove dependencies that are no longer required
       ansible.builtin.apt:

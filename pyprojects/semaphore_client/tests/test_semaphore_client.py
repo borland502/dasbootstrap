@@ -7,14 +7,14 @@ from ..semaphore_client import SemaphoreActions
 
 
 @pytest.fixture
-def get_semaphore_client() -> SemaphoreActions:
+def get_semaphore_client() -> SemaphoreActions: # type: ignore
   semaphore_client = SemaphoreActions()
   semaphore_client.initialize()
   yield semaphore_client
 
 
 @pytest.fixture()
-def get_inventory_request(get_semaphore_client) -> InventoryRequest:
+def get_inventory_request(get_semaphore_client: SemaphoreActions) -> InventoryRequest: # type: ignore
   inventory_req = get_semaphore_client.from_ansible_inventory("lxc")
   assert inventory_req is not None
   yield inventory_req
@@ -23,18 +23,18 @@ def get_inventory_request(get_semaphore_client) -> InventoryRequest:
   get_semaphore_client.delete_inventory_for_hostname(hostname=hostname, projectid=projectid)
 
 @pytest.fixture()
-def get_projects(get_semaphore_client) -> list[Project]:
+def get_projects(get_semaphore_client: SemaphoreActions) -> list[Project]: # type: ignore
     projects = get_semaphore_client.get_projects()
     yield projects
 
 class TestSemaphoreClient:
 
-  def test_client_init(self, get_semaphore_client):
+  def test_client_init(self, get_semaphore_client: SemaphoreActions):
     assert get_semaphore_client.semaphore_client.cookie is not None
 
   def test_get_projects(self, get_projects: list[Project]):
     assert get_projects is not None
     assert len(get_projects) > 0
 
-  def test_create_inventory(self, get_inventory_request):
+  def test_create_inventory(self, get_inventory_request: InventoryRequest):
     assert get_inventory_request.name == "lxc"

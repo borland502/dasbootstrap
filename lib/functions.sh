@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC1090
-source "${DBS_SCROOT}/lib/constants.sh"
+source "${XDG_LIB_HOME}/constants.sh"
 # shellcheck disable=SC1090
-source "${DBS_SCROOT}/lib/logger.sh"
+source "${XDG_LIB_HOME}/logger.sh"
 # shellcheck disable=SC1090
-source "${DBS_SCROOT}/lib/install_doctor_functions.sh"
+source "${XDG_LIB_HOME}/install_doctor_functions.sh"
 # shellcheck disable=SC1090
-source "${DBS_SCROOT}/lib/util_functions.sh"
+source "${XDG_LIB_HOME}/util_functions.sh"

@@ -5,8 +5,12 @@
 # XDG_ spec availability
 ###
 
+source "${XDG_DATA_LIB}/functions.sh"
+
 # TODO: alias task functions in chezmoi managed .zshrc files and discard this script
 
-# function dbs_task(){
-#    task -t Taskfile.yml dbs:run -- create --app-name 'lxc'
-# }
+# Taken in conjection with the task dbs:runm mimics the original dbs script execution
+# e.g. dbs
+function dbs(){
+    task -t Taskfile.yml dbs:run -- $@
+}

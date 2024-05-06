@@ -1,6 +1,7 @@
 version: "3"
 
-# https://github.com/RDFLib/rdflib/blob/main/Taskfile.yml
+dotenv: [".env"]
+
 vars:
   POETRY: poetry
   PYTHON: python
@@ -15,9 +16,18 @@ vars:
   # The python to use for running in the venv
   VENV_PYTHON: "{{.RUN_PREFIX}} python"
   RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
+  CHEZMOI_HOME: ""
+
+includes:
+  chezmoi:
+    taskfile: "../automation/chezmoi/Taskfile.yml"
+    optional: true
 
 tasks:
   dbs:run:
+    deps:
+      - task: build:all
+      - task: install:all:local
     desc: General alias for `poetry run python -m dasbootstrap` <command>
     cmds:
       - "{{.RUN_MODULE_PREFIX}} dasbootstrap {{.CLI_ARGS}}"
@@ -49,20 +59,17 @@ tasks:
       - task: tools:bandit
       - task: tools:ruff:check
       - task: tools:ruff:format
+      - task: build:all
     desc: Runs molecule integration and pytest unit/integration tests
     cmds:
       - "{{.PYTEST_PREFIX}}"
 
   build:all:
-    deps:
-      - task: tests:integration
     desc: Build all pyprojects and the shared libraries for them
     cmds:
       - "{{.BUILD_ALL_PREFIX}}"
 
   install:all:local:
-    deps:
-      - task: build:all
     desc: Install all pyprojects to local .venv
     cmds:
       - "{{.PIP_PREFIX}} install ./dist/*.whl --force-reinstall --no-deps"

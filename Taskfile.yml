@@ -1,7 +1,5 @@
 version: "3"
 
-dotenv: [".env"]
-
 vars:
   POETRY: poetry
   PYTHON: python
@@ -13,21 +11,17 @@ vars:
   PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
   PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
   BUILD_ALL_PREFIX: "{{.POETRY}} build-project"
+  PYTHON_PROJ_SRC: "./pyprojects/**/*.py"
+  PYTHON_SHARED_SRC: "./shared/**/*.py"
+  PYTHON_TMP_FOLDER: "../.prepare_dasbootstrap"
+  PYTHON_DIST: "./dist"
   # The python to use for running in the venv
   VENV_PYTHON: "{{.RUN_PREFIX}} python"
   RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
   CHEZMOI_HOME: ""
 
-includes:
-  chezmoi:
-    taskfile: "../automation/chezmoi/Taskfile.yml"
-    optional: true
-
 tasks:
   dbs:run:
-    deps:
-      - task: build:all
-      - task: install:all:local
     desc: General alias for `poetry run python -m dasbootstrap` <command>
     cmds:
       - "{{.RUN_MODULE_PREFIX}} dasbootstrap {{.CLI_ARGS}}"
@@ -42,37 +36,50 @@ tasks:
   tools:ruff:check:
     desc: Run ruff
     cmds:
-      - "{{.RUN_PREFIX}} ruff check pyprojects shared --config pyproject.toml --fix"
+      - "{{.RUN_PREFIX}} ruff check {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --fix"
 
   tools:ruff:format:
     desc: Format code
     cmds:
-      - "{{.RUN_PREFIX}} ruff format ./pyprojects ./shared --config pyproject.toml --line-length 128 --target-version py311"
+      - "{{.RUN_PREFIX}} ruff format {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --line-length 128 --target-version py311"
 
   tools:bandit:
     desc: Run bandit
+    sources:
+      - "{{.PYTHON_PROJ_SRC}}"
+      - "{{.PYTHON_SHARED_SRC}}"
     cmds:
-      - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r ./pyprojects ./shared"
+      - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
 
   tests:integration:
     deps:
       - task: tools:bandit
       - task: tools:ruff:check
       - task: tools:ruff:format
-      - task: build:all
     desc: Runs molecule integration and pytest unit/integration tests
     cmds:
       - "{{.PYTEST_PREFIX}}"
 
+  build:clean:
+    desc: Clean build directories
+    cmds:
+      - "rm -rf {{.PYTHON_DIST}}"
+
   build:all:
     desc: Build all pyprojects and the shared libraries for them
+    sources:
+      - "{{.PYTHON_TMP_FOLDER}}"
+    generates:
+      - "{{.PYTHON_DIST}}"
     cmds:
       - "{{.BUILD_ALL_PREFIX}}"
 
   install:all:local:
     desc: Install all pyprojects to local .venv
+    sources:
+      - "{{.PYTHON_DIST}}"
     cmds:
-      - "{{.PIP_PREFIX}} install ./dist/*.whl --force-reinstall --no-deps"
+      - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
 
   tests:functional:
     desc: Runs all actions against a live proxmox server

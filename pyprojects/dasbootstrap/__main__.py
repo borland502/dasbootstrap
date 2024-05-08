@@ -18,7 +18,7 @@ def create(app_name: str = Option("lxc", help="Application to manage (defaults t
   HostKeysUtils(filename=OperatingSystemFiles.KNOWN_HOSTS).remove(app_name)
   Actions.dump_inventory()
   actions.bootstrap_lxc(app_name)
-  actions.ansible_user_lxc(app_name)
+  # actions.ansible_user_lxc(app_name)
   # if a playbook exists with the app_name then run it
   actions.setup_playbook(app_name)
 

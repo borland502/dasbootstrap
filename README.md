@@ -25,8 +25,10 @@ This project also checks out my dotfiles project and sets up that config with ch
 ## Example
 
 ```bash
-task -t Taskfile.yml dbs:run -- create --app-name 'lxc'
-task -t Taskfile.yml dbs:run -- destroy --app-name 'lxc'
+task --list
+task dbs:run -- dump-inventory
+task dbs:run -- create --app-name 'lxc'
+task dbs:run -- destroy --app-name 'lxc'
 ```
 
 ```text

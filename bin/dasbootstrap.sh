@@ -1,18 +1,42 @@
 #!/usr/bin/env bash
 
-# Essential constants -- though two of them are not actually in the XDG Spec
-# shellcheck disable=SC2155
+# dasbootstrap.sh assumes no previously installed elements and will attempt to use more common commands
+# to retrieve them
+
+mkdir -p "${HOME}"/.local/{"bin","lib","share/automation","state","config"}
+
+# Essential constants
+# XDG Spec
+set -o allexport
+XDG_CONFIG_HOME="${HOME}/.config"
+# shellcheck disable=SC2034
+XDG_CACHE_HOME="${HOME}/.cache"
+XDG_DATA_HOME="${HOME}/.local/share"
+# shellcheck disable=SC2034
+XDG_STATE_HOME="${HOME}/.local/state"
+# shellcheck disable=SC2034
+XDG_DATA_DIRS="/usr/local/share:/usr/share:${XDG_DATA_HOME}/var/lib/flatpak/exports/share:${XDG_DATA_HOME}/flatpak/exports/share"
+# shellcheck disable=SC2034
+XDG_CONFIG_DIRS="/etc/xdg:${XDG_CONFIG_HOME}"
+# XDG Spec adjacent
 XDG_BIN_HOME="${HOME}/.local/bin"
 XDG_LIB_HOME="${HOME}/.local/lib"
-XDG_DATA_HOME="${HOME}/.local/share"
 
-declare -rx XDG_BIN_HOME
-declare -rx XDG_LIB_HOME
-declare -rx XDG_DATA_HOME
+ANSIBLE_HOME="${HOME}/.ansible"
 
-# shellcheck disable=SC2155
-declare -rx DBS_SCROOT="${XDG_DATA_HOME}/automation/dasbootstrap"
-declare -rx DBS_WORKING_DIR="${XDG_DATA_HOME}/dasbootstrap"
+DBS_SCROOT="${XDG_DATA_HOME}/automation/dasbootstrap"
+DBS_WORKING_DIR="${HOME}/.local/share/dasbootstrap"
+# shellcheck disable=SC2034
+HOMEBREW_NO_INSTALL_CLEANUP=true
+# shellcheck disable=SC2034
+HOMEBREW_NO_ANALYTICS=1
+CAN_USE_SUDO=1
+# shellcheck disable=SC2034
+HAS_ALLOW_UNSAFE=y
+
+# Program versions
+PYTHON=3.11
+set +o allexport
 
 # @description Ensures given package is installed on a system.
 #
@@ -61,24 +85,36 @@ ensurePackageInstalled rsync
 ensurePackageInstalled unison
 ensurePackageInstalled gh
 
-# TODO: Create XDG spec dirs if they don't exist
-mkdir -p "${HOME}"/.local/{"bin","lib","share/automation","state"}
-
 if ! [[ -d ${DBS_SCROOT} ]]; then
     git clone --single-branch --branch=main https://github.com/borland502/dasbootstrap.git "${DBS_SCROOT}"
-    # TODO: Update automation repos
 else
     git pull --autostash --force "${DBS_SCROOT}"
 fi
 
 # Ensure changes between working directory and mirror are sync'd
-unison -batch=true -ignore 'Path {.git,.venv}' "${DBS_WORKING_DIR}/" "${DBS_SCROOT}/"
+unison -batch=true -ignore 'Path {.git,.venv,.task,.cache,.vscode,dist}' "${DBS_WORKING_DIR}/" "${DBS_SCROOT}/"
 
 # Copy all bin and lib files to their system homes
 rsync -avzPh "${DBS_SCROOT}/bin/" "${XDG_BIN_HOME}/"
 rsync -avzPh "${DBS_SCROOT}/lib/" "${XDG_LIB_HOME}/"
+rsync -avzPh "${DBS_SCROOT}/ansible/" "${ANSIBLE_HOME}/"
 
 source "${XDG_LIB_HOME}/functions.sh"
 
 bootstrap_ansible_node
 installTask
+
+for program in "${BREW_LIST[@]}"; do
+  if ! has "${program}"; then
+    brew install "${program}"
+  fi
+done
+
+pyenv install "${PYTHON}"
+
+for program in "${PIPX_LIST[@]}"; do
+  if ! has "${program}"; then
+    pipx install "${program}"
+  fi
+done
+

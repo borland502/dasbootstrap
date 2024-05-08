@@ -1,0 +1,4 @@
+[submodule "chezmoi"]
+path = conf/chezmoi
+url = https://github.com/borland502/dotfiles
+branch = main

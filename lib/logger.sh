@@ -375,20 +375,3 @@ write() {
         echo "ERROR: gum is not installed!"
     fi
 }
-
-if [ -n "$1" ] && [ -n "$2" ]; then
-    # Public functions that require at least two parameters to be used
-    if [ "$1" == 'warn' ] || [ "$1" == 'success' ] || [ "$1" == 'star' ] || [ "$1" == 'info' ] \
-    || [ "$1" == 'error' ] || [ "$1" == 'md' ] || [ "$1" == 'write' ] || [ "$1" == 'start' ] \
-    || [ "$1" == 'spin' ] || [ "$1" == 'prompt' ] || [ "$1" == 'filter' ] || [ "$1" == 'input' ] \
-    || [ "$1" == 'confirm' ] || [ "$1" == 'password' ]; then
-        "$1" "$2"
-        elif [[ "$1" == 'choose' ]]; then
-        "$@"
-    fi
-    elif [ -n "$1" ]; then
-    # Public functions that can run with only one argument passed to .config/log (i.e. `.config/log password`)
-    if [ "$1" == 'write' ] || [ "$1" == 'password' ] || [ "$1" == 'confirm' ] || [ "$1" == 'input' ]; then
-        "$1"
-    fi
-fi

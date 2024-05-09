@@ -8,5 +8,3 @@ source "${XDG_LIB_HOME}/logger.sh"
 source "${XDG_LIB_HOME}/install_doctor_functions.sh"
 # shellcheck disable=SC1090
 source "${XDG_LIB_HOME}/util_functions.sh"
-# shellcheck disable=SC1090
-source "${XDG_LIB_HOME}/task_functions.sh"

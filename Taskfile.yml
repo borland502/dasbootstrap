@@ -18,20 +18,62 @@ vars:
   # The python to use for running in the venv
   VENV_PYTHON: "{{.RUN_PREFIX}} python"
   RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
+  DASBOOTSTRAP_PREFIX: "{{.RUN_MODULE_PREFIX}} dasbootstrap"
   CHEZMOI_HOME: ""
 
 tasks:
-  dbs:run:
-    desc: General alias for `poetry run python -m dasbootstrap` <command>
+  default:
     cmds:
-      - "{{.RUN_MODULE_PREFIX}} dasbootstrap {{.CLI_ARGS}}"
+      - |
+        command -v brew >/dev/null || { echo "brew is mandatory for this to work, please install it"; exit 1; }
+        command -v gum >/dev/null|| brew install gum
 
-  # gh:commit:
-  #   deps:
-  #     - task: install:all:local
-  #     - task: tests:functional
-  #   desc: Commit to the daily branch
-  #   cmds:
+        selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
+        echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
+
+  create:lxc:
+    desc: Create an LXC by hostname
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} create --app-name {{.LXC_HOST}}
+    vars:
+      LXC_HOST:
+        sh: |
+          echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
+
+  destroy:lxc:
+    desc: Destroy an LXC by hostname
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} destroy --app-name {{.LXC_HOST}}
+    vars:
+      LXC_HOST:
+        sh: |
+          echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
+
+  dump-inventory:
+    desc: Dump the available ansible dynamic sources to a static hosts.yaml
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} dump-inventory
+
+  update-collections:
+    desc: Update the available ansible collections using ~/.ansible/collections/requirements.yml
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} update-collections
+
+  update-roles:
+    desc: Update the available ansible roles using ~/.ansible/roles/requirements.yml
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} update-roles
+
+  update-facts:
+    desc: Update ansible facts
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} update-facts
 
   tools:ruff:check:
     desc: Run ruff
@@ -83,10 +125,14 @@ tasks:
 
   tests:functional:
     desc: Runs all actions against a live proxmox server
+    deps:
+      - task: build:all
     cmds:
-      - '{{.VENV_PYTHON}} -m "dasbootstrap" update-collections'
-      - '{{.VENV_PYTHON}} -m "dasbootstrap" update-roles'
-      - '{{.VENV_PYTHON}} -m "dasbootstrap" destroy --app-name lxc'
-      - '{{.VENV_PYTHON}} -m "dasbootstrap" create --app-name lxc'
-      - '{{.VENV_PYTHON}} -m "dasbootstrap" destroy --app-name lxc'
-      - '{{.VENV_PYTHON}} -m "dasbootstrap" update-facts'
+      - task: tests:integration
+      - task: install:all:local
+      - "{{.DASBOOTSTRAP_PREFIX}} update-collections"
+      - "{{.DASBOOTSTRAP_PREFIX}} update-roles"
+      - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
+      - "{{.DASBOOTSTRAP_PREFIX}} create --app-name lxc"
+      - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
+      - "{{.DASBOOTSTRAP_PREFIX}} update-facts"

@@ -2,3 +2,11 @@
 path = conf/chezmoi
 url = https://github.com/borland502/dotfiles
 branch = main
+[submodule "proxmox-ansible"]
+	path = ansible/collections/ansible_collections/proxmox-ansible
+	url = https://github.com/borland502/proxmox-ansible
+	branch = main
+[submodule "technohouser"]
+	path = ansible/collections/ansible_collections/technohouser
+	url = https://github.com/borland502/technohouser
+	branch = main

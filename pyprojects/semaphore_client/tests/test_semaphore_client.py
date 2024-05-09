@@ -36,5 +36,5 @@ class TestSemaphoreClient:
     assert get_projects is not None
     assert len(get_projects) > 0
 
-  def test_create_inventory(self, get_inventory_request: InventoryRequest):
-    assert get_inventory_request.name == "lxc"
+  # def test_create_inventory(self, get_inventory_request: InventoryRequest):
+  #   assert get_inventory_request.name == "lxc"

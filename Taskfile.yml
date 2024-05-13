@@ -118,8 +118,6 @@ tasks:
 
   install:all:local:
     desc: Install all pyprojects to local .venv
-    sources:
-      - "{{.PYTHON_DIST}}"
     cmds:
       - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
 

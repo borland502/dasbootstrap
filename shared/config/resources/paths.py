@@ -49,6 +49,7 @@ class Inventory:
   """Source/Target for Inventory Actions."""
 
   STATIC_HOSTS: str = Directories.IHOME + "/hosts.yaml"
+  DBS_SQLITE: str = Directories.AHOME + "/dasbootstrap.db"
 
 
 @dataclass

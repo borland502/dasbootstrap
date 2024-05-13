@@ -34,8 +34,8 @@ systemd_sleep:
   allow_hybrid_sleep: false
 
 virtualenvs_in_project: true
-ansible_password: ""
-ansible_become_password: ""
+password: ""
+become_password: ""
 default_password: ""
 domain:
   name: ""
@@ -46,6 +46,12 @@ domain:
   ou: ""
   server: ""
 ansible:
+  home: "{{ ansible_env.HOME }}"
+  redis_connection:
+  collections_path:
+  roles_path:
+  inventory:
+  inventory_plugins:
   hostname: ""
   alt_hostname: ""
   pub_key: ""
@@ -55,6 +61,17 @@ ansible:
     - ""
   domain_user: ""
   password: ""
+
+xdg:
+  config_home: "{{ ansible.home }}/.config"
+  cache_home: "{{ ansible.home }}/.cache"
+  data_home: "{{ ansible.home }}/.local/share"
+  state_home: "{{ ansible.home }}/.local/state"
+  bin_home: "{{ ansible.home }}/.local/bin"
+  lib_home: "{{ ansible.home }}/.local/lib"
+  data_dirs: "/usr/local/share:/usr/share:{{ xdg.data_home }}/var/lib/flatpak/exports/share:{{ xdg.data_home }}/flatpak/exports/share"
+  config_dirs: "/etc/xdg:{{ xdg.config_home }}"
+
 homebrew_temporary_passwordless_sudo: ""
 homebrew:
   user: ""
@@ -94,7 +111,7 @@ pyenv_version: "HEAD"
 pyenv_virtualenv_version: "HEAD"
 pyenv_update_version: "HEAD"
 pyenv_env: "system"
-pyenv_path: "{% if pyenv_env == 'user' %}{{ ansible_env.HOME }}/pyenv{% else %}/usr/local/pyenv{% endif %}"
+pyenv_path: "{% if pyenv_env == 'user' %}{{ env.HOME }}/pyenv{% else %}/usr/local/pyenv{% endif %}"
 pyenvrc_path: "{{ pyenv_path }}"
 pyenv_owner: "root"
 pyenv_owner_group: "root"
@@ -141,7 +158,7 @@ pve_py_pckg_mgmt: apt
 # pve_node: "{{ pve_node }}"
 # FQDN or IP of the Proxmox API endpoint where we manage the cluster or node
 # pve_api_host: "{{ pve_api_host }}"
-# pve_ansible_user: "{{ ansible.user }}"
+# pve_user: "{{ ansible_user.user }}"
 # # User to use to connect to the Proxmox cluster API
 pve_api_user: "{{ pve_api_user }}"
 # Password for the previous API user (BETTER PUT THIS IN A VAULT, this dummy example can cause security issues)
@@ -163,7 +180,7 @@ dns:
 git_username: "{{ git_username }}"
 
 # The group to own directories.
-git_groupname: "{{ ansible.user }}"
+git_groupname: "{{ automation_user.user }}"
 
 # Settings for git configuration.
 git_user_email: jhettenh@gmail.com
@@ -178,11 +195,11 @@ git_repository_destination: /home/{{ username | default('unset') }}/Documents/gi
 # The repositories to check out, bootstrap is pinned to a version, java will get HEAD/latest.
 git_repositories:
   - repo: "https://github.com/borland502/Proxmox-Automation.git"
-    dest: "{{ ansible_env.HOME }}/github/proxmox-automation"
+    dest: "{{ env.HOME }}/github/proxmox-automation"
     version: "master"
     force: true
   - repo: "https://github.com/borland502/proxmox-ansible.git"
-    dest: "{{ ansible_env.HOME }}/github/proxmox-ansible"
+    dest: "{{ env.HOME }}/github/proxmox-ansible"
     version: "main"
     force: true
 

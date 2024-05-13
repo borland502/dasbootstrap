@@ -4,6 +4,7 @@ import pytest
 
 from utils.inventory import ansible_inventory
 from ansible.inventory.group import InventoryObjectType
+from sqlite_utils import Database
 
 
 class TestAnsibleInventory(unittest.TestCase):

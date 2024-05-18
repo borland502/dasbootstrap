@@ -44,7 +44,7 @@ class SemaphoreActions:
 
   # TODO: Refresh host_vars
 
-  def initialize(self):
+  def connect(self):
     """Initialize the semaphore client and initialize."""
     login: ApiResponse = self.semaphore_instance.auth_login_post_with_http_info(self.auth_call)
     api_cookie = login.headers["Set-Cookie"]
@@ -116,4 +116,4 @@ class SemaphoreActions:
 
 if __name__ == "__main__":
   semaphore_client = SemaphoreActions()
-  semaphore_client.initialize()
+  semaphore_client.connect()

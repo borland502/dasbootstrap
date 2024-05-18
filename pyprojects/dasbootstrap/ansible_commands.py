@@ -8,14 +8,10 @@ from shared.config.resources.paths import Directories, Inventory, Requirements, 
 from shared.config.utils import find_playbook
 
 INVENTORY: list[str] = ["-i", str(Directories.IHOME)]
+# TODO: Validate vars
 VARS: list[str] = [
   *INVENTORY,
-  *[
-    "-e",
-    "@" + str(Variables.ALL_VARS),
-    "-e",
-    "@" + str(Variables.ALL_LXC_VARS),
-  ],
+  *["-e", "@" + str(Variables.ALL_VARS), "-e", "@" + str(Variables.ALL_LXC_VARS), "-e", "@" + str(Variables.ALL_KVM_VARS)],
 ]
 
 
@@ -39,6 +35,24 @@ class Actions:
     ansible_runner.run_command(
       executable_cmd="ansible-inventory",
       cmdline_args=["all", "--export", "--list", "--yaml", *VARS, "--output", str(Inventory.STATIC_HOSTS)],
+    )
+
+  def create_kvm(self):
+    """Create a new KVM using the specified application role."""
+    ansible_runner.run_command(
+      executable_cmd="ansible",
+      cmdline_args=[
+        "localhost",
+        "-m",
+        "import_role",
+        "-a",
+        "name=technohouser.proxmox.create_kvm",
+        "-e",
+        self.app_path,
+        *VARS,
+        "--user",
+        "root",
+      ],
     )
 
   def create_lxc(self):

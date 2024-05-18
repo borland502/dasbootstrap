@@ -2,10 +2,6 @@
 path = conf/chezmoi
 url = https://github.com/borland502/dotfiles
 branch = main
-[submodule "proxmox-ansible"]
-path = ansible/collections/ansible_collections/proxmox-ansible
-url = https://github.com/borland502/proxmox-ansible
-branch = main
 [submodule "homebrew"]
 path = ansible/collections/ansible_collections/ansible-homebrew
 url = https://github.com/borland502/ansible-homebrew

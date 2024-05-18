@@ -9,7 +9,7 @@ from ..semaphore_client import SemaphoreActions
 @pytest.fixture
 def get_semaphore_client() -> SemaphoreActions: # type: ignore
   semaphore_client = SemaphoreActions()
-  semaphore_client.initialize()
+  semaphore_client.connect()
   yield semaphore_client
 
 

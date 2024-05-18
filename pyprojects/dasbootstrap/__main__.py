@@ -10,7 +10,21 @@ app = Typer()
 
 
 @app.command()
-def create(app_name: str = Option("lxc", help="Application to manage (defaults to lxc)")):
+def create_kvm(app_name: str = Option("kvm", help="Virtual machine to manage (defaults to kvm)")):
+  """Create and set up a new KVM using debian by default."""
+  actions = Actions(app_name)
+  actions.create_kvm()
+  # preemptively delete the host key
+  HostKeysUtils(filename=OperatingSystemFiles.KNOWN_HOSTS).remove(app_name)
+  Actions.dump_inventory()
+  # TODO: Call this something more generic as there is little that is lxc specific
+  # actions.bootstrap_lxc(app_name)
+  # TODO: Call this something more generic as there is little that is lxc specific
+  # actions.ansible_user_lxc(app_name)
+
+
+@app.command()
+def create_lxc(app_name: str = Option("lxc", help="Application to manage (defaults to lxc)")):
   """Create and set up a new LXC container, installing favorites, and creating a service user."""
   actions = Actions(app_name)
   actions.create_lxc()

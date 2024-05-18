@@ -15,6 +15,7 @@ vars:
   PYTHON_SHARED_SRC: "./shared/**/*.py"
   PYTHON_TMP_FOLDER: "../.prepare_dasbootstrap"
   PYTHON_DIST: "./dist"
+  PYPROJECTS_VENV: "./venv/**/dasbootstrap/*"
   # The python to use for running in the venv
   VENV_PYTHON: "{{.RUN_PREFIX}} python"
   RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
@@ -31,11 +32,21 @@ tasks:
         selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
         echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
 
+  create:kvm:
+    desc: Create a KVM by hostname
+    cmds:
+      - |
+        {{.DASBOOTSTRAP_PREFIX}} create-kvm --app-name {{.KVM_HOST}}
+    vars:
+      KVM_HOST:
+        sh: |
+           echo $(gum input --prompt="What is the hostname for the KVM template? " --placeholder "kvm")
+
   create:lxc:
     desc: Create an LXC by hostname
     cmds:
       - |
-        {{.DASBOOTSTRAP_PREFIX}} create --app-name {{.LXC_HOST}}
+        {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name {{.LXC_HOST}}
     vars:
       LXC_HOST:
         sh: |
@@ -87,13 +98,30 @@ tasks:
 
   tools:bandit:
     desc: Run bandit
-    sources:
-      - "{{.PYTHON_PROJ_SRC}}"
-      - "{{.PYTHON_SHARED_SRC}}"
     cmds:
       - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
 
+  build:clean:
+    desc: Clean build directories
+    cmds:
+      - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
+      - "rm -rf {{.PYTHON_DIST}}"
+
+  build:all:
+    desc: Build all pyprojects and the shared libraries for them
+    cmds:
+      - "{{.BUILD_ALL_PREFIX}}"
+
+  install:all:local:
+    desc: Install all pyprojects to local .venv
+    deps:
+      - task: build:all
+    cmds:
+      - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
+      - task: tests:integration
+
   tests:integration:
+    internal: true
     deps:
       - task: tools:bandit
       - task: tools:ruff:check
@@ -102,26 +130,8 @@ tasks:
     cmds:
       - "{{.PYTEST_PREFIX}}"
 
-  build:clean:
-    desc: Clean build directories
-    cmds:
-      - "rm -rf {{.PYTHON_DIST}}"
-
-  build:all:
-    desc: Build all pyprojects and the shared libraries for them
-    sources:
-      - "{{.PYTHON_TMP_FOLDER}}"
-    generates:
-      - "{{.PYTHON_DIST}}"
-    cmds:
-      - "{{.BUILD_ALL_PREFIX}}"
-
-  install:all:local:
-    desc: Install all pyprojects to local .venv
-    cmds:
-      - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
-
   tests:functional:
+    internal: true
     desc: Runs all actions against a live proxmox server
     deps:
       - task: build:all
@@ -134,3 +144,8 @@ tasks:
       - "{{.DASBOOTSTRAP_PREFIX}} create --app-name lxc"
       - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
       - "{{.DASBOOTSTRAP_PREFIX}} update-facts"
+
+  tests:
+    desc: Runs linters, build, install, integration, and functional tests
+    cmds:
+      - task: tests:functional

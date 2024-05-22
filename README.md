@@ -7,7 +7,7 @@ Dasbootstrap is a loose wrapper around other efforts, including my own, to boots
 Even cowboy-style DevOps needs some focal points at least, and those are:
 
 1. Proxmox
-2. Ansible / Python
+2. Terraform / Ansible / Python
 3. ZSH managed by Chezmoi
 
 ## Languages

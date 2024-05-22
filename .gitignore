@@ -124,3 +124,4 @@ yarn-error.log
 .ruff_cache
 .config
 reports/
+.run/

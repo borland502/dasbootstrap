@@ -1,0 +1,3 @@
+plugin: sqlite
+db_path: ~/.local/state/sqlite/dasbootstrap.db
+db_table: hosts

@@ -6,6 +6,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 from pynput import keyboard
+from undetected_playwright import Tarnished
 
 
 def _validate_data(user_data_dir: str) -> str:
@@ -43,6 +44,7 @@ class ChromeKiosk:
       browser = p.chromium.launch_persistent_context(
         headless=False,
         downloads_path=os.getcwd(),
+        ignore_default_args=["--enable-automation"],
         args=[
           "--disable-dev-shm-usage",
           "--disable-blink-features=AutomationControlled",
@@ -51,11 +53,13 @@ class ChromeKiosk:
           "--no-sandbox",
           "--kiosk",
         ],
+        locale="en_US.UTF-8",
         devtools=False,
         no_viewport=True,
         user_data_dir=self.expanded_user_data_dir,
       )
 
+      Tarnished.apply_stealth(context=browser)
       page = browser.new_page()
       page.goto(self.url)
 

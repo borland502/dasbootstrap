@@ -18,9 +18,9 @@ def create_kvm(app_name: str = Option("kvm", help="Virtual machine to manage (de
   HostKeysUtils(filename=OperatingSystemFiles.KNOWN_HOSTS).remove(app_name)
   Actions.dump_inventory()
   # TODO: Call this something more generic as there is little that is lxc specific
-  # actions.bootstrap_lxc(app_name)
+  actions.bootstrap_lxc(app_name)
   # TODO: Call this something more generic as there is little that is lxc specific
-  # actions.ansible_user_lxc(app_name)
+  actions.ansible_user_lxc(app_name)
 
 
 @app.command()

@@ -63,69 +63,68 @@ tasks:
           echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
 
   dump-inventory:
+    internal: true
     desc: Dump the available ansible dynamic sources to a static hosts.yaml
     cmds:
       - |
         {{.DASBOOTSTRAP_PREFIX}} dump-inventory
 
   update-collections:
+    internal: true
     desc: Update the available ansible collections using ~/.ansible/collections/requirements.yml
     cmds:
       - |
         {{.DASBOOTSTRAP_PREFIX}} update-collections
 
   update-roles:
+    internal: true
     desc: Update the available ansible roles using ~/.ansible/roles/requirements.yml
     cmds:
       - |
         {{.DASBOOTSTRAP_PREFIX}} update-roles
 
   update-facts:
+    internal: true
     desc: Update ansible facts
     cmds:
       - |
         {{.DASBOOTSTRAP_PREFIX}} update-facts
 
   tools:ruff:check:
+    internal: true
     desc: Run ruff
     cmds:
       - "{{.RUN_PREFIX}} ruff check {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --fix"
 
   tools:ruff:format:
+    internal: true
     desc: Format code
     cmds:
       - "{{.RUN_PREFIX}} ruff format {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --line-length 128 --target-version py311"
 
   tools:bandit:
+    internal: true
     desc: Run bandit
     cmds:
       - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
 
   build:clean:
+    internal: true
     desc: Clean build directories
     cmds:
       - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
       - "rm -rf {{.PYTHON_DIST}}"
 
   build:all:
+    internal: true
     desc: Build all pyprojects and the shared libraries for them
     cmds:
       - "{{.BUILD_ALL_PREFIX}}"
 
-  install:all:local:
-    desc: Install all pyprojects to local .venv
-    deps:
-      - task: build:all
-    cmds:
-      - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
-      - task: tests:integration
-
   tests:integration:
     internal: true
     deps:
-      - task: tools:bandit
-      - task: tools:ruff:check
-      - task: tools:ruff:format
+      - task: lint
     desc: Runs molecule integration and pytest unit/integration tests
     cmds:
       - "{{.PYTEST_PREFIX}}"
@@ -134,16 +133,46 @@ tasks:
     internal: true
     desc: Runs all actions against a live proxmox server
     deps:
-      - task: build:all
+      - task: install
     cmds:
       - task: tests:integration
-      - task: install:all:local
-      - "{{.DASBOOTSTRAP_PREFIX}} update-collections"
-      - "{{.DASBOOTSTRAP_PREFIX}} update-roles"
+      - task: update
       - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
-      - "{{.DASBOOTSTRAP_PREFIX}} create --app-name lxc"
+      - "{{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name lxc"
       - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
-      - "{{.DASBOOTSTRAP_PREFIX}} update-facts"
+
+  lint:
+    desc: Runs linters
+    deps:
+      - task: tools:bandit
+      - task: tools:ruff:check
+      - task: tools:ruff:format
+    cmds:
+
+  update:
+    desc: Update dasbootstrap and ansible dependencies
+    sources:
+      - "{{.HOME}}/.ansible/collections/requirements.yml"
+      - "{{.HOME}}/.ansible/roles/requirements.yml"
+    generates:
+      - "{{.HOME}}/.ansible/collections/**/*.yml"
+      - "{{.HOME}}/.ansible/collections/**/*.yaml"
+      - "{{.HOME}}/.ansible/roles/**/*.yaml"
+      - "{{.HOME}}/.anbile/roles/**/*.yml"
+    deps:
+      - task: update-roles
+      - task: update-facts
+      - task: update-collections
+    cmds:
+      - task: dump-inventory
+
+  install:
+    desc: Install all pyprojects to local .venv
+    deps:
+      - task: build:clean
+    cmds:
+      - task: build:all
+      - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
 
   tests:
     desc: Runs linters, build, install, integration, and functional tests

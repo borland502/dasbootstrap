@@ -3,12 +3,13 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from xdg_base_dirs import xdg_cache_home, xdg_data_home, xdg_config_home
+from xdg_base_dirs import xdg_cache_home, xdg_data_home, xdg_config_home, xdg_state_home
 
 HOME = str(Path.home())
 XDG_DATA_HOME = str(xdg_data_home())
 XDG_CACHE_HOME = str(xdg_cache_home())
 XDG_CONFIG_HOME = str(xdg_config_home())
+XDG_STATE_HOME = str(xdg_state_home())
 
 
 @dataclass
@@ -22,7 +23,6 @@ class Directories:
   PBROOT: str = PROOT + "/ansible/playbooks"
   PLAYBOOK_ROOT: str = PBROOT
   CROOT: str = PROOT + "/ansible"
-
   AHOME: str = HOME + "/.ansible"
   ANSIBLE_HOME: str = AHOME
   CHOME: str = AHOME + "/collections"
@@ -54,7 +54,7 @@ class Inventory:
   """Source/Target for Inventory Actions."""
 
   STATIC_HOSTS: str = Directories.IHOME + "/hosts.yaml"
-  DBS_SQLITE: str = Directories.AHOME + "/dasbootstrap.db"
+  DBS_SQLITE: str = XDG_STATE_HOME + "/sqlite/dasbootstrap.db"
 
 
 @dataclass

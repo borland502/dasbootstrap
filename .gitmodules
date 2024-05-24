@@ -10,7 +10,7 @@ branch = master
 path = ansible/collections/ansible_collections/technohouser
 url = https://github.com/borland502/technohouser
 branch = main
-[submodule "trapper-keeper"]
-	path = pyprojects/trapper-keeper
-	url = https://github.com/borland502/trapper-keeper
-	branch = main
+[submodule "trapper_keeper"]
+path = pyprojects/trapper_keeper
+url = https://github.com/borland502/trapper-keeper
+branch = main

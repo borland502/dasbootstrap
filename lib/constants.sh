@@ -37,21 +37,3 @@ fi
 declare -ax BREW_LIST=(gh curl git rsync unison jq yq chezmoi java jenv vim starship tldr docker zsh zinit gcc gcc@11)
 BREW_LIST+=(sshpass fzf direnv rg fd sd eza atuin prettyping nmap pyenv pipx)
 declare -ax PIPX_LIST=(poetry ansible ansible-lint)
-
-## programs
-#has gh
-#has curl
-#has git
-#has brew
-#has task
-#has java
-#has file
-#has gzip
-#has sudo
-#has direnv
-
-#
-## scripts
-#has sysupdate.zsh
-#has dbs
-

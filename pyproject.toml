@@ -4,16 +4,12 @@
     license = "MIT"
     name = "dasbootstrap"
     packages = [
-        { include = "utils", from = "./shared" },
-        { include = "config", from = "./shared" },
-        { include = "dasbootstrap", from = "./pyprojects" },
-        { include = "semaphore_client", from = "./pyprojects" },
-        { include = "technitium_client", from = "./pyprojects" },
-        { include = "trapper-keeper/trapper_keeper", from = "./pyprojects" },
+        { include = "**/*", from = "shared" },
+        { include = "**/*", from = "pyprojects" }
     ]
     readme = "README.md"
     repository = "https://github.com/borland502/dasbootstrap"
-    version = "0.2.1"
+    version = "0.2.2"
 
     # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
 
@@ -142,9 +138,6 @@
     reportMissingImports = false
     reportMissingTypeStubs = false
 
-    pythonPlatform = "Linux"
-    pythonVersion = "3.11"
-
 [tool.pytest.ini_options]
     addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=2 --junitxml=reports/pytest.xml"
     filterwarnings = [
@@ -152,7 +145,7 @@
     ]
     markers = ["slow"]
     minversion = "6.0"
-    norecursedirs = ["testing/example_scripts", "build", "dist"]
+    norecursedirs = [".venv","lib", "build", "dist"]
     testpaths = ["tests"]
 
 [tool.poetry.plugins]
@@ -190,7 +183,7 @@
     pyautogui = "^0.9.54"
     pydig = "^0.4.0"
     pynput = "^1.7.6"
-    python = "^3.11"
+    python = "^3.12"
     python-nmap = "^0.7.1"
     python3-nmap = "^1.6.0"
     pyyaml = "^6.0.1"

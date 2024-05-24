@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# prevent chick/egg problem on chezmoi apply
+if [[ ${XDG_LIB_HOME+x} ]]; then
+  declare -x XDG_LIB_HOME="${HOME}/.local/lib"
+fi
+
 # shellcheck disable=SC1090
 source "${XDG_LIB_HOME}/constants.sh"
 # shellcheck disable=SC1090

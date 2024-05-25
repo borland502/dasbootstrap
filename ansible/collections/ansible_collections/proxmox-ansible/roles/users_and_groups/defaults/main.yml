@@ -1,0 +1,43 @@
+---
+# defaults file for users_and_groups
+
+#  pve_users_data:
+#
+#    user1:
+#        name: User One
+#        email: user1@domain.org
+#        firstname: User
+#        lastname: On
+#
+#      user2:
+#        name: User Two
+#        expire: 8600   # in seconds
+#
+#      user3:
+#        name: User Three
+#
+#  pve_cluster_username_list:
+#  - user1
+#  - user2
+##  pve_global_username_list:
+#  - root
+#  - deploy
+#
+#  pve_groups:
+#    group1:
+#      comment: Group One
+#      members:
+#      - user1
+#      - user2
+#    group2:
+#      comment: Group Two
+#      members:
+#      - user2
+#      - user3
+#
+#  pve_permissions:
+#  - path: <proxmox_datacenter_path>
+#    user: <user> (and no "group:" defined)
+#    group: <group> (and no "user:" defined)
+#    role: <proxmox role>
+...

@@ -1,0 +1,7 @@
+---
+## error publishing the collection
+# https://github.com/ansible/galaxy-importer/pull/122
+
+requires_ansible: '>=2.10'
+
+...

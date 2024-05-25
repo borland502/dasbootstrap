@@ -1,0 +1,18 @@
+---
+# cielito.proxmox.create_kvm: Packages requirements on PVE node
+
+# Verificar si python-pip está instalado en el nodo Proxmox
+- name: Verify that python-pip is installed in the Proxmox node
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+  delegate_to: "{{ pve_api_host }}"
+
+# Verificar si el módulo proxmoxer de python está instalado
+- name: Verify if proxmoxer pip module is installed
+  ansible.builtin.pip:
+    name: proxmoxer
+    state: present
+  delegate_to: "{{ pve_api_host }}"
+
+...

@@ -1,0 +1,41 @@
+---
+# cielito.proxmox.create_lxc: Proxmox VE template management
+
+# Descargar la plantilla del contenedor si es necesario
+- name: Download the container template if it's needed
+  ansible.builtin.get_url:
+    url: "{{ pve_lxc_ostemplate_url }}"
+    dest: /tmp/
+  delegate_to: "{{ pve_api_host }}"
+  register: pve_lxc_ostemplate_downloaded
+  when:
+  - pve_lxc_ostemplate_url is defined
+  - pve_lxc_ostemplate_name is not defined
+  tags:
+  - pve_descarga
+  - pve_download
+
+# Agregar el template LXC del contenedor al nodo
+- name: Add LXC container template to node
+  community.general.proxmox_template:
+    node: "{{ pve_node }}"
+    api_host: "{{ pve_api_host }}"
+    api_user: "{{ pve_api_user | default(omit) }}"
+    api_password: "{{ pve_api_password | default(omit) }}"
+    api_token_id: "{{ pve_api_token_id | default(omit) }}"
+    api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+    template: "{{ pve_lxc_ostemplate_name | default(omit) }}"
+    src: "{{ pve_lxc_ostemplate_src if(pve_lxc_ostemplate_src is defined) else ( pve_lxc_ostemplate_downloaded.dest if(pve_lxc_ostemplate_downloaded.dest is defined) ) | default(omit) }}"
+    storage: "{{ pve_lxc_ostemplate_storage | default(omit) }}"
+    content_type: "{{ pve_lxc_ostemplate_content_type | default(omit) }}"
+    timeout: "{{ pve_lxc_ostemplate_timeout | default(omit) }}"
+    force: "{{ pve_lxc_ostemplate_force | default(omit) }}"
+    validate_certs: "{{ pve_validate_certs | default(omit) }}"
+    state: "{{ pve_lxc_ostemplate_state  | default(omit) }}"
+  delegate_to: "{{ pve_api_host }}"
+  when: pve_lxc_ostemplate_url is defined
+  tags:
+  - pve_descarga
+  - pve_download
+
+...

@@ -1,0 +1,17 @@
+---
+# vars file for users_and_groups
+# the list of users to configure in current hosts
+
+current_cluster_full_username_list: >-
+            {{ ( pve_cluster_username_list | default ([])
+            + pve_global_username_list | default ([])
+            ) | default ( pve_users_data | list, true )
+            }}
+pve_users_query: '[?contains(`{{ current_cluster_full_username_list | to_json }}`, username)]'
+pve_cluster_users_data: >
+            {{ pve_users_data | dict2items ( key_name='username' )
+            | community.general.json_query( pve_users_query )
+            | items2dict ( key_name='username' )
+            }}
+
+...

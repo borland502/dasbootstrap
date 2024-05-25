@@ -1,0 +1,53 @@
+[OPTIONS]
+
+enable: 1
+policy_in: ACCEPT
+policy_out: ACCEPT
+
+
+		##### EXAMPLES OF USE PROXMOX FIREWALL #####
+
+		#TYPE ACTION [OPTIONS]
+		# -i      <INTERFACE>
+		# -source <SOURCE>
+		# -dest   <DEST>
+		# -p      <PROTOCOL>
+		# -dport  <DESTINATION_PORT>
+		# -sport  <SOURCE_PORT>
+
+		#	IN SSH(ACCEPT) -i net0
+		#	IN SSH(ACCEPT) -i net0 # a comment
+		#	IN SSH(ACCEPT) -i net0 -source 192.168.2.192  				# only allow SSH from  192.168.2.192
+		#	IN SSH(ACCEPT) -i net0 -source 10.0.0.1-10.0.0.10 			# accept SSH for ip in range 10.0.0.1 to 10.0.0.10
+		#	IN SSH(ACCEPT) -i net0 -source 10.0.0.1,10.0.0.2,10.0.0.3 	# accept ssh for 10.0.0.1 or 10.0.0.2 or 10.0.0.3
+		#	IN SSH(ACCEPT) -i net0 -source +mynetgroup   				# accept ssh for ipset mynetgroup
+		#	IN SSH(ACCEPT) -i net0 -source myserveralias   				# accept ssh for alias myserveralias
+		#	IN SSH(ACCEPT) -i net0 -source FE80:0000:0000:0000:0202:B3FF:FE1E:8329
+		#	IN ACCEPT -i net0 -p icmpv6
+
+		#	|IN SSH(ACCEPT) -i net0 									# disabled rule
+
+		# GROUP group1 -i net0											# add a security group
+
+		##### END OF EXAMPLES #####
+
+[ALIASES]
+mynetwork-ipv4 200.200.0.0/16
+mynetwork-ipv6 200:200::/32
+
+[group basic]
+IN ACCEPT -p tcp -dport 22 -source mynetwork-ipv4		### IN SSH(ACCEPT)		# !!! DO NOT MIX IPV4 AND IPV6 IN THE SAME RULE
+IN ACCEPT -p tcp -dport 22 -source mynetwork-ipv6		### IN SSH(ACCEPT)		# !!! DO NOT MIX IPV4 AND IPV6 IN THE SAME RULE
+OUT ACCEPT -p tcp -dport 22 -source mynetwork-ipv4		### OUT SSH(ACCEPT)
+OUT ACCEPT -p tcp -dport 22 -source mynetwork-ipv6		### OUT SSH(ACCEPT)
+IN ACCEPT -p icmp 				### IN Ping(ACCEPT)
+OUT ACCEPT -p icmp 				### OUT Ping(ACCEPT)
+IN ACCEPT -p icmpv6 			### IN Ping(ACCEPT)
+OUT ACCEPT -p icmpv6 			### OUT Ping(ACCEPT)
+OUT DNS(ACCEPT)
+OUT ACCEPT -p tcp -dport 80		### OUT HTTP(ACCEPT) # Necesario para instalación y actualización de paquetes. Needed for install and upgrade packages.
+OUT ACCEPT -p tcp -dport 443	### OUT HTTPS(ACCEPT) # Necesario para instalación y actualización de paquetes. Needed for install and upgrade packages.
+
+[group webserver]
+IN ACCEPT -p tcp -dport 80			### IN HTTP(ACCEPT)
+IN ACCEPT -p tcp -dport 443			### IN HTTP(ACCEPT)

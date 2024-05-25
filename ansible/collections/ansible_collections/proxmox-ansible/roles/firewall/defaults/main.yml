@@ -1,0 +1,25 @@
+---
+# defaults file for pve-firewall
+
+## Our Proxmox Virtual Enviroment node
+pve_api_host: mynode.mycluster.org
+
+# By default, we suppose that `inventory_hostname` is the FQDN or the hostname of the host to create, so we set the variable to the hostname.
+# You can arbitrarly define this hostname
+pve_hostname: "{{ inventory_hostname.split('.')[0] }}"
+
+## Indicates if the cluster firewall will also be configured.
+## Keep in mind that modifications to cluster configurations can
+## affect many hosts, especially if groups are defined. Use with care
+pve_firewall_configure_cluster: false
+
+## Path to go to find firewall files
+pve_firewall_configuration_files: "firewall_proxmox/etc/pve/firewall"
+
+## Path to the host correspondent .fw file. Relative to Ansible project 'files' folder.
+pve_firewall_host_configuration_file: "{{ pve_firewall_configuration_files }}/{{ pve_hostname }}.fw"
+
+## Path to the host correspondent .fw file. Absolute to the file on our local machine that runs the playbook.
+pve_firewall_path_to_host_configuration_file: "{{ playbook_dir }}/files/{{ pve_firewall_host_configuration_file }}"
+
+...

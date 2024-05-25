@@ -1,0 +1,48 @@
+---
+# tasks file for cielito.proxmox.users_and_groups
+
+- name: Acceso admin consola proxmox
+  block:
+
+  - name: Loop | Include | Add Proxmox users to cluster
+    include_tasks: 10_create_pve_users.yml
+    loop: '{{ current_cluster_full_username_list }}'
+    loop_control:
+      loop_var: current_pve_username
+    vars:
+      current_pve_user: '{{ pve_users_data | community.general.json_query ( current_pve_username ) }}'
+
+  - name: Loop to build the groups of the Proxmox cluster
+    set_fact:
+      pve_cluster_groups: >
+              {{ pve_cluster_groups | default( {} )
+              | combine ( { current_pve_groupname: current_pve_group | combine ( current_pve_group_members ) } ) }}
+    when: current_pve_group_members.members | length > 0
+    loop: '{{ pve_groups | list }}'
+    loop_control:
+      loop_var: current_pve_groupname
+    vars:
+      current_pve_group: '{{ pve_groups | community.general.json_query ( current_pve_groupname ) }}'
+      current_pve_group_members:
+        members: '{{ current_pve_group.members | intersect( current_cluster_full_username_list ) }}'
+
+
+  - name: Loop | Include | Add Proxmox groups
+    include_tasks: 20_create_pve_groups.yml
+    loop: '{{ pve_cluster_groups | list }}'
+    loop_control:
+      loop_var: current_pve_groupname
+    vars:
+      current_pve_group: '{{ pve_cluster_groups | community.general.json_query ( current_pve_groupname ) }}'
+    when: pve_cluster_groups is defined and pve_cluster_groups | length > 0
+
+  - name: Loop | Include | Add Proxmox permissions
+    include_tasks: 30_create_pve_permissions.yml
+    loop: '{{ pve_permissions }}'
+    loop_control:
+      loop_var: pve_permission
+
+  run_once: true
+  # Se corre en un solo nodo del cluster, podés pasarle el grupo de nodos del cluster
+
+...

@@ -1,0 +1,7 @@
+---
+# cielito.proxmox.create_lxc: Packages requirements on PVE node
+
+# TODO: Prefer system managed python in lxc
+
+
+...

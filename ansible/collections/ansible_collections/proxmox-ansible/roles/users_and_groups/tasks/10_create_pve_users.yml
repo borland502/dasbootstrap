@@ -1,0 +1,32 @@
+---
+# Creation of Proxmox users using Proxmox cli tools
+
+- name: Check if {{ current_pve_username }}@pam user exists in Proxmox cluster
+  command: pveum usermod "{{ current_pve_username }}"@pam
+  register: pve_mod_user
+  ignore_errors: yes
+
+- name: Create {{ current_pve_username }}@pam user account in Proxmox cluster
+  command: >
+     pveum useradd "{{ current_pve_username }}"@pam
+     -enable "{{ current_pve_user.enable | default( 1 ) }}"
+     -expire "{{ current_pve_user.expire | default( 0 ) }}"
+  when: pve_mod_user.rc != 0
+
+- name: Add conmment/name to {{ current_pve_username }}@pam user account in Proxmox cluster
+  command: pveum usermod "{{ current_pve_username }}"@pam -comment "{{ current_pve_user.name }}"
+  when: current_pve_user.name is defined
+
+- name: Add email to {{ current_pve_username }}@pam user account in Proxmox cluster
+  command: pveum usermod "{{ current_pve_username }}"@pam -email "{{ current_pve_user.email }}"
+  when: current_pve_user.email is defined
+
+- name: Add first name to {{ current_pve_username }}@pam user account in Proxmox cluster
+  command: pveum usermod "{{ current_pve_username }}"@pam -firstname "{{ current_pve_user.firstname }}"
+  when: current_pve_user.firstname is defined
+
+- name: Add last name to {{ current_pve_username }}@pam user account in Proxmox cluster
+  command: pveum usermod "{{ current_pve_username }}"@pam -lastname "{{ current_pve_user.lastname }}"
+  when: current_pve_user.lastname is defined
+
+...

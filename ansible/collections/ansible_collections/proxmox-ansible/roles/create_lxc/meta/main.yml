@@ -1,0 +1,29 @@
+---
+galaxy_info:
+  role_name: proxmox_create_lxc
+  author: "Daniel Viñar (@ulvida) and Santiago Martínez (@santiagomr)"
+  description: Create LXC containers in Proxmox cluster
+  company: Red Unidades Informáticas UdelaR Interior (@cielito @UdelaRInterior)
+
+  license: GPL-3.0-or-later
+
+  min_ansible_version: '2.13'
+
+  platforms:
+  - name: Debian
+    versions:
+    - bullseye
+    - buster
+
+  galaxy_tags:
+  - system
+  - container
+  - lxc
+  - pve
+  - proxmox
+  - debian
+  - sysadmin
+
+dependencies: []
+
+...

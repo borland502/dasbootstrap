@@ -1,0 +1,58 @@
+---
+# Parameters validation and sanity check for cielito.proxmox.create_kvm role
+
+- name: Test if user is setup
+  ansible.builtin.assert:
+    that:
+    - pve_api_user is defined
+    - pve_api_user is string
+    - pve_api_user | length > 0
+    quiet: yes
+    fail_msg: Proxmox API user must be defined as a non zero length string
+
+- name: Register password configuration
+  set_fact:
+    is_password_setup: "{{ pve_api_password is defined and pve_api_password is string and pve_api_password | length > 0 and not ( pve_api_password is search('omit') ) }}"
+
+- name: Register token configuration
+  set_fact:
+    is_token_setup:
+      "{{ pve_api_token_id is defined and pve_api_token_id is string and pve_api_token_id | length > 0 and pve_api_token_secret is defined and pve_api_token_secret is string
+      and pve_api_token_secret | length > 0 }}"
+
+- name: Check conflict between token and password configuration
+  ansible.builtin.assert:
+    that:
+    - ( not is_password_setup and is_token_setup )
+      or
+      ( is_password_setup and not is_token_setup )
+    fail_msg: Password variable or Token and Secret variables must be defined, and not both.
+    quiet: yes
+
+- name: Sockets / Cores set up
+  set_fact:
+    pve_kvm_cores: "{{ pve_kvm_cpulimit }}"
+  when:
+  - not pve_kvm_cores is defined
+  - pve_kvm_cpulimit is defined
+
+- name: Sockets / Cores set up
+  set_fact:
+    pve_kvm_vcpus: "{{ pve_kvm_cpulimit }}"
+  when:
+  - not pve_kvm_vcpus is defined
+  - pve_kvm_cpulimit is defined
+
+- name: Check that cpus / cores ratios
+  assert:
+    that:
+    - pve_kvm_cores >= pve_kvm_cpulimit
+    - pve_kvm_cpulimit >= pve_kvm_vcpus
+    fail_msg: Number of Cores must be greater or equal to the CPU's
+    quiet: true
+  when:
+  - pve_kvm_cores is defined
+  - pve_kvm_vcpus is defined
+  - pve_kvm_cpulimit is defined
+
+...

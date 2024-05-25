@@ -1,0 +1,29 @@
+galaxy_info:
+  role_name: cielito.proxmox.create_kvm
+  author: Daniel Viñar (@ulvida) and Santiago Martínez (@santiagomr), contributions from Florent Thomas (@flotho)
+  description: Create KVM virtual machines in Proxmox cluster
+  company: Red Unidades Informáticas UdelaR Interior (@cielito / @UdelaRInterior)
+
+  license: GPL-3.0-or-later
+
+  min_ansible_version: "2.10"
+
+  platforms:
+  - name: Debian
+    versions:
+    - buster
+    - bullseye
+
+  galaxy_tags:
+  - system
+  - virtual
+  - machines
+  - kvm
+  - pve
+  - proxmox
+  - debian
+  - sysadmin
+
+dependencies: []
+
+...

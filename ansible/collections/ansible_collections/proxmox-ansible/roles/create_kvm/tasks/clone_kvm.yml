@@ -1,0 +1,46 @@
+---
+# Crear una KVM clonando otra preexistente en el nodo Proxmox
+- name: Create a KVM by cloning a pre-existing one on the Proxmox node
+  block:
+
+  - name: Create a KVM by cloning a pre-existing one on the Proxmox node | Password
+    community.general.proxmox_kvm:
+      api_password: "{{ pve_api_password | default(omit) }}"
+    when:
+    - is_password_setup
+    - not is_token_setup
+    register: pve_kvm_virtual_password_created
+
+  - name: Create a KVM by cloning a pre-existing one on the Proxmox node | Token
+    community.general.proxmox_kvm:
+      api_token_id: "{{ pve_api_token_id | default(omit) }}"
+      api_token_secret: "{{ pve_api_token_secret | default(omit) }}"
+    when:
+    - is_token_setup
+    - not is_password_setup
+    register: pve_kvm_virtual_token_created
+
+  delegate_to: "{{ pve_api_host }}"
+  module_defaults:
+    community.general.proxmox_kvm:
+      node: "{{ pve_node }}"
+      api_host: "{{ pve_api_host }}"
+      api_user: "{{ pve_api_user | default(omit) }}"
+      proxmox_default_behavior: "{{ pve_default_behavior | default('compatibility') }}"
+      validate_certs: "{{ pve_validate_certs | default(omit) }}"
+      name: "{{ pve_hostname }}"
+      vmid: "{{ pve_kvm_clone_vmid | default(omit) }}"
+      timeout: "{{ pve_kvm_timeout | default(omit) }}"
+      clone: "{{ pve_kvm_clone_vm | default(omit) }}"
+      snapname: "{{ pve_kvm_clone_snapname | default(omit) }}"
+      full: "{{ pve_kvm_clone_full | default(omit) }}"
+      storage: "{{ pve_kvm_clone_storage | default(omit) }}"
+      format: "{{ pve_kvm_clone_format | default(omit) }}"
+      target: "{{ pve_kvm_clone_target | default(omit) }}"
+      newid: "{{ pve_kvm_clone_newid | default(omit) }}"
+
+- name: Choose the appropriate register variable
+  set_fact:
+    pve_kvm_virtual_created: "{{ pve_kvm_virtual_token_created if is_token_setup else pve_kvm_virtual_password_created }}"
+
+...

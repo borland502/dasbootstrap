@@ -34,6 +34,7 @@ if [[ -f "${HOME}/.env" ]]; then
   export_from "${HOME}/.env"
 fi
 
-declare -ax BREW_LIST=(gh curl git rsync unison jq yq chezmoi java jenv vim starship tldr docker zsh zinit gcc gcc@11)
-BREW_LIST+=(sshpass fzf direnv rg fd sd eza atuin prettyping nmap pyenv pipx)
+# has should always install first as it is used to check for subsequent installs
+declare -ax BREW_LIST=(has gh age curl git rsync unison jq yq chezmoi java jenv vim starship tldr zsh zinit gcc gcc@11)
+BREW_LIST+=(gum sshpass fzf direnv rg fd sd eza atuin prettyping nmap pyenv pipx poetry)
 declare -ax PIPX_LIST=(poetry ansible ansible-lint)

@@ -3,7 +3,16 @@
 # dasbootstrap.sh assumes no previously installed elements and will attempt to use more common commands
 # to retrieve them
 
-mkdir -p "${HOME}"/.local/{"bin","lib","share/automation","state","config"}
+# Choose the user that will be in control
+_user = $(gum choose {"ansible","$(whoami)"}) 
+
+# use gum before chezmoi engages to ask for the age key
+mkdir -p "${XDG_CONFIG_HOME}/keepass"
+"$(gum input --placeholder "Enter the age private key: ")" | tr -d '\n' > "${XDG_CONFIG_HOME}/keepass/key.txt"
+
+
+# Create a quick and dirty service user then restart the script as that user
+create_sudo_user "${_user}"
 
 # Essential constants
 # XDG Spec
@@ -25,7 +34,7 @@ XDG_LIB_HOME="${HOME}/.local/lib"
 ANSIBLE_HOME="${HOME}/.ansible"
 
 DBS_SCROOT="${XDG_DATA_HOME}/automation/dasbootstrap"
-DBS_WORKING_DIR="${HOME}/.local/share/dasbootstrap"
+DBS_WORKING_DIR="${XDG_DATA_HOME}/dasbootstrap"
 # shellcheck disable=SC2034
 HOMEBREW_NO_INSTALL_CLEANUP=true
 # shellcheck disable=SC2034
@@ -35,8 +44,15 @@ CAN_USE_SUDO=1
 HAS_ALLOW_UNSAFE=y
 
 # Program versions
-PYTHON=3.11
+PYTHON=3.12
 set +o allexport
+
+mkdir -p "${XDG_CONFIG_HOME}"
+mkdir -p "${XDG_CACHE_HOME}"
+mkdir -p "${XDG_DATA_HOME}"
+mkdir -p "${XDG_STATE_HOME}"
+mkdir -p "${XDG_BIN_HOME}"
+mkdir -p "${XDG_LIB_HOME}"
 
 # @description Ensures given package is installed on a system.
 #
@@ -85,6 +101,7 @@ ensurePackageInstalled rsync
 ensurePackageInstalled unison
 ensurePackageInstalled gh
 
+# Clone this project if the script is invoked alone
 if ! [[ -d ${DBS_SCROOT} ]]; then
     git clone --single-branch --branch=main https://github.com/borland502/dasbootstrap.git "${DBS_SCROOT}"
 else
@@ -101,8 +118,11 @@ rsync -avzPh "${DBS_SCROOT}/ansible/" "${ANSIBLE_HOME}/"
 
 source "${XDG_LIB_HOME}/functions.sh"
 
-bootstrap_ansible_node
-installTask
+# download has for a little validation flare
+brew install has
+
+bootstrap_ansible_node "${_user}"
+installTask "${_user}"
 
 for program in "${BREW_LIST[@]}"; do
   if ! has "${program}"; then
@@ -110,7 +130,7 @@ for program in "${BREW_LIST[@]}"; do
   fi
 done
 
-pyenv install "${PYTHON}"
+python --version 2>/dev/null | grep -q '^Python 3\.[0-9]\{1,2\}' || pyenv install "${PYTHON}"
 
 for program in "${PIPX_LIST[@]}"; do
   if ! has "${program}"; then
@@ -118,3 +138,18 @@ for program in "${PIPX_LIST[@]}"; do
   fi
 done
 
+if ! [[ -d "${XDG_DATA_HOME}/chezmoi" ]]; then
+  git clone --single-branch --branch=main https://github.com/borland502/dotfiles.git "${XDG_DATA_HOME}/chezmoi"
+else
+  git pull --autostash --force "${XDG_DATA_HOME}/chezmoi"
+fi
+
+pyenv global "${PYTHON}"
+cd "${DBS_SCROOT}" || (echo "Could not cd into ${DBS_SCROOT}"; exit 2)
+poetry install
+
+cd "${XDG_DATA_HOME}/chezmoi" || (echo "Could not cd into ${XDG_DATA_HOME}/chezmoi"; exit 2)
+poetry install
+
+chezmoi init
+chezmoi apply

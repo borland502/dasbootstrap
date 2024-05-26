@@ -3,16 +3,96 @@
 # dasbootstrap.sh assumes no previously installed elements and will attempt to use more common commands
 # to retrieve them
 
-# Choose the user that will be in control
-_user = $(gum choose {"ansible","$(whoami)"}) 
+if [[ $USER == "root" ]] && [[ -f '/root/.rootfinished' ]]; then
+  # presume sudo powers at this point
+  _username="$(cat /root/.rootfinished)"
+  exec su - "${_username}" "/home/${_username}/$(basename "$0")" -- "$@" \
+   || (echo "could not change to user ${_username}.  Exiting" && exit 2)
+fi
 
-# use gum before chezmoi engages to ask for the age key
-mkdir -p "${XDG_CONFIG_HOME}/keepass"
-"$(gum input --placeholder "Enter the age private key: ")" | tr -d '\n' > "${XDG_CONFIG_HOME}/keepass/key.txt"
+# @description Helper function for ensurePackageInstalled for Debian installations
+function ensureDebianPackageInstalled() {
+    if type sudo &> /dev/null && [ "$CAN_USE_SUDO" != 'false' ]; then
+        sudo apt-get update
+        sudo apt-get install -y "$1"
+    else
+        apt-get update
+        apt-get install -y "$1"
+    fi
+}
 
+# @description Ensures given package is installed on a system.
+#
+# @arg $1 string The name of the package that must be present
+#
+# @exitcode 0 The package(s) were successfully installed
+# @exitcode 1+ If there was an error, the package needs to be installed manually, or if the OS is unsupported
+function ensurePackageInstalled() {
+    export CAN_USE_SUDO='true'
+    # TODO: Restore other types later
+    if ! [[ $(command -v "$1" ) ]]; then
+      ensureDebianPackageInstalled "$1"
+    fi
+}
 
-# Create a quick and dirty service user then restart the script as that user
-create_sudo_user "${_user}"
+# @description If the user is running this script as root, then create a new user
+# and restart the script with that user. This is required because Homebrew
+# can only be invoked by non-root users.
+function create_sudo_user(){
+    local _username=${1:-'ansible'}
+
+    ensurePackageInstalled "sudo"
+    ensurePackageInstalled "zsh"
+
+    if [ -z "$NO_INSTALL_HOMEBREW" ] && [ "$USER" == "root" ] && [ -z "$INIT_CWD" ] && type useradd &> /dev/null; then
+        # shellcheck disable=SC2016
+        logger info "Running as root - creating separate user named ${_username} to run script with"
+        echo "${_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+        useradd --create-home --shell "$(which zsh)" "${_username}" > /dev/null || ROOT_EXIT_CODE=$?
+        if [ -n "$ROOT_EXIT_CODE" ]; then
+            # shellcheck disable=SC2016
+            logger info "User ${_username} already exists"
+        fi
+
+        cp "$0" "/home/${_username}/$(basename "$0")"
+        chown "${_username}:${_username}" "/home/${_username}/$(basename "$0")"
+
+        # use gum before chezmoi engages to ask for the age key
+        mkdir -p "/home/${_username}/.config/keepass"
+        gum input --placeholder "Enter the age private key: " | tr -d '\n' >\
+         "/home/${_username}/.config/keepass/key.txt"
+
+        # shellcheck disable=SC2016
+        logger info "Reloading the script with the ${_username} user"
+        echo "${_username}" > /root/.rootfinished
+        # TODO: This is wonky and not reliable here
+        # exec su "${_username}" "/home/${_username}/$(basename "$0")" -- "$@"
+    fi
+}
+
+ensurePackageInstalled build-essential
+ensurePackageInstalled "linux-headers-$(uname -r)"
+ensurePackageInstalled git
+ensurePackageInstalled curl
+ensurePackageInstalled rsync
+ensurePackageInstalled unison
+ensurePackageInstalled gh
+ensurePackageInstalled python3-full
+
+if [[ $USER == "root" ]]; then
+  # Choose the user that will be in control
+  _user=$(gum choose {"ansible","$(whoami)"})
+
+  curl -L https://github.com/charmbracelet/gum/releases/download/v0.14.0/gum_0.14.0_amd64.deb \
+    -o gum.deb
+  sudo dpkg -i gum.deb
+
+  # Create a quick and dirty service user then restart the script as that user
+  create_sudo_user "${_user}"
+fi
+
+# if user is still root here then exit as something went wrong
+if [[ $USER == "root" ]]; then echo "User is still root.  Exiting." && exit 2; fi
 
 # Essential constants
 # XDG Spec
@@ -54,59 +134,14 @@ mkdir -p "${XDG_STATE_HOME}"
 mkdir -p "${XDG_BIN_HOME}"
 mkdir -p "${XDG_LIB_HOME}"
 
-# @description Ensures given package is installed on a system.
-#
-# @arg $1 string The name of the package that must be present
-#
-# @exitcode 0 The package(s) were successfully installed
-# @exitcode 1+ If there was an error, the package needs to be installed manually, or if the OS is unsupported
-function ensurePackageInstalled() {
-    export CAN_USE_SUDO='true'
-    if ! type "$1" &> /dev/null; then
-        if [[ "$OSTYPE" == 'darwin'* ]]; then
-            brew install "$1"
-            elif [[ "$OSTYPE" == 'linux'* ]]; then
-            if [ -f "/etc/redhat-release" ]; then
-                ensureRedHatPackageInstalled "$1"
-                elif [ -f "/etc/debian_version" ]; then
-                ensureDebianPackageInstalled "$1"
-                elif [ -f "/etc/arch-release" ]; then
-                ensureArchPackageInstalled "$1"
-                elif [ -f "/etc/alpine-release" ]; then
-                ensureAlpinePackageInstalled "$1"
-                elif type dnf &> /dev/null || type yum &> /dev/null; then
-                ensureRedHatPackageInstalled "$1"
-                elif type apt-get &> /dev/null; then
-                ensureDebianPackageInstalled "$1"
-                elif type pacman &> /dev/null; then
-                ensureArchPackageInstalled "$1"
-                elif type apk &> /dev/null; then
-                ensureAlpinePackageInstalled "$1"
-            else
-                logger error "$1 is missing. Please install $1 to continue." && exit 1
-            fi
-            elif [[ "$OSTYPE" == 'cygwin' ]] || [[ "$OSTYPE" == 'msys' ]] || [[ "$OSTYPE" == 'win32' ]]; then
-            logger error "Windows is not directly supported. Use WSL or Docker." && exit 1
-            elif [[ "$OSTYPE" == 'freebsd'* ]]; then
-            logger error "FreeBSD support not added yet" && exit 1
-        else
-            logger error "System type not recognized"
-        fi
-    fi
-}
-
-ensurePackageInstalled git
-ensurePackageInstalled curl
-ensurePackageInstalled rsync
-ensurePackageInstalled unison
-ensurePackageInstalled gh
-
 # Clone this project if the script is invoked alone
 if ! [[ -d ${DBS_SCROOT} ]]; then
     git clone --single-branch --branch=main https://github.com/borland502/dasbootstrap.git "${DBS_SCROOT}"
 else
     git pull --autostash --force "${DBS_SCROOT}"
 fi
+
+echo $USER
 
 # Ensure changes between working directory and mirror are sync'd
 unison -batch=true -ignore 'Path {.git,.venv,.task,.cache,.vscode,dist}' "${DBS_WORKING_DIR}/" "${DBS_SCROOT}/"
@@ -122,7 +157,6 @@ source "${XDG_LIB_HOME}/functions.sh"
 brew install has
 
 bootstrap_ansible_node "${_user}"
-installTask "${_user}"
 
 for program in "${BREW_LIST[@]}"; do
   if ! has "${program}"; then

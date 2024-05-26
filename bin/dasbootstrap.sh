@@ -3,6 +3,7 @@
 # dasbootstrap.sh assumes no previously installed elements and will attempt to use more common commands
 # to retrieve them
 
+# Fallback action in case the install is interrupted after root phase is done
 if [[ $USER == "root" ]] && [[ -f '/root/.rootfinished' ]]; then
   # presume sudo powers at this point
   _username="$(cat /root/.rootfinished)"
@@ -62,11 +63,16 @@ function create_sudo_user(){
         gum input --placeholder "Enter the age private key: " | tr -d '\n' >\
          "/home/${_username}/.config/keepass/key.txt"
 
+        mkdir -p "/home/${_username}/.local/state/keepass"
+        gum input --placeholder "Enter the keepassxc password: " | tr -d '\n' >\
+          "/home/${_username}/.local/state/keepass/keepass_token"
+
+        chown -R "${_username}:${_username}" "/home/${_username}"
+
         # shellcheck disable=SC2016
         logger info "Reloading the script with the ${_username} user"
         echo "${_username}" > /root/.rootfinished
-        # TODO: This is wonky and not reliable here
-        # exec su "${_username}" "/home/${_username}/$(basename "$0")" -- "$@"
+        exec su - "${_username}" "/home/${_username}/$(basename "$0")" -- "$@"
     fi
 }
 
@@ -90,9 +96,6 @@ if [[ $USER == "root" ]]; then
   # Create a quick and dirty service user then restart the script as that user
   create_sudo_user "${_user}"
 fi
-
-# if user is still root here then exit as something went wrong
-if [[ $USER == "root" ]]; then echo "User is still root.  Exiting." && exit 2; fi
 
 # Essential constants
 # XDG Spec
@@ -141,8 +144,6 @@ else
     git pull --autostash --force "${DBS_SCROOT}"
 fi
 
-echo $USER
-
 # Ensure changes between working directory and mirror are sync'd
 unison -batch=true -ignore 'Path {.git,.venv,.task,.cache,.vscode,dist}' "${DBS_WORKING_DIR}/" "${DBS_SCROOT}/"
 
@@ -154,6 +155,7 @@ rsync -avzPh "${DBS_SCROOT}/ansible/" "${ANSIBLE_HOME}/"
 source "${XDG_LIB_HOME}/functions.sh"
 
 # download has for a little validation flare
+# TODO: replace has with command -v check as most of the install will be in non-interactive shells
 brew install has
 
 bootstrap_ansible_node "${_user}"
@@ -186,4 +188,4 @@ cd "${XDG_DATA_HOME}/chezmoi" || (echo "Could not cd into ${XDG_DATA_HOME}/chezm
 poetry install
 
 chezmoi init
-chezmoi apply
+poetry run chezmoi apply

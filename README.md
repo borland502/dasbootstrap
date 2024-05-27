@@ -1,5 +1,32 @@
 # Dasbootstrap
 
+## Install
+
+### From Taskfile / Ansible Node Example
+
+```bash
+* install:           Install all pyprojects to local .venv
+* lint:              Runs linters
+* tests:             Runs linters, build, install, integration, and functional tests
+* update:            Update dasbootstrap and ansible dependencies
+* create:kvm:        Create a KVM by hostname
+* create:lxc:        Create an LXC by hostname
+* destroy:lxc:       Destroy an LXC by hostname
+
+task create:lxc
+```
+### From pure shell
+
+```bash
+curl -L https://raw.githubusercontent.com/borland502/dasbootstrap/main/bin/dasbootstrap.sh \
+  -o dasbootstrap.sh
+  
+chmod +x ./dasbootstrap.sh && ./dasbootstrap.sh  
+```
+
+In both cases [gum](https://github.com/charmbracelet/gum) is used to gather sensitive variables like the age 
+encryption key and the key and token for the keepass database.
+
 ## Overview
 
 Dasbootstrap is a loose wrapper around other efforts, including my own, to bootstrap containers, virtual machines, applications, and even dotfiles.  All personal automation is local in nature, but this project will be even more so -- centered on products I use and coherent enough to provide a leg up when the next personal project takes my fancy.  That is to say you'll best be served by the frameworks I wrap like cielito.proxmox, ansible-hombrew, and Proxmox VE Helper-Scripts projects that aim to provide extensibility and are written by automation experts.  I am still learning most of the products and languages that I employ here so Dasbootstrap will likely be messy for some time.
@@ -19,47 +46,6 @@ The language used is primarily python and executed via ansible runners.  [Typer]
 This project houses mostly templates with only the playbooks, collections, and roles executed locally.  Sensitive Inventory, Vars, etc are in ~/.ansible.  Each host var file has enough info in it to create the lxc/qemu container as well as the intended app to install afterwards.
 
 This project also checks out my dotfiles project and sets up that config with chezmoi
-
-# TODO: Lots
-
-## Example
-
-```bash
-task --list
-task dbs:run -- dump-inventory
-task dbs:run -- create --app-name 'lxc'
-task dbs:run -- destroy --app-name 'lxc'
-```
-
-```text
-╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --install-completion          Install completion for the current shell.                                         │
-│ --show-completion             Show completion for the current shell, to copy it or customize the installation.  │
-│ --help                        Show this message and exit.                                                       │
-╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ──────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ create               Creates and sets up a new LXC container, installing favorites, and creating a service user │
-│ destroy              Destroys an existing LXC container.                                                        │
-│ dump-inventory       Dump the inventory to hosts.yaml                                                           │
-│ update-collections   Updates Ansible collections from requirements.                                             │
-│ update-facts         Updates facts for all managed hosts.                                                       │
-│ update-roles         Updates Ansible roles from requirements.                                                   │
-╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-```
-
-## Development Commands
-
-```
-task: Available tasks for this project:
-* build:all:               Build all pyprojects and the shared libraries for them
-* dbs:run:                 General alias for `poetry run python -m dasbootstrap` <command>
-* install:all:local:       Install all pyprojects to local .venv
-* tests:functional:        Runs all actions against a live proxmox server
-* tests:integration:       Runs molecule integration and pytest unit/integration tests
-* tools:bandit:            Run bandit
-* tools:ruff:check:        Run ruff
-* tools:ruff:format:       Format code
-```
 
 ## License
 

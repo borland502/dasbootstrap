@@ -154,22 +154,18 @@ rsync -avzPh "${DBS_SCROOT}/ansible/" "${ANSIBLE_HOME}/"
 
 source "${XDG_LIB_HOME}/functions.sh"
 
-# download has for a little validation flare
-# TODO: replace has with command -v check as most of the install will be in non-interactive shells
-brew install has
-
 bootstrap_ansible_node "${_user}"
 
 for program in "${BREW_LIST[@]}"; do
-  if ! has "${program}"; then
+  if ! [[ $(command -v "${program}") ]]; then
     brew install "${program}"
   fi
 done
 
-python --version 2>/dev/null | grep -q '^Python 3\.[0-9]\{1,2\}' || pyenv install "${PYTHON}"
+[[ "$(python --version 2>/dev/null)" == *"${PYTHON}"* ]] || pyenv install "${PYTHON}"
 
 for program in "${PIPX_LIST[@]}"; do
-  if ! has "${program}"; then
+  if ! [[ $(command -v "${program}") ]]; then
     pipx install "${program}"
   fi
 done

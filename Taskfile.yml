@@ -40,17 +40,18 @@ tasks:
     vars:
       KVM_HOST:
         sh: |
-           echo $(gum input --prompt="What is the hostname for the KVM template? " --placeholder "kvm")
+          echo $(gum input --prompt="What is the hostname for the KVM template? " --placeholder "kvm")
 
   create:lxc:
     desc: Create an LXC by hostname
     cmds:
       - |
-        {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name {{.LXC_HOST}}
+        {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name "{{ .LXC_HOST }}"
     vars:
       LXC_HOST:
         sh: |
-          echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
+          echo "$(find ~/.ansible/inventory/host_vars -name "*.yaml" -exec sh -c 'basename {} .yaml' \; | gum choose)"
+
 
   destroy:lxc:
     desc: Destroy an LXC by hostname

@@ -9,7 +9,7 @@
     ]
     readme = "README.md"
     repository = "https://github.com/borland502/dasbootstrap"
-    version = "0.2.2"
+    version = "0.2.3"
 
     # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
 

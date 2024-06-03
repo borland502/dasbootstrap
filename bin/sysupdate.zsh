@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-if [[ $(command -v apt) ]]; then
+if has apt; then
     sudo apt update && sudo apt dist-upgrade -y
 fi
 
@@ -21,11 +21,6 @@ if [[ $(command -v npm) ]]; then
     npm install -g npm
 fi
 
-if [[ $(command -v pip3) ]]; then
-    # Python3 updates (will error if you have nothing to update)
-    pip3 install -U $(pip3 freeze | awk '{split($0, a, "=="); print a[1]}')
-fi
-
 if [[ $(command -v tldr) ]]; then
     # misc updates
     tldr --update
@@ -36,6 +31,6 @@ if [[ -x "$(command -v softwareupdate)" ]]; then
     softwareupdate --all --install --force
 fi
 
-if [[ "$(command -v zi)" ]]; then
-    zi update --all
+if [[ "$(command -v zinit)" ]]; then
+    zinit update --all
 fi

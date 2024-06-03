@@ -5,10 +5,10 @@
 
 # Fallback action in case the install is interrupted after root phase is done
 if [[ $USER == "root" ]] && [[ -f '/root/.rootfinished' ]]; then
-  # presume sudo powers at this point
-  _username="$(cat /root/.rootfinished)"
-  exec su - "${_username}" "/home/${_username}/$(basename "$0")" -- "$@" \
-   || (echo "could not change to user ${_username}.  Exiting" && exit 2)
+    # presume sudo powers at this point
+    _username="$(cat /root/.rootfinished)"
+    exec su - "${_username}" "/home/${_username}/$(basename "$0")" -- "$@" \
+    || (echo "could not change to user ${_username}.  Exiting" && exit 2)
 fi
 
 # @description Helper function for ensurePackageInstalled for Debian installations
@@ -32,7 +32,7 @@ function ensurePackageInstalled() {
     export CAN_USE_SUDO='true'
     # TODO: Restore other types later
     if ! [[ $(command -v "$1" ) ]]; then
-      ensureDebianPackageInstalled "$1"
+        ensureDebianPackageInstalled "$1"
     fi
 }
 
@@ -41,10 +41,10 @@ function ensurePackageInstalled() {
 # can only be invoked by non-root users.
 function create_sudo_user(){
     local _username=${1:-'ansible'}
-
+    
     ensurePackageInstalled "sudo"
     ensurePackageInstalled "zsh"
-
+    
     if [ -z "$NO_INSTALL_HOMEBREW" ] && [ "$USER" == "root" ] && [ -z "$INIT_CWD" ] && type useradd &> /dev/null; then
         # shellcheck disable=SC2016
         logger info "Running as root - creating separate user named ${_username} to run script with"
@@ -54,21 +54,21 @@ function create_sudo_user(){
             # shellcheck disable=SC2016
             logger info "User ${_username} already exists"
         fi
-
+        
         cp "$0" "/home/${_username}/$(basename "$0")"
         chown "${_username}:${_username}" "/home/${_username}/$(basename "$0")"
-
+        
         # use gum before chezmoi engages to ask for the age key
-        mkdir -p "/home/${_username}/.config/keepass"
+        mkdir -p "/home/${_username}/.config/trapper_keeper"
         gum input --placeholder "Enter the age private key: " | tr -d '\n' >\
-         "/home/${_username}/.config/keepass/key.txt"
-
-        mkdir -p "/home/${_username}/.local/state/keepass"
+        "/home/${_username}/.config/trapper_keeper/key.txt"
+        
+        mkdir -p "/home/${_username}/.local/state/trapper_keeper"
         gum input --placeholder "Enter the keepassxc password: " | tr -d '\n' >\
-          "/home/${_username}/.local/state/keepass/keepass_token"
-
+        "/home/${_username}/.local/state/trapper_keeper/keepass_token"
+        
         chown -R "${_username}:${_username}" "/home/${_username}"
-
+        
         # shellcheck disable=SC2016
         logger info "Reloading the script with the ${_username} user"
         echo "${_username}" > /root/.rootfinished
@@ -86,15 +86,15 @@ ensurePackageInstalled gh
 ensurePackageInstalled python3-full
 
 if [[ $USER == "root" ]]; then
-  # Choose the user that will be in control
-  _user=$(gum choose {"ansible","$(whoami)"})
-
-  curl -L https://github.com/charmbracelet/gum/releases/download/v0.14.0/gum_0.14.0_amd64.deb \
+    # Choose the user that will be in control
+    _user=$(gum choose {"ansible","$(whoami)"})
+    
+    curl -L https://github.com/charmbracelet/gum/releases/download/v0.14.0/gum_0.14.0_amd64.deb \
     -o gum.deb
-  sudo dpkg -i gum.deb
-
-  # Create a quick and dirty service user then restart the script as that user
-  create_sudo_user "${_user}"
+    sudo dpkg -i gum.deb
+    
+    # Create a quick and dirty service user then restart the script as that user
+    create_sudo_user "${_user}"
 fi
 
 # Essential constants
@@ -147,9 +147,10 @@ fi
 # Ensure changes between working directory and mirror are sync'd
 unison -batch=true -ignore 'Path {.git,.venv,.task,.cache,.vscode,dist}' "${DBS_WORKING_DIR}/" "${DBS_SCROOT}/"
 
-# Copy all bin and lib files to their system homes
-rsync -avzPh "${DBS_SCROOT}/bin/" "${XDG_BIN_HOME}/"
-rsync -avzPh "${DBS_SCROOT}/lib/" "${XDG_LIB_HOME}/"
+# remove all the script links in bin / lib and establish them as hard links from the working directory
+cp -Ral "${DBS_SCROOT}/bin/" "${XDG_BIN_HOME}/"
+cp -Ral "${DBS_SCROOT}/lib/" "${XDG_LIB_HOME}/"
+
 rsync -avzPh "${DBS_SCROOT}/ansible/" "${ANSIBLE_HOME}/"
 
 source "${XDG_LIB_HOME}/functions.sh"
@@ -157,23 +158,23 @@ source "${XDG_LIB_HOME}/functions.sh"
 bootstrap_ansible_node "${_user}"
 
 for program in "${BREW_LIST[@]}"; do
-  if ! [[ $(command -v "${program}") ]]; then
-    brew install "${program}"
-  fi
+    if ! [[ $(command -v "${program}") ]]; then
+        brew install "${program}"
+    fi
 done
 
 [[ "$(python --version 2>/dev/null)" == *"${PYTHON}"* ]] || pyenv install "${PYTHON}"
 
 for program in "${PIPX_LIST[@]}"; do
-  if ! [[ $(command -v "${program}") ]]; then
-    pipx install "${program}"
-  fi
+    if ! [[ $(command -v "${program}") ]]; then
+        pipx install "${program}"
+    fi
 done
 
 if ! [[ -d "${XDG_DATA_HOME}/chezmoi" ]]; then
-  git clone --single-branch --branch=main https://github.com/borland502/dotfiles.git "${XDG_DATA_HOME}/chezmoi"
+    git clone --single-branch --branch=main https://github.com/borland502/dotfiles.git "${XDG_DATA_HOME}/chezmoi"
 else
-  git pull --autostash --force "${XDG_DATA_HOME}/chezmoi"
+    git pull --autostash --force "${XDG_DATA_HOME}/chezmoi"
 fi
 
 pyenv global "${PYTHON}"

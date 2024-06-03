@@ -52,7 +52,6 @@ tasks:
         sh: |
           echo "$(find ~/.ansible/inventory/host_vars -name "*.yaml" -exec sh -c 'basename {} .yaml' \; | gum choose)"
 
-
   destroy:lxc:
     desc: Destroy an LXC by hostname
     cmds:
@@ -148,7 +147,6 @@ tasks:
       - task: tools:bandit
       - task: tools:ruff:check
       - task: tools:ruff:format
-    cmds:
 
   update:
     desc: Update dasbootstrap and ansible dependencies

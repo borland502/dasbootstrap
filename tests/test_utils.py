@@ -1,5 +1,5 @@
 from shared.config.resources.paths import Directories
-from shared.config.utils import find_hosts, find_playbooks, find_yaml_files
+from utils.paths import find_yaml_files, find_playbooks, find_hosts
 
 
 class TestUtils:

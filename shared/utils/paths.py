@@ -2,7 +2,7 @@
 
 import os
 
-from .resources.paths import Directories
+from shared.config.resources.paths import Directories
 
 
 def find_yaml_files(path) -> list[str]:

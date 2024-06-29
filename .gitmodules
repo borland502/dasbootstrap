@@ -1,12 +1,4 @@
-[submodule "homebrew"]
-path = ansible/collections/ansible_collections/ansible-homebrew
-url = https://github.com/borland502/ansible-homebrew
-branch = master
 [submodule "technohouser"]
 path = ansible/collections/ansible_collections/technohouser
 url = https://github.com/borland502/technohouser
-branch = main
-[submodule "trapper_keeper"]
-path = pyprojects/trapper_keeper
-url = https://github.com/borland502/trapper-keeper
 branch = main

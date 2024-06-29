@@ -3,7 +3,7 @@ from pydantic import StrictInt,StrictStr
 from semaphore_api.models.inventory import Inventory
 from semaphore_api.api.project_api import InventoryRequest, Project
 
-from ..semaphore_client import SemaphoreActions
+from semaphore_client.semaphore_client import SemaphoreActions
 
 
 @pytest.fixture

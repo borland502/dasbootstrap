@@ -4,14 +4,19 @@
 
 ### From Taskfile / Ansible Node Example
 
+Install [Task](https://taskfile.dev/installation/)
+
 ```bash
-* install:           Install all pyprojects to local .venv
-* lint:              Runs linters
-* tests:             Runs linters, build, install, integration, and functional tests
-* update:            Update dasbootstrap and ansible dependencies
-* create:kvm:        Create a KVM by hostname
-* create:lxc:        Create an LXC by hostname
-* destroy:lxc:       Destroy an LXC by hostname
+* install:                      Install all pyprojects to local .venv
+* lint:                         Runs linters
+* test:                         Run unit tests
+* update:                       Update dasbootstrap and ansible dependencies
+* ansible:inventory:ldap:       Display inventory with the ansible ldap dynamic plugin
+* ansible:inventory:nmap:       Display inventory with the ansible nmap dynamic plugin
+* bin:system:update:            Update the local system
+* create:kvm:                   Create a KVM by hostname
+* create:lxc:                   Create an LXC by hostname
+* destroy:lxc:                  Destroy an LXC by hostname
 
 task create:lxc
 ```
@@ -34,18 +39,9 @@ Dasbootstrap is a loose wrapper around other efforts, including my own, to boots
 Even cowboy-style DevOps needs some focal points at least, and those are:
 
 1. Proxmox
-2. Terraform / Ansible / Python
-3. ZSH managed by Chezmoi
-
-## Languages
-
-The language used is primarily python and executed via ansible runners.  [Typer](https://github.com/tiangolo/typer) provides a quick and easy cli wrapper.
-
-## Design
-
-This project houses mostly templates with only the playbooks, collections, and roles executed locally.  Sensitive Inventory, Vars, etc are in ~/.ansible.  Each host var file has enough info in it to create the lxc/qemu container as well as the intended app to install afterwards.
-
-This project also checks out my dotfiles project and sets up that config with chezmoi
+2. Terraform / Ansible / Taskfile
+3. Python
+4. ZSH managed by Chezmoi
 
 ## License
 
@@ -53,6 +49,7 @@ MIT unless attributed to another author
 
 ## Links
 
+* [Taskfile.dev](https://taskfile.dev/installation/)
 * [Buluma Roles](https://galaxy.ansible.com/ui/repo/published/buluma/roles/docs/)
 * [Proxmox VE Helper-Scripts](https://tteck.github.io/Proxmox/)
 * [Robert Debock Roles](https://robertdebock.nl/ansible.html)

@@ -1,179 +1,198 @@
 version: "3"
 
 vars:
-  POETRY: poetry
-  PYTHON: python
-  PYTEST: pytest
-  PIP: pip
-  GH: gh
-  # The prefix to use when running dev commands
-  RUN_PREFIX: "{{.POETRY}} run"
-  PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
-  PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
-  BUILD_ALL_PREFIX: "{{.POETRY}} build-project"
-  PYTHON_PROJ_SRC: "./pyprojects/**/*.py"
-  PYTHON_SHARED_SRC: "./shared/**/*.py"
-  PYTHON_TMP_FOLDER: "../.prepare_dasbootstrap"
-  PYTHON_DIST: "./dist"
-  PYPROJECTS_VENV: "./venv/**/dasbootstrap/*"
-  # The python to use for running in the venv
-  VENV_PYTHON: "{{.RUN_PREFIX}} python"
-  RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
-  DASBOOTSTRAP_PREFIX: "{{.RUN_MODULE_PREFIX}} dasbootstrap"
-  CHEZMOI_HOME: ""
+    POETRY: poetry
+    PYTHON: python
+    PYTEST: pytest
+    PIP: pip
+    GH: gh
+    # The prefix to use when running dev commands
+    RUN_PREFIX: "{{.POETRY}} run"
+    PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
+    PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
+    BUILD_ALL_PREFIX: "{{.POETRY}} build-project"
+    PYTHON_PROJ_SRC: "./pyprojects/**/*.py"
+    PYTHON_SHARED_SRC: "./shared/**/*.py"
+    PYTHON_TMP_FOLDER: "../.prepare_dasbootstrap"
+    PYTHON_DIST: "./dist"
+    PYPROJECTS_VENV: "./venv/**/dasbootstrap/*"
+    # The python to use for running in the venv
+    VENV_PYTHON: "{{.RUN_PREFIX}} python"
+    RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
+    DASBOOTSTRAP_PREFIX: "{{.RUN_MODULE_PREFIX}} dasbootstrap"
+    TK_PREFIX: "{{.RUN_MODULE_PREFIX}} trapper_keeper"
+    RUN_UNITTEST_PREFIX: "{{.RUN_MODULE_PREFIX}} unittest discover ."
+    CHEZMOI_HOME: ""
+
+includes:
+    ansible:
+        taskfile: ./ansible/Taskfile.yml
+        dir: ./ansible
+    bin:
+        taskfile: ./bin/Taskfile.yml
+        dir: ./bin
 
 tasks:
-  default:
-    cmds:
-      - |
-        command -v brew >/dev/null || { echo "brew is mandatory for this to work, please install it"; exit 1; }
-        command -v gum >/dev/null|| brew install gum
+    default:
+        cmds:
+            - |
+                command -v brew >/dev/null || { echo "brew is mandatory for this to work, please install it"; exit 1; }
+                command -v gum >/dev/null|| brew install gum
 
-        selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
-        echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
+                selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
+                echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
 
-  create:kvm:
-    desc: Create a KVM by hostname
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} create-kvm --app-name {{.KVM_HOST}}
-    vars:
-      KVM_HOST:
-        sh: |
-          echo $(gum input --prompt="What is the hostname for the KVM template? " --placeholder "kvm")
+    bootstrap:
+        desc: This will execute an imperfect install of critical tools from untrusted sources
+        cmds:
+            - curl https://pyenv.run | bash
 
-  create:lxc:
-    desc: Create an LXC by hostname
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name "{{ .LXC_HOST }}"
-    vars:
-      LXC_HOST:
-        sh: |
-          echo "$(find ~/.ansible/inventory/host_vars -name "*.yaml" -exec sh -c 'basename {} .yaml' \; | gum choose)"
 
-  destroy:lxc:
-    desc: Destroy an LXC by hostname
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} destroy --app-name {{.LXC_HOST}}
-    vars:
-      LXC_HOST:
-        sh: |
-          echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
+    create:kvm:
+        desc: Create a KVM by hostname
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} create-kvm --app-name {{.KVM_HOST}}
+        vars:
+            KVM_HOST:
+                sh: |
+                    echo $(gum input --prompt="What is the hostname for the KVM template? " --placeholder "kvm")
 
-  dump-inventory:
-    internal: true
-    desc: Dump the available ansible dynamic sources to a static hosts.yaml
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} dump-inventory
+    create:lxc:
+        desc: Create an LXC by hostname
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name "{{ .LXC_HOST }}"
+        vars:
+            LXC_HOST:
+                sh: |
+                    echo "$(find ~/.ansible/inventory/host_vars -name "*.yaml" -exec sh -c 'basename {} .yaml' \; | gum choose)"
 
-  update-collections:
-    internal: true
-    desc: Update the available ansible collections using ~/.ansible/collections/requirements.yml
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} update-collections
+    destroy:lxc:
+        desc: Destroy an LXC by hostname
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} destroy --app-name {{.LXC_HOST}}
+        vars:
+            LXC_HOST:
+                sh: |
+                    echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
 
-  update-roles:
-    internal: true
-    desc: Update the available ansible roles using ~/.ansible/roles/requirements.yml
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} update-roles
+    dump-inventory:
+        internal: true
+        desc: Dump the available ansible dynamic sources to a static hosts.yaml
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} dump-inventory
 
-  update-facts:
-    internal: true
-    desc: Update ansible facts
-    cmds:
-      - |
-        {{.DASBOOTSTRAP_PREFIX}} update-facts
+    update-collections:
+        internal: true
+        desc: Update the available ansible collections using ~/.ansible/collections/requirements.yml
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} update-collections
 
-  tools:ruff:check:
-    internal: true
-    desc: Run ruff
-    cmds:
-      - "{{.RUN_PREFIX}} ruff check {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --fix"
+    update-roles:
+        internal: true
+        desc: Update the available ansible roles using ~/.ansible/roles/requirements.yml
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} update-roles
 
-  tools:ruff:format:
-    internal: true
-    desc: Format code
-    cmds:
-      - "{{.RUN_PREFIX}} ruff format {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --line-length 128 --target-version py311"
+    update-facts:
+        internal: true
+        desc: Update ansible facts
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} update-facts
 
-  tools:bandit:
-    internal: true
-    desc: Run bandit
-    cmds:
-      - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
+    tools:ruff:check:
+        internal: true
+        desc: Run ruff
+        cmds:
+            - "{{.RUN_PREFIX}} ruff check {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --fix"
 
-  build:clean:
-    internal: true
-    desc: Clean build directories
-    cmds:
-      - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
-      - "rm -rf {{.PYTHON_DIST}}"
+    tools:ruff:format:
+        internal: true
+        desc: Format code
+        cmds:
+            - "{{.RUN_PREFIX}} ruff format {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --line-length 128 --target-version py311"
 
-  build:all:
-    internal: true
-    desc: Build all pyprojects and the shared libraries for them
-    cmds:
-      - "{{.BUILD_ALL_PREFIX}}"
+    tools:bandit:
+        internal: true
+        desc: Run bandit
+        cmds:
+            - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
 
-  tests:integration:
-    internal: true
-    deps:
-      - task: lint
-    desc: Runs molecule integration and pytest unit/integration tests
-    cmds:
-      - "{{.PYTEST_PREFIX}}"
+    build:clean:
+        internal: true
+        desc: Clean build directories
+        cmds:
+            - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
+            - "rm -rf {{.PYTHON_DIST}}"
 
-  tests:functional:
-    internal: true
-    desc: Runs all actions against a live proxmox server
-    deps:
-      - task: install
-    cmds:
-      - task: tests:integration
-      - task: update
-      - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
-      - "{{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name lxc"
-      - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
+    build:all:
+        internal: true
+        desc: Build all pyprojects and the shared libraries for them
+        cmds:
+            - "{{.BUILD_ALL_PREFIX}}"
 
-  lint:
-    desc: Runs linters
-    deps:
-      - task: tools:bandit
-      - task: tools:ruff:check
-      - task: tools:ruff:format
+    tests:integration:
+        internal: true
+        deps:
+            -   task: lint
+        desc: Runs molecule integration and pytest unit/integration tests
+        cmds:
+            - "{{.PYTEST_PREFIX}}"
 
-  update:
-    desc: Update dasbootstrap and ansible dependencies
-    sources:
-      - "{{.HOME}}/.ansible/collections/requirements.yml"
-      - "{{.HOME}}/.ansible/roles/requirements.yml"
-    generates:
-      - "{{.HOME}}/.ansible/collections/**/*.yml"
-      - "{{.HOME}}/.ansible/collections/**/*.yaml"
-      - "{{.HOME}}/.ansible/roles/**/*.yaml"
-      - "{{.HOME}}/.anbile/roles/**/*.yml"
-    deps:
-      - task: update-roles
-      - task: update-facts
-      - task: update-collections
-    cmds:
-      - task: dump-inventory
+    tests:functional:
+        internal: true
+        desc: Runs all actions against a live proxmox server
+        deps:
+            -   task: install
+        cmds:
+            -   task: tests:integration
+            -   task: update
+            - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
+            - "{{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name lxc"
+            - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
 
-  install:
-    desc: Install all pyprojects to local .venv
-    deps:
-      - task: build:clean
-    cmds:
-      - task: build:all
-      - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
+    lint:
+        desc: Runs linters
+        deps:
+            -   task: tools:bandit
+            -   task: tools:ruff:check
+            -   task: tools:ruff:format
 
-  tests:
-    desc: Runs linters, build, install, integration, and functional tests
-    cmds:
-      - task: tests:functional
+    update:
+        desc: Update dasbootstrap and ansible dependencies
+        sources:
+            - "{{.HOME}}/.ansible/collections/requirements.yml"
+            - "{{.HOME}}/.ansible/roles/requirements.yml"
+        generates:
+            - "{{.HOME}}/.ansible/collections/**/*.yml"
+            - "{{.HOME}}/.ansible/collections/**/*.yaml"
+            - "{{.HOME}}/.ansible/roles/**/*.yaml"
+            - "{{.HOME}}/.anbile/roles/**/*.yml"
+        deps:
+            -   task: update-roles
+            -   task: update-facts
+            -   task: update-collections
+        cmds:
+            -   task: dump-inventory
+
+    install:
+        desc: Install all pyprojects to local .venv
+        deps:
+            -   task: build:clean
+        cmds:
+            -   task: build:all
+            - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
+
+    test:
+        desc: Run unit tests
+        deps:
+            -   task: build:all
+            -   task: tools:ruff:format
+        cmds:
+            - "{{.RUN_UNITTEST_PREFIX}}"

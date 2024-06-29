@@ -5,7 +5,8 @@
     name = "dasbootstrap"
     packages = [
         { include = "**/*", from = "shared" },
-        { include = "**/*", from = "pyprojects" }
+        { include = "**/*", from = "pyprojects" },
+        { include = "*.py", from = "bin" }
     ]
     readme = "README.md"
     repository = "https://github.com/borland502/dasbootstrap"
@@ -126,10 +127,8 @@
         "**/tests",
     ]
     include = [
-        "pyprojects/dasbootstrap",
-        "pyprojects/semaphore_client",
-        "shared/config",
-        "shared/utils",
+        "pyprojects/**",
+        "shared/**",
     ]
 
     defineConstant = { DEBUG = true }
@@ -199,14 +198,17 @@
     uvicorn = { extras = ["standard"], version = ">=0.29.0" }
     wheel = "0.42.0"
     xdg-base-dirs = "^6.0.1"
+boltdb = "^0.0.2"
+pykeepass = "^4.1.0"
+pandas = "^2.2.2"
+streamlit = "^1.36.0"
+streamlit-extras = "^0.4.3"
+xkcdpass = "^1.19.9"
+zstandard = "^0.22.0"
+filelock = "^3.15.4"
 
 [tool.poetry.group.dev.dependencies]
-    argparse = "1.4.0"
     bandit = "^1.7.8"
-    docker = "7.0.0"
-    fastapi = { extras = ["all"], version = ">=0.110.1" }
-    jmespath = "1.0.1"
-    jq = "1.6.0"
     molecule = "6.0.3"
     molecule-containers = "^2.0.0"
     molecule-plugins = { extras = ["docker"], version = "^23.5.0" }
@@ -221,10 +223,9 @@
     pytest-srcpaths = "^1.2.1"
     pytest-xdist = ">=3.5.0"
     pyupgrade = "^3.15.2"
-    requests = "2.31.0"
     sansldap = "0.1.0"
-    typer = "^0.12.3"
     virtualenv-pyenv = "^0.4.0"
+faker = "^26.0.0"
 
 [build-system]
     build-backend = "poetry.core.masonry.api"

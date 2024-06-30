@@ -24,14 +24,6 @@ vars:
     RUN_UNITTEST_PREFIX: "{{.RUN_MODULE_PREFIX}} unittest discover ."
     CHEZMOI_HOME: ""
 
-includes:
-    ansible:
-        taskfile: ./ansible/Taskfile.yml
-        dir: ./ansible
-    bin:
-        taskfile: ./bin/Taskfile.yml
-        dir: ./bin
-
 tasks:
     default:
         cmds:

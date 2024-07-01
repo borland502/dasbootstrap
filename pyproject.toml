@@ -226,6 +226,7 @@ filelock = "^3.15.4"
     sansldap = "0.1.0"
     virtualenv-pyenv = "^0.4.0"
 faker = "^26.0.0"
+poetry = "^1.8.3"
 
 [build-system]
     build-backend = "poetry.core.masonry.api"

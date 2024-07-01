@@ -6,23 +6,26 @@ vars:
     PYTEST: pytest
     PIP: pip
     GH: gh
+
+    DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/dasbootstrap"
+    VENV_POETRY: "{{.XDG_DATA_HOME}}/dasbootstrap/.venv/bin/poetry"
     # The prefix to use when running dev commands
-    RUN_PREFIX: "{{.POETRY}} run"
+    RUN_PREFIX: "{{.VENV_POETRY}} run"
+    VENV_PYTHON: "{{.RUN_PREFIX}} {{.XDG_DATA_HOME}}/dasbootstrap/.venv/bin/python"
+
+
     PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
     PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
-    BUILD_ALL_PREFIX: "{{.POETRY}} build-project"
-    PYTHON_PROJ_SRC: "./pyprojects/**/*.py"
-    PYTHON_SHARED_SRC: "./shared/**/*.py"
-    PYTHON_TMP_FOLDER: "../.prepare_dasbootstrap"
-    PYTHON_DIST: "./dist"
-    PYPROJECTS_VENV: "./venv/**/dasbootstrap/*"
-    # The python to use for running in the venv
-    VENV_PYTHON: "{{.RUN_PREFIX}} python"
-    RUN_MODULE_PREFIX: "{{.RUN_PREFIX}} {{.PYTHON}} -m"
+    BUILD_ALL_PREFIX: "{{.VENV_POETRY}} build"
+    PYTHON_PROJ_SRC: "{{.DASBOOTSTRAP_HOME}}/pyprojects/**/*.py"
+    PYTHON_SHARED_SRC: "{{.DASBOOTSTRAP_HOME}}/shared/**/*.py"
+    PYTHON_TMP_FOLDER: "{{.DASBOOTSTRAP_HOME}}/.prepare_dasbootstrap"
+    PYTHON_DIST: "{{.DASBOOTSTRAP_HOME}}/dist"
+    PYPROJECTS_VENV: "{{.DASBOOTSTRAP_HOME}}/venv/**/dasbootstrap/*"
+    RUN_MODULE_PREFIX: "{{.VENV_PYTHON}} -m"
     DASBOOTSTRAP_PREFIX: "{{.RUN_MODULE_PREFIX}} dasbootstrap"
     TK_PREFIX: "{{.RUN_MODULE_PREFIX}} trapper_keeper"
     RUN_UNITTEST_PREFIX: "{{.RUN_MODULE_PREFIX}} unittest discover ."
-    CHEZMOI_HOME: ""
 
 tasks:
     default:
@@ -33,12 +36,6 @@ tasks:
 
                 selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
                 echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
-
-    bootstrap:
-        desc: This will execute an imperfect install of critical tools from untrusted sources
-        cmds:
-            - curl https://pyenv.run | bash
-
 
     create:kvm:
         desc: Create a KVM by hostname
@@ -150,7 +147,7 @@ tasks:
             - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
 
     lint:
-        desc: Runs linters
+        desc: Runs linters for dasbootstrap project
         deps:
             -   task: tools:bandit
             -   task: tools:ruff:check
@@ -184,7 +181,7 @@ tasks:
     test:
         desc: Run unit tests
         deps:
-            -   task: build:all
-            -   task: tools:ruff:format
+            - task: build:all
+            - task: tools:ruff:format
         cmds:
             - "{{.RUN_UNITTEST_PREFIX}}"

@@ -83,6 +83,7 @@ ensurePackageInstalled rsync
 ensurePackageInstalled unison
 ensurePackageInstalled gh
 ensurePackageInstalled python3-full
+ensurePackageInstalled pipx
 
 if [[ $USER == "root" ]]; then
     # Choose the user that will be in control
@@ -150,7 +151,7 @@ export PYENV_ROOT="$HOME/.pyenv"
 [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 
-[[ "$(python --version 2>/dev/null)" == *"${PYTHON}"* ]] || sudo pyenv install "${PYTHON}"
+#[[ "$(python --version 2>/dev/null)" == *"${PYTHON}"* ]] || sudo pyenv install "${PYTHON}"
 
 # TODO: Copy over command files
 find "${DBS_SCROOT}/bin" -name '*.sh' -exec cp {} "${XDG_BIN_HOME}/" \;
@@ -197,4 +198,4 @@ cd "${XDG_DATA_HOME}/chezmoi" || (echo "Could not cd into ${XDG_DATA_HOME}/chezm
 poetry install
 
 chezmoi init
-poetry run chezmoi apply
+chezmoi apply

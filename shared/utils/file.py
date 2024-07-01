@@ -34,9 +34,8 @@ def pack(src_dir: Path, out_file: Path | str, compression_type: CompressionTypes
   match compression_type:
     case CompressionTypes.ZSTD:
       cctx = zstd.ZstdCompressor(level=3, write_checksum=True, write_content_size=True, threads=-1)
-      with open(f"{src_dir_pth}.tar", "rb") as tar_file:
-        with open(out_file_pth, "xb") as zstd_file:
-          zstd_file.write(cctx.compress(tar_file.read()))
+      with open(f"{src_dir_pth}.tar", "rb") as tar_file, open(out_file_pth, "xb") as zstd_file:
+        zstd_file.write(cctx.compress(tar_file.read()))
       os.remove(f"{src_dir_pth}.tar")
     case CompressionTypes.ZIP:
       raise NotImplementedError
@@ -45,7 +44,8 @@ def pack(src_dir: Path, out_file: Path | str, compression_type: CompressionTypes
 
 
 def unpack(in_file: Path | str, out_dir: Path | str, compression_type: CompressionTypes = CompressionTypes.ZSTD):
-  """:param out_dir:
+  """
+  :param out_dir:
   :param in_file:
   :param compression_type:
   :return:
@@ -72,10 +72,12 @@ def unpack(in_file: Path | str, out_dir: Path | str, compression_type: Compressi
 
 
 def zip_files(*files: Path) -> BytesIO:
-  with tempfile.NamedTemporaryFile() as temp_file:
-    with zipfile.ZipFile(temp_file.name, mode="w") as zip_file:
-      for file in files:
-        zip_file.write(file)
+  with (
+    tempfile.NamedTemporaryFile() as temp_file,
+    zipfile.ZipFile(temp_file.name, mode="w") as zip_file,
+  ):
+    for file in files:
+      zip_file.write(file)
     # Read the temporary ZIP file into BytesIO
     with open(temp_file.name, "rb") as f:
       data = BytesIO(f.read())

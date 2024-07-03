@@ -7,21 +7,21 @@ vars:
     PIP: pip
     GH: gh
 
-    DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/dasbootstrap"
-    VENV_POETRY: "{{.XDG_DATA_HOME}}/dasbootstrap/.venv/bin/poetry"
+    DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/automation/dasbootstrap"
+    VENV_POETRY: "{{.DASBOOTSTRAP_HOME}}/.venv/bin/poetry"
     # The prefix to use when running dev commands
     RUN_PREFIX: "{{.VENV_POETRY}} run"
-    VENV_PYTHON: "{{.RUN_PREFIX}} {{.XDG_DATA_HOME}}/dasbootstrap/.venv/bin/python"
-
+    VENV_PYTHON: "{{.RUN_PREFIX}} {{.DASBOOTSTRAP_HOME}}/.venv/bin/python"
+    VENV_PACKAGES: "{{.DASBOOTSTRAP_HOME}}/.venv/lib/python3.12/site-packages/dasbootstrap"
 
     PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
     PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
-    BUILD_ALL_PREFIX: "{{.VENV_POETRY}} build"
+    BUILD_ALL_PREFIX: "{{.VENV_POETRY}} build-project"
     PYTHON_PROJ_SRC: "{{.DASBOOTSTRAP_HOME}}/pyprojects/**/*.py"
     PYTHON_SHARED_SRC: "{{.DASBOOTSTRAP_HOME}}/shared/**/*.py"
     PYTHON_TMP_FOLDER: "{{.DASBOOTSTRAP_HOME}}/.prepare_dasbootstrap"
     PYTHON_DIST: "{{.DASBOOTSTRAP_HOME}}/dist"
-    PYPROJECTS_VENV: "{{.DASBOOTSTRAP_HOME}}/venv/**/dasbootstrap/*"
+    PYPROJECTS_VENV: "{{.DASBOOTSTRAP_HOME}}/.venv/**/dasbootstrap/*"
     RUN_MODULE_PREFIX: "{{.VENV_PYTHON}} -m"
     DASBOOTSTRAP_PREFIX: "{{.RUN_MODULE_PREFIX}} dasbootstrap"
     TK_PREFIX: "{{.RUN_MODULE_PREFIX}} trapper_keeper"
@@ -49,6 +49,8 @@ tasks:
 
     create:lxc:
         desc: Create an LXC by hostname
+        deps:
+            - task: install
         cmds:
             - |
                 {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name "{{ .LXC_HOST }}"
@@ -95,36 +97,37 @@ tasks:
             - |
                 {{.DASBOOTSTRAP_PREFIX}} update-facts
 
-    tools:ruff:check:
-        internal: true
+    ruff:check:
         desc: Run ruff
         cmds:
             - "{{.RUN_PREFIX}} ruff check {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --fix"
 
-    tools:ruff:format:
-        internal: true
+    ruff:format:
         desc: Format code
         cmds:
             - "{{.RUN_PREFIX}} ruff format {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --line-length 128 --target-version py311"
 
-    tools:bandit:
+    bandit:
         internal: true
         desc: Run bandit
         cmds:
             - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
 
     build:clean:
-        internal: true
         desc: Clean build directories
         cmds:
             - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
             - "rm -rf {{.PYTHON_DIST}}"
 
     build:all:
-        internal: true
         desc: Build all pyprojects and the shared libraries for them
         cmds:
             - "{{.BUILD_ALL_PREFIX}}"
+        sources:
+            - "{{.PYTHON_PROJ_SRC}}"
+            - "{{.PYTHON_SHARED_SRC}}"
+        generates:
+            - "{{.VENV_PACKAGES}}"
 
     tests:integration:
         internal: true
@@ -149,9 +152,9 @@ tasks:
     lint:
         desc: Runs linters for dasbootstrap project
         deps:
-            -   task: tools:bandit
-            -   task: tools:ruff:check
-            -   task: tools:ruff:format
+            - task: bandit
+            - task: ruff:check
+            - task: ruff:format
 
     update:
         desc: Update dasbootstrap and ansible dependencies
@@ -164,24 +167,38 @@ tasks:
             - "{{.HOME}}/.ansible/roles/**/*.yaml"
             - "{{.HOME}}/.anbile/roles/**/*.yml"
         deps:
-            -   task: update-roles
-            -   task: update-facts
-            -   task: update-collections
+            - task: update-roles
+            - task: update-facts
+            - task: update-collections
         cmds:
-            -   task: dump-inventory
+            - task: dump-inventory
 
     install:
         desc: Install all pyprojects to local .venv
-        deps:
-            -   task: build:clean
+        sources:
+           - "{{.PYTHON_PROJ_SRC}}"
+           - "{{.PYTHON_SHARED_SOURCE}}"
+        generates:
+            - "{{.VENV_PACKAGES}}"
         cmds:
-            -   task: build:all
+            - task: build:all
             - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
+        dir: "{{.DASBOOTSTRAP_HOME}}"
 
     test:
         desc: Run unit tests
         deps:
             - task: build:all
-            - task: tools:ruff:format
+            - task: ruff:format
         cmds:
             - "{{.RUN_UNITTEST_PREFIX}}"
+
+    test:all:
+        desc: Run unit, integration, and functional tests
+        deps:
+            - task: build:all
+            - task: ruff:format
+        cmds:
+            - task: test
+            - task: tests:integration
+            - task: tests:functional

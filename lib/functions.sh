@@ -13,3 +13,8 @@ source "${XDG_LIB_HOME}/logger.sh"
 source "${XDG_LIB_HOME}/install_doctor_functions.sh"
 # shellcheck disable=SC1090
 source "${XDG_LIB_HOME}/util_functions.sh"
+
+## lib scripts provided by chezmoi, which may or may not be present
+if [[ -f "${XDG_LIB_HOME}/fzf-git.sh" ]]; then
+    source "${XDG_LIB_HOME}/fzf-git.sh"
+fi

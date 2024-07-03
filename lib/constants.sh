@@ -34,6 +34,6 @@ if [[ -f "${HOME}/.env" ]]; then
   export_from "${HOME}/.env"
 fi
 
-declare -ax BREW_LIST=(age atuin chezmoi curl direnv eza fd fzf gcc gcc@11 git gh gum jq ncdu nmap prettyping pyenv)
-BREW_LIST+=(pipx poetry rsync rg sd sshpass starship tldr unison vim yq zinit zsh)
-declare -ax PIPX_LIST=(ansible ansible-lint)
+declare -ax BREW_LIST=(age ansible atuin bat chezmoi curl direnv eza fd fzf gcc gcc@11 git gh go-task gum jq ncdu nmap)
+BREW_LIST+=(prettyping pyenv pipx poetry rsync rg sd sshpass starship tldr unison vim yq zinit zsh)
+declare -ax PIPX_LIST=(ansible-lint)

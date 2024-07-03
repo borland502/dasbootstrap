@@ -70,7 +70,6 @@ tasks:
                     echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
 
     dump-inventory:
-        internal: true
         desc: Dump the available ansible dynamic sources to a static hosts.yaml
         cmds:
             - |

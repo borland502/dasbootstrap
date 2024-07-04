@@ -8,15 +8,14 @@ vars:
     GH: gh
 
     DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/automation/dasbootstrap"
-    VENV_POETRY: "{{.DASBOOTSTRAP_HOME}}/.venv/bin/poetry"
     # The prefix to use when running dev commands
-    RUN_PREFIX: "{{.VENV_POETRY}} run"
-    VENV_PYTHON: "{{.RUN_PREFIX}} {{.DASBOOTSTRAP_HOME}}/.venv/bin/python"
+    RUN_PREFIX: "{{.POETRY}} run"
+    VENV_PYTHON: "{{.RUN_PREFIX}} python"
     VENV_PACKAGES: "{{.DASBOOTSTRAP_HOME}}/.venv/lib/python3.12/site-packages/dasbootstrap"
 
     PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
     PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
-    BUILD_ALL_PREFIX: "{{.VENV_POETRY}} build-project"
+    BUILD_ALL_PREFIX: "{{.POETRY}} build"
     PYTHON_PROJ_SRC: "{{.DASBOOTSTRAP_HOME}}/pyprojects/**/*.py"
     PYTHON_SHARED_SRC: "{{.DASBOOTSTRAP_HOME}}/shared/**/*.py"
     PYTHON_TMP_FOLDER: "{{.DASBOOTSTRAP_HOME}}/.prepare_dasbootstrap"

@@ -4,13 +4,17 @@ from config.resources.paths import OperatingSystemFiles
 from typer import Option, Typer
 from utils.ssh import HostKeysUtils
 
-from dasbootstrap.ansible_commands import Actions
+from dasbootstrap.ansible_commands import Actions, Plays
 
 app = Typer()
 
 
 @app.command()
-def create_kvm(app_name: str = Option("kvm", help="Virtual machine to manage (defaults to kvm)")):
+def create_kvm(
+    app_name: str = Option(
+        "kvm", help="Virtual machine to manage (defaults to kvm)"
+    ),
+):
     """Create and set up a new KVM using debian by default."""
     actions = Actions(app_name)
     actions.create_kvm()
@@ -24,7 +28,11 @@ def create_kvm(app_name: str = Option("kvm", help="Virtual machine to manage (de
 
 
 @app.command()
-def create_lxc(app_name: str = Option("lxc", help="Application to manage (defaults to lxc)")):
+def create_lxc(
+    app_name: str = Option(
+        "lxc", help="Application to manage (defaults to lxc)"
+    ),
+):
     """Create and set up a new LXC container, installing favorites, and creating a service user."""
     actions = Actions(app_name)
     actions.create_lxc()
@@ -38,7 +46,11 @@ def create_lxc(app_name: str = Option("lxc", help="Application to manage (defaul
 
 
 @app.command()
-def destroy(app_name: str = Option("lxc", help="Application to manage (defaults to lxc)")):
+def destroy(
+    app_name: str = Option(
+        "lxc", help="Application to manage (defaults to lxc)"
+    ),
+):
     """Destroy an existing LXC container."""
     actions = Actions(app_name)
     actions.destroy_lxc()
@@ -48,6 +60,14 @@ def destroy(app_name: str = Option("lxc", help="Application to manage (defaults 
 def update_facts():
     """Update facts for all managed hosts."""
     Actions.update_facts()
+
+
+@app.command()
+def update_containers(
+    user: str = Option("user", help="Ansible user to run playbook under"),
+):
+    """Update Ansible containers from requirements."""
+    Plays.update_containers(user=user)
 
 
 @app.command()

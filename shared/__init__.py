@@ -1,1 +1,0 @@
-"""Monorepo shared code."""

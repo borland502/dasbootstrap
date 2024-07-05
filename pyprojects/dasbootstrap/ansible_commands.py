@@ -5,14 +5,48 @@ import os
 import ansible_runner
 from utils.paths import find_playbook
 
-from shared.config.resources.paths import Directories, Inventory, Requirements, Variables
+from shared.config.resources.paths import (
+    Directories,
+    Inventory,
+    Requirements,
+    Variables,
+)
 
-INVENTORY: list[str] = ["-i", str(Directories.IHOME)]
+INVENTORY: list[str] = ["-i", str(Directories.IHOME + "/hosts.yaml")]
 # TODO: Validate vars
 VARS: list[str] = [
     *INVENTORY,
-    *["-e", "@" + str(Variables.ALL_VARS), "-e", "@" + str(Variables.ALL_LXC_VARS), "-e", "@" + str(Variables.ALL_KVM_VARS)],
+    *[
+        "-e",
+        "@" + str(Variables.ALL_VARS),
+        "-e",
+        "@" + str(Variables.ALL_LXC_VARS),
+        "-e",
+        "@" + str(Variables.ALL_KVM_VARS),
+    ],
 ]
+
+
+class Plays:
+    """
+    Class for running playbooks.
+
+    """
+
+    # TODO: Gather playbooks and present a list
+    @classmethod
+    def update_containers(cls, user: str):
+        """Update all LXC & KVM containers."""
+        ansible_runner.run_command(
+            executable_cmd="ansible-playbook",
+            project_dir=Directories.PBROOT,
+            cmdline_args=[
+                "ansible/playbooks/maintainence/pkg-update.yaml",
+                *VARS,
+                "--user",
+                user,
+            ],
+        )
 
 
 class Actions:
@@ -34,7 +68,15 @@ class Actions:
 
         ansible_runner.run_command(
             executable_cmd="ansible-inventory",
-            cmdline_args=["all", "--export", "--list", "--yaml", *VARS, "--output", str(Inventory.STATIC_HOSTS)],
+            cmdline_args=[
+                "all",
+                "--export",
+                "--list",
+                "--yaml",
+                *VARS,
+                "--output",
+                str(Inventory.STATIC_HOSTS),
+            ],
         )
 
     def create_kvm(self):
@@ -154,7 +196,15 @@ class Actions:
         """
         ansible_runner.run_command(
             executable_cmd="ansible-inventory",
-            cmdline_args=["all", "--export", "--list", "--yaml", *VARS, "--output", str(Inventory.STATIC_HOSTS)],
+            cmdline_args=[
+                "all",
+                "--export",
+                "--list",
+                "--yaml",
+                *VARS,
+                "--output",
+                str(Inventory.STATIC_HOSTS),
+            ],
         )
 
     @classmethod
@@ -190,7 +240,13 @@ class Actions:
         """
         ansible_runner.run_command(
             executable_cmd="ansible-galaxy",
-            cmdline_args=["role", "install", "-r", str(Requirements.ROLES_REQS), "--force"],
+            cmdline_args=[
+                "role",
+                "install",
+                "-r",
+                str(Requirements.ROLES_REQS),
+                "--force",
+            ],
         )
 
     @classmethod
@@ -216,6 +272,8 @@ class Actions:
                     os.remove(file_path)
                 except OSError as e:
                     print(f"Error deleting file {file_path}: {e}")
-            print(f"Contents of Ansible cache directory '{Directories.CHOME}' erased successfully.")
+            print(
+                f"Contents of Ansible cache directory '{Directories.CHOME}' erased successfully."
+            )
         else:
             print("Ansible cache directory not found.")

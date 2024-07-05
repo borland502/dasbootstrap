@@ -5,6 +5,7 @@ import zipfile
 from enum import StrEnum, auto
 from io import BytesIO
 from pathlib import Path
+from typing import IO
 
 import zstandard as zstd
 
@@ -70,17 +71,15 @@ def unpack(in_file: Path | str, out_dir: Path | str, compression_type: Compressi
             raise TypeError(f"{compression_type} is not implemented")
 
 
-def zip_files(*files: Path) -> BytesIO:
+def zip_files(*files: Path) -> Path:
     with (
-        tempfile.NamedTemporaryFile() as temp_file,
+        tempfile.NamedTemporaryFile(delete=False, delete_on_close=False) as temp_file,
         zipfile.ZipFile(temp_file.name, mode="w") as zip_file,
     ):
         for file in files:
             zip_file.write(file)
-        # Read the temporary ZIP file into BytesIO
-        with open(temp_file.name, "rb") as f:
-            data = BytesIO(f.read())
-        return data
+
+        return Path(temp_file.name)
 
 
 def ensure_path(*files: Path) -> bool:

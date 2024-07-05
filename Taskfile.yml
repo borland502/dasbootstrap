@@ -1,23 +1,34 @@
 version: "3"
 
+dotenv:
+    - .envrc
+
 vars:
     POETRY: poetry
     PYTHON: python
     PYTEST: pytest
     PIP: pip
     GH: gh
+    STREAMLIT: streamlit
 
     DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/automation/dasbootstrap"
     # The prefix to use when running dev commands
     RUN_PREFIX: "{{.POETRY}} run"
+    ANSIBLE_PB_PREFIX: "{{.RUN_PREFIX}} ansible-playbook"
+    # The prefix to use when running streamlit commands
+    ST_RUN_PREFIX: "{{.RUN_PREFIX}} {{.STREAMLIT}} run"
+    # necessary if we've been in other poetry venvs and activated them manually
+    VENV_ACTIVATE: "if [[ $(command -v deactivate) ]]; then deactivate; fi; poetry shell"
     VENV_PYTHON: "{{.RUN_PREFIX}} python"
     VENV_PACKAGES: "{{.DASBOOTSTRAP_HOME}}/.venv/lib/python3.12/site-packages/dasbootstrap"
 
     PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
     PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
-    BUILD_ALL_PREFIX: "{{.POETRY}} build"
+    BUILD_ALL_PREFIX: "{{.POETRY}} build-project --with-top-namespace=dasbootstrap"
     PYTHON_PROJ_SRC: "{{.DASBOOTSTRAP_HOME}}/pyprojects/**/*.py"
     PYTHON_SHARED_SRC: "{{.DASBOOTSTRAP_HOME}}/shared/**/*.py"
+    PYTHON_ST_SRC: "{{.DASBOOTSTRAP_HOME}}/pages/**/*.py"
+    PYTHON_DASH_SRC: "{{.DASBOOTSTRAP_HOME}}/Home.py"
     PYTHON_TMP_FOLDER: "{{.DASBOOTSTRAP_HOME}}/.prepare_dasbootstrap"
     PYTHON_DIST: "{{.DASBOOTSTRAP_HOME}}/dist"
     PYPROJECTS_VENV: "{{.DASBOOTSTRAP_HOME}}/.venv/**/dasbootstrap/*"
@@ -35,6 +46,20 @@ tasks:
 
                 selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
                 echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
+
+    poetry:dbsshell:
+        desc: Switch to Dasbootstrap shell
+        cmds:
+            - "{{.VENV_ACTIVATE}}"
+
+    # TODO: Gather playbooks and present a list
+    update:containers:
+        deps:
+            - task: poetry:dbsshell
+            - task: install
+        desc: Update lxc and kvm containers
+        cmds:
+            - "{{.DASBOOTSTRAP_PREFIX}} update-containers --user ansible"
 
     create:kvm:
         desc: Create a KVM by hostname
@@ -117,20 +142,21 @@ tasks:
             - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
             - "rm -rf {{.PYTHON_DIST}}"
 
-    build:all:
+    build:
         desc: Build all pyprojects and the shared libraries for them
         cmds:
             - "{{.BUILD_ALL_PREFIX}}"
         sources:
             - "{{.PYTHON_PROJ_SRC}}"
             - "{{.PYTHON_SHARED_SRC}}"
-        generates:
-            - "{{.VENV_PACKAGES}}"
+            - "{{.PYTHON_ST_SRC}}"
+            - "{{.PYTHON_DASH_SRC}}"
+            - "bin/*.py"
 
     tests:integration:
         internal: true
         deps:
-            -   task: lint
+            - task: lint
         desc: Runs molecule integration and pytest unit/integration tests
         cmds:
             - "{{.PYTEST_PREFIX}}"
@@ -139,10 +165,10 @@ tasks:
         internal: true
         desc: Runs all actions against a live proxmox server
         deps:
-            -   task: install
+            - task: install
         cmds:
-            -   task: tests:integration
-            -   task: update
+            - task: tests:integration
+            - task: update
             - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
             - "{{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name lxc"
             - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
@@ -174,19 +200,19 @@ tasks:
     install:
         desc: Install all pyprojects to local .venv
         sources:
-           - "{{.PYTHON_PROJ_SRC}}"
-           - "{{.PYTHON_SHARED_SOURCE}}"
-        generates:
-            - "{{.VENV_PACKAGES}}"
+            - "{{.PYTHON_PROJ_SRC}}"
+            - "{{.PYTHON_SHARED_SOURCE}}"
+            - "{{.PYTHON_ST_SRC}}"
+            - "{{.PYTHON_DASH_SRC}}"
         cmds:
-            - task: build:all
+            - task: build
             - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
         dir: "{{.DASBOOTSTRAP_HOME}}"
 
     test:
         desc: Run unit tests
         deps:
-            - task: build:all
+            - task: build
             - task: ruff:format
         cmds:
             - "{{.RUN_UNITTEST_PREFIX}}"
@@ -194,9 +220,17 @@ tasks:
     test:all:
         desc: Run unit, integration, and functional tests
         deps:
-            - task: build:all
+            - task: build
             - task: ruff:format
         cmds:
             - task: test
             - task: tests:integration
             - task: tests:functional
+
+    run_app:
+        deps:
+            - install
+            - task: poetry:dbsshell
+        desc: Run Automation Station
+        cmds:
+            - "{{.ST_RUN_PREFIX}} Home.py"

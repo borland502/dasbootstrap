@@ -2,7 +2,7 @@
 
 # prevent chick/egg problem on chezmoi apply
 if [[ ${XDG_LIB_HOME+x} ]]; then
-  declare -x XDG_LIB_HOME="${HOME}/.local/lib"
+    declare -x XDG_LIB_HOME="${HOME}/.local/lib"
 fi
 
 # shellcheck disable=SC1090
@@ -13,6 +13,8 @@ source "${XDG_LIB_HOME}/logger.sh"
 source "${XDG_LIB_HOME}/install_doctor_functions.sh"
 # shellcheck disable=SC1090
 source "${XDG_LIB_HOME}/util_functions.sh"
+# shellcheck disable=SC1090
+source "${XDG_LIB_HOME}/task_functions.sh"
 
 ## lib scripts provided by chezmoi, which may or may not be present
 if [[ -f "${XDG_LIB_HOME}/fzf-git.sh" ]]; then

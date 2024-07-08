@@ -44,6 +44,16 @@ repos:
         types: [python]
   - repo: local
     hooks:
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+      - id: ansible-lint
+        name: ansible-lint
+        entry: ansible-lint
+        language: system
+        types: [yaml]
       - id: ruff-check
         name: ruff check
         entry: ruff check
@@ -63,8 +73,20 @@ repos:
         entry: poetry check
         language: system
         pass_filenames: false
-      - id: mypy
-        name: mypy
-        entry: mypy
+      - id: bandit
+        name: bandit
+        entry: bandit
         language: system
-        types: [python]
+        types_or: [python, pyi]
+        args: ["-iii", "-ll"]
+      - id: pyupgrade
+        name: pyupgrade
+        entry: pyupgrade
+        language: system
+        types_or: [python, pyi]
+        args: ["--py312"]
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: system
+        types_or: [python, pyi]

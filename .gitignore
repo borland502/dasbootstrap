@@ -126,3 +126,5 @@ yarn-error.log
 reports/
 .run/
 .streamlit
+.env
+.envrc

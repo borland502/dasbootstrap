@@ -2,52 +2,15 @@
   hosts: proxmox_all_running
   gather_facts: true
   remote_user: root
-  pre_tasks:
-      - name: Ensure that /etc/apt/apt.conf.d exists
-        ansible.builtin.file:
-            state: directory
-            path: /etc/apt/apt.conf.d
-            owner: root
-            group: root
-            mode: "0744"
-        register: ret_val
-        failed_when: ret_val.rc is defined and ret_val.rc != 0
-        when: ansible_facts['os_family'] == "Debian"
-
-      - name: Ensure apt proxy configuration
-        ansible.builtin.copy:
-            content: |
-                Acquire::http { Proxy "{{ apt_cacher_ng }}"; }
-            dest: /etc/apt/apt.conf.d/proxy
-            owner: root
-            group: root
-            mode: "0644"
-        when: ansible_facts['os_family'] == "Debian"
-
   tasks:
-      - name: Update all packages to their latest version
-        ansible.builtin.package:
-            name: "*"
-            state: latest
-            use: auto
-
-      # - name: Update all packages to their latest version
-      #   ansible.builtin.apt:
-      #     name: "*"
-      #     state: latest
-      #   when: ansible_facts['os_family'] == "Debian"
-
-      - name: Upgrade the OS (apt-get dist-upgrade)
-        ansible.builtin.apt:
-            upgrade: dist
-        when: ansible_facts['os_family'] == "Debian"
-
-      - name: Remove useless packages from the cache
-        ansible.builtin.apt:
-            autoclean: true
-        when: ansible_facts['os_family'] == "Debian"
-
-      - name: Remove dependencies that are no longer required
-        ansible.builtin.apt:
-            autoremove: true
-        when: ansible_facts['os_family'] == "Debian"
+      - name: Rerun bootstrap role
+        ansible.builtin.include_role:
+            name: technohouser.dasbootstrap.bootstrap
+- name: Update all packages and set proxies where available except proxmox nodes
+  hosts: proxmox_all_running
+  gather_facts: true
+  remote_user: ansible
+  tasks:
+      - name: Rerun ansible role
+        ansible.builtin.include_role:
+            name: technohouser.dasbootstrap.ansible

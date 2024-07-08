@@ -1,16 +1,6 @@
 version: "3"
 
-dotenv:
-    - .envrc
-
 vars:
-    POETRY: poetry
-    PYTHON: python
-    PYTEST: pytest
-    PIP: pip
-    GH: gh
-    STREAMLIT: streamlit
-
     DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/automation/dasbootstrap"
     # The prefix to use when running dev commands
     RUN_PREFIX: "{{.POETRY}} run"
@@ -37,6 +27,10 @@ vars:
     TK_PREFIX: "{{.RUN_MODULE_PREFIX}} trapper_keeper"
     RUN_UNITTEST_PREFIX: "{{.RUN_MODULE_PREFIX}} unittest discover ."
 
+includes:
+    ansible:
+        taskfile: "ansible/Taskfile.yaml"
+
 tasks:
     default:
         cmds:
@@ -51,6 +45,15 @@ tasks:
         desc: Switch to Dasbootstrap shell
         cmds:
             - "{{.VENV_ACTIVATE}}"
+
+    poetry:init:
+        desc: Initialize new poetry project
+        cmds:
+            - "{{.POETRY}} init --no-interaction"
+        vars:
+            PROJECT_DIR:
+                sh: |
+                    get_confirmed_path
 
     # TODO: Gather playbooks and present a list
     update:containers:

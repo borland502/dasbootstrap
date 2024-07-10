@@ -4,11 +4,20 @@
     license = "MIT"
     name = "dasbootstrap"
     packages = [
-        { include = "**/*", from = "pyprojects" },
-        { include = "**/*", from = "shared" },
-        { include = "*.py", from = "bin" },
-        { include = "*.py", from = "pages" },
-        { include = "Home.py", from = "." },
+        {include = "dasbootstrap/technitium_client",from = "bases"},
+        {include = "dasbootstrap/chrome_kiosk",from = "bases"},
+        {include = "dasbootstrap/automation_station",from = "bases"},
+        {include = "dasbootstrap/semaphore_client",from = "bases"},
+        {include = "dasbootstrap/dasbootstrap",from = "bases"},
+        {include = "dasbootstrap/proximate_utils",from = "bases"},
+        {include = "dasbootstrap/config",from = "components"},
+        {include = "dasbootstrap/trapper_keeper",from = "components"},
+        {include = "dasbootstrap/paths",from = "components"},
+        {include = "dasbootstrap/ssh",from = "components"},
+        {include = "dasbootstrap/ansible",from = "components"},
+        {include = "dasbootstrap/files",from = "components"},
+        {include = "dasbootstrap/keegen",from = "components"},
+        {include = "dasbootstrap/inventory",from = "components"},
     ]
     readme = "README.md"
     repository = "https://github.com/borland502/dasbootstrap"
@@ -16,163 +25,163 @@
 
     # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
 
-[tool.bandit]
-    exclude_dirs = [
-        ".eggs",
-        ".git",
-        ".ipynb_checkpoints",
-        ".mypy_cache",
-        ".pytest_cache",
-        ".pytype",
-        ".ruff_cache",
-        ".venv",
-        "tests",
-        "__pypackages__",
-        "__pycache__",
-        "build",
-        "dist",
-    ]
-
-[tool.ruff]
-    indent-width = 4
-    line-length = 80
-    target-version = "py312"
-
-    exclude = [
-        ".eggs",
-        ".git",
-        ".ipynb_checkpoints",
-        ".mypy_cache",
-        ".pytest_cache",
-        ".pytype",
-        ".ruff_cache",
-        ".venv",
-        "tests",
-        "__pypackages__",
-        "__pycache__",
-        "build",
-        "dist",
-    ]
-
-    lint.ignore = [
-        "C901",
-        "PLR0912",
-        "D104",
-        "D203",
-        "D213",
-        "E501",
-        "PGH003",
-        "RET504",
-        "S101",
-        "S307",
-        "D205",
-        "ISC001",
-        "E111",
-    ]
-    lint.ignore-init-module-imports = true
-    lint.select = [
-        "A",
-        "ASYNC",
-        "B",
-        "C4",
-        "C90",
-        "D",
-        "DTZ",
-        "E",
-        "F",
-        "FLY",
-        "I",
-        "ISC",
-        "LOG",
-        "N",
-        "NPY",
-        "PERF",
-        "PGH",
-        "PIE",
-        "PL",
-        "PT",
-        "Q",
-        "RET",
-        "RUF",
-        "RSE",
-        "SIM",
-        "TID",
-        "UP",
-        "W",
-        "YTT",
-    ]
-    lint.unfixable = ["F401", "F841"]
-
-[tool.ruff.format]
-    line-ending = "lf"
-
-
-[tool.ruff.lint.pydocstyle]
-    convention = "google"
-
-[tool.ruff.lint.isort]
-    section-order = [
-        "future",
-        "standard-library",
-        "third-party",
-        "first-party",
-        "tests",
-        "local-folder",
-    ]
-
-[tool.ruff.lint.isort.sections]
-    "tests" = ["tests"]
-
 [tool.pyright]
-    exclude = [
-        "**/node_modules",
-        "**/__pycache__",
-        "pyprojects/**/experimental",
-        "pyprojects/**/typestubs",
-        "**/tests",
-    ]
-    include = ["pyprojects/**", "shared/**", "pages/**", "Home.py"]
+extraPaths = ["bases", "components"]
 
-    defineConstant = { DEBUG = true }
-    stubPath = "dasbootstrap/stubs"
+#[tool.bandit]
+#    exclude_dirs = [
+#        ".eggs",
+#        ".git",
+#        ".ipynb_checkpoints",
+#        ".mypy_cache",
+#        ".pytest_cache",
+#        ".pytype",
+#        ".ruff_cache",
+#        ".venv",
+#        "tests",
+#        "__pypackages__",
+#        "__pycache__",
+#        "build",
+#        "dist",
+#    ]
+#
+#[tool.ruff]
+#    indent-width = 2
+#    line-length = 128
+#    target-version = "py312"
+#
+#    exclude = [
+#        ".eggs",
+#        ".git",
+#        ".ipynb_checkpoints",
+#        ".mypy_cache",
+#        ".pytest_cache",
+#        ".pytype",
+#        ".ruff_cache",
+#        ".venv",
+#        "tests",
+#        "__pypackages__",
+#        "__pycache__",
+#        "build",
+#        "dist",
+#    ]
+#
+#    lint.ignore = [
+#        "C901",
+#        "PLR0912",
+#        "D104",
+#        "D203",
+#        "D213",
+#        "E501",
+#        "PGH003",
+#        "RET504",
+#        "S101",
+#        "S307",
+#        "D205",
+#        "ISC001",
+#        "E111",
+#    ]
+#    lint.ignore-init-module-imports = true
+#    lint.select = [
+#        "A",
+#        "ASYNC",
+#        "B",
+#        "C4",
+#        "C90",
+#        "D",
+#        "DTZ",
+#        "E",
+#        "F",
+#        "FLY",
+#        "I",
+#        "ISC",
+#        "LOG",
+#        "N",
+#        "NPY",
+#        "PERF",
+#        "PGH",
+#        "PIE",
+#        "PL",
+#        "PT",
+#        "Q",
+#        "RET",
+#        "RUF",
+#        "RSE",
+#        "SIM",
+#        "TID",
+#        "UP",
+#        "W",
+#        "YTT",
+#    ]
+#    lint.unfixable = ["F401", "F841"]
+#
+#[tool.ruff.format]
+#    line-ending = "lf"
+#
+#
+#[tool.ruff.lint.pydocstyle]
+#    convention = "google"
 
-    reportMissingImports = false
-    reportMissingTypeStubs = false
+#[tool.ruff.lint.isort]
+#    section-order = [
+#        "future",
+#        "standard-library",
+#        "third-party",
+#        "first-party",
+#        "tests",
+#        "local-folder",
+#    ]
+#
+#[tool.ruff.lint.isort.sections]
+#    "tests" = ["test"]
 
-[tool.pytest.ini_options]
-    addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=5 --junitxml=reports/pytest.xml"
-    filterwarnings = [
-        'ignore:AnsibleCollectionFinder has already been configured',
-    ]
-    markers = ["slow"]
-    minversion = "6.0"
-    norecursedirs = [".venv", "lib", "build", "dist"]
-    testpaths = ["tests"]
+#[tool.pyright]
+#    exclude = [
+#        "**/node_modules",
+#        "**/__pycache__",
+#        "bases/**/experimental",
+#        "components/**/typestubs",
+#        "**/test",
+#    ]
+#    include = ["bases/**", "components/**"]
+#
+#    defineConstant = { DEBUG = true }
+#    stubPath = "dasbootstrap/stubs"
+#
+#    reportMissingImports = false
+#    reportMissingTypeStubs = false
 
-[tool.poetry.plugins]
+#[tool.pytest.ini_options]
+#    addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=5 --junitxml=reports/pytest.xml"
+#    filterwarnings = [
+#        'ignore:AnsibleCollectionFinder has already been configured',
+#    ]
+#    markers = ["slow"]
+#    minversion = "6.0"
+#    norecursedirs = [".venv", "lib", "build", "dist"]
+#    testpaths = ["test"]
 
-[tool.coverage.report] # https://coverage.readthedocs.io/en/latest/config.html#report
-    precision = 1
-    show_missing = true
-    skip_covered = true
-
-[tool.coverage.run] # https://coverage.readthedocs.io/en/latest/config.html#run
-    branch = true
-    command_line = "--module pytest"
-    data_file = "reports/.coverage"
-    source = [
-        "pyprojects/**/*",
-        "shared/**/*",
-        "pages/*.py",
-        "bin/*.py",
-        "Home.py",
-    ]
-
-[tool.coverage.xml] # https://coverage.readthedocs.io/en/latest/config.html#xml
-    output = "reports/coverage.xml"
+#[tool.poetry.plugins]
+#
+#[tool.coverage.report] # https://coverage.readthedocs.io/en/latest/config.html#report
+#    precision = 1
+#    show_missing = true
+#    skip_covered = true
+#
+#[tool.coverage.run] # https://coverage.readthedocs.io/en/latest/config.html#run
+#    branch = true
+#    command_line = "--module pytest"
+#    data_file = "reports/.coverage"
+#    source = [
+#        "bases/**/*",
+#        "components/**/*",
+#    ]
+#
+#[tool.coverage.xml] # https://coverage.readthedocs.io/en/latest/config.html#xml
+#    output = "reports/coverage.xml"
 
 [tool.poetry.dependencies]
-    ansible = "^9.1.0"
+    ansible = "9.1.0"
     ansible-lint = { version = "6.22.1", markers = "platform_system != 'Windows'" }
     ansible-runner = "^2.3.6"
     boltdb = "^0.0.2"
@@ -224,7 +233,6 @@
     molecule-containers = "^2.0.0"
     molecule-plugins = { extras = ["docker"], version = "^23.5.0" }
     paramiko = "3.4.0"
-    poetry = "^1.8.3"
     pre-commit = ">=3.7.0"
     pyright = "^1.1.358"
     pyspnego = { extras = ["kerberos"], version = "0.10.2" }
@@ -236,7 +244,7 @@
     pytest-xdist = ">=3.5.0"
     pyupgrade = "^3.15.2"
     sansldap = "0.1.0"
-    virtualenv-pyenv = "^0.4.0"
+
 
 [build-system]
     build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "dasbootstrap"
+version = "0.3.4"
+description = ""
+authors = ["Jeremy Hettenhouser <jhettenh@gmail.com>"]
+license = "MIT"
+
+packages = [
+    {include = "dasbootstrap/automation_station", from = "../../bases"},
+    {include = "dasbootstrap/dasbootstrap", from = "../../bases"},
+    {include = "dasbootstrap/config", from = "../../components"},
+    {include = "dasbootstrap/trapper_keeper", from = "../../components"},
+    {include = "dasbootstrap/files",from = "../../components"},
+    {include = "dasbootstrap/ssh",from = "../../components"},
+    {include = "dasbootstrap/ansible",from = "../../components"},
+    {include = "dasbootstrap/paths",from = "../../components"},
+    {include = "dasbootstrap/keegen",from = "../../components"},
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+xdg-base-dirs = "^6.0.1"
+ansible-runner = "^2.4.0"
+boltdb = "^0.0.2"
+components = "^1.2.8"
+pandas = "^2.2.2"
+paramiko = "^3.4.0"
+plumbum = "^1.8.3"
+pykeepass = "^4.1.0"
+streamlit = "^1.36.0"
+streamlit-extras = "^0.4.3"
+typer = "^0.12.3"
+xkcdpass = "^1.19.9"
+zstandard = "^0.22.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

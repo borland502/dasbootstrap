@@ -10,3 +10,4 @@ roles:
   - name: geerlingguy.nodejs
   - name: gantsign.golang
   - name: cimon-io.systemd-service
+  - name: caddy_ansible.caddy_ansible

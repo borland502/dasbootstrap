@@ -1,23 +1,20 @@
+"""PS: all password entries are in cleartext between server and browser, DO NOT DEPLOY THIS ON A SERVER. EVER.
+https://gist.github.com/andfanilo/4bd880ea760d67d5afc40d215ef060e1.
 """
-PS: all password entries are in cleartext between server and browser, DO NOT DEPLOY THIS ON A SERVER. EVER.
-https://gist.github.com/andfanilo/4bd880ea760d67d5afc40d215ef060e1
-"""
-
 import logging
 from io import BytesIO, StringIO
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from dasbootstrap.resources import delete_files, ensure_path, zip_files
+from dasbootstrap.keegen.core import gen_passphrase, gen_utf8
+from dasbootstrap.trapper_keeper.tk import DbTypes, save_dataframe, validate_tk_store
 from pandas import DataFrame
 from pykeepass.pykeepass import CredentialsError, PyKeePass, create_database
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit_extras.row import row
 from xdg_base_dirs import xdg_config_home, xdg_data_home, xdg_state_home
-
-from dasbootstrap.files import delete_files, ensure_path, zip_files
-from dasbootstrap.keegen.core import gen_passphrase, gen_utf8
-from dasbootstrap.trapper_keeper.tk import save_dataframe, DbTypes, validate_tk_store
 
 ENTRY_XPATH: str = "//Entry[UUID != ''][String[Key='Title' or Key='Password' or Key='UserName' or Key='URL']]"
 
@@ -86,7 +83,7 @@ def _save_paths_to_session(*args: Path):
 # TODO: Pass in elements to extract
 @st.cache_data
 def _to_dataframe(_kp_db: PyKeePass) -> DataFrame:
-  """Create a simplified DataFrame from a KeePass XML string
+  """Create a simplified DataFrame from a KeePass XML string.
 
   :param _kp_db: raw xml data from pykeepass as etree (e.g. kb_dp.xml())
   :return: DataFrame containing Title, Username, Password, and URL
@@ -137,13 +134,9 @@ def _create_sidebar_row(path: Path, found_row, create_row):
           st.rerun()
       else:
         if create_row.button(label="Generate Token", key="gen_token"):
-          token_path.write_text(
-            encoding="utf-8", data=gen_passphrase()
-          )
+          token_path.write_text(encoding="utf-8", data=gen_passphrase())
           st.rerun()
-        kp_token = create_row.file_uploader(
-          "Select keepass token", key="kp_token_upload"
-        )
+        kp_token = create_row.file_uploader("Select keepass token", key="kp_token_upload")
         if kp_token is not None:
           _process_file(kp_token, dest=token_path)
           st.rerun()
@@ -157,9 +150,7 @@ def _create_sidebar_row(path: Path, found_row, create_row):
         if create_row.button(label="Generate Key", key="gen_key"):
           key_path.write_text(encoding="utf-8", data=gen_utf8())
           st.rerun()
-        kp_key = create_row.file_uploader(
-          "Select keepass key", key="kp_key_upload"
-        )
+        kp_key = create_row.file_uploader("Select keepass key", key="kp_key_upload")
         if kp_key is not None:
           _process_file(kp_key, dest=key_path)
           st.rerun()
@@ -181,9 +172,7 @@ def _create_sidebar_row(path: Path, found_row, create_row):
           # With no entries the datatable will have no columns, so generate a sample
           _create_sample_entries(kp_db)
           st.rerun()
-        kp_db_bin = create_row.file_uploader(
-          "Select keepass db", key="kp_db_upload"
-        )
+        kp_db_bin = create_row.file_uploader("Select keepass db", key="kp_db_upload")
         if kp_db_bin is not None:
           _process_file(kp_db_bin, dest=db_path)
           st.rerun()
@@ -197,6 +186,7 @@ def _create_download():
 
 
 def main():
+  """Trapper Keeper Dashboard Module."""
   logging.basicConfig(filename="automation_station.log", level=logging.INFO)
   st.title("Keepass browser")
   all_exist = ensure_path(db_path, key_path, token_path)
@@ -208,9 +198,7 @@ def main():
 
   if all_exist:
     try:
-      validate_tk_store(
-        DbTypes.KP, db_path, token=token_path, key=key_path
-      )
+      validate_tk_store(DbTypes.KP, db_path, token=token_path, key=key_path)
       _process_data_table()
     except CredentialsError:
       st.error("""
@@ -221,15 +209,15 @@ def main():
     download_file: Path = _create_download()
     if download_file is None:
       raise FileNotFoundError
-    else:
-      st.download_button(
-        key="download_button",
-        disabled=(not all_exist),
-        label="Download Button",
-        file_name=DOWNLOAD_FILE_NAME,
-        mime="application/zip",
-        data=download_file.read_bytes(),
-      )
+
+    st.download_button(
+      key="download_button",
+      disabled=(not all_exist),
+      label="Download Button",
+      file_name=DOWNLOAD_FILE_NAME,
+      mime="application/zip",
+      data=download_file.read_bytes(),
+    )
 
 
 if __name__ == "__main__":

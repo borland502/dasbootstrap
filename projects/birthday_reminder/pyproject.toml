@@ -1,0 +1,19 @@
+[tool.poetry]
+  authors = ["Jeremy Hettenhouser <jhettenh@gmail.com>"]
+  description = "A simple streamlit app to remind you of important birthdays"
+  license = "MIT"
+  name = "birthday_reminder"
+  version = "0.1.0"
+
+  packages = [
+    { include = "dasbootstrap/config", from = "../../components" },
+    { include = "dasbootstrap/files", from = "../../components" },
+  ]
+
+[tool.poetry.dependencies]
+  python = "^3.12"
+  simple-toml-settings = { git = "https://github.com/borland502/simple-toml-settings", branch = "xdg_folders" }
+
+[build-system]
+  build-backend = "poetry.core.masonry.api"
+  requires = ["poetry-core>=1.0.0"]

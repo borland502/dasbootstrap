@@ -1,13 +1,14 @@
 """Main module for proximate_utils."""
+from __future__ import annotations
 
 from pathlib import Path
 
+from proxmoxer.core import ProxmoxAPI
 from pykeepass.entry import Entry
 from pykeepass.group import Group
 from pykeepass.pykeepass import PyKeePass, create_database
 from trapper_keeper.util.keegen import KeeAuth
-from xdg_base_dirs import xdg_config_home, xdg_state_home, xdg_data_home
-from proxmoxer.core import ProxmoxAPI
+from xdg_base_dirs import xdg_config_home, xdg_data_home, xdg_state_home
 
 from proximate_utils.actions import Actions
 from proximate_utils.info import Info
@@ -25,7 +26,7 @@ class ProximateUtils:
     @classmethod
     def _get_api_secrets(cls, db: PyKeePass) -> Entry:
         proj_group: Group = db.find_groups(recursive=True, name=cls.proj_id, first=True)
-        return [host for host in proj_group.entries if host.title == "proxmox_api"][0]
+        return next(host for host in proj_group.entries if host.title == "proxmox_api")
 
     def __init__(self, db: Path = db, token: Path = token, key: Path = key):
         kee_auth: KeeAuth = KeeAuth()
@@ -39,9 +40,13 @@ class ProximateUtils:
             # TODO: Integrate keegen
             # TODO: Bug if token is created but key is not
             # DbUtils.create_tk_store(kp_token=kee_auth.kp_token[1], kp_key=kee_auth.kp_token[1], kp_fp=db, kv_fp=kv_db)
-            create_database(filename=db, password=kee_auth.kp_token[1], keyfile=kee_auth.kp_key[0])
+            create_database(
+                filename=db, password=kee_auth.kp_token[1], keyfile=kee_auth.kp_key[0]
+            )
 
-        self.proximate_store: PyKeePass = PyKeePass(filename=db, password=token.read_text(encoding="utf-8"), keyfile=key)
+        self.proximate_store: PyKeePass = PyKeePass(
+            filename=db, password=token.read_text(encoding="utf-8"), keyfile=key
+        )
         self.proxmox_secrets: Entry = self._get_api_secrets(self.proximate_store)
         self.proxmox: ProxmoxAPI = ProxmoxAPI(
             str(self.proxmox_secrets.url).strip("https://"),

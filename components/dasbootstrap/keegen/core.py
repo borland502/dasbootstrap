@@ -1,9 +1,11 @@
 # num words
+from __future__ import annotations
+
 import secrets
 import string
+import unicodedata
 from collections import namedtuple
 
-import unicodedata
 from xkcdpass import xkcd_password as xp
 
 TOKEN_SIZE: int = 4
@@ -17,13 +19,15 @@ VALID_DELIMITERS: list[str] = [str(i) for i in range(10)]
 
 
 def gen_passphrase(length=TOKEN_SIZE):
-    """Generate a 1password style token that is assured to skate by anything with a complexity requirement other than length
+    """Generate a 1password style token that is assured to skate by anything with a complexity requirement other than length.
 
     :param length: size in words for the generated passphrase + 1
     :return: passphrase with an all caps word and symbol appended to the end
     """
     wordfile = xp.locate_wordfile()
-    wordlist = xp.generate_wordlist(wordfile, min_length=TOKEN_SIZE, max_length=KEY_SIZE)
+    wordlist = xp.generate_wordlist(
+        wordfile, min_length=TOKEN_SIZE, max_length=KEY_SIZE
+    )
     pass_complexity_chk: str = "".join(
         [
             secrets.choice(string.digits),
@@ -31,8 +35,13 @@ def gen_passphrase(length=TOKEN_SIZE):
             secrets.choice(string.punctuation),
         ]
     )
-    passwd: str = xp.generate_xkcdpassword(wordlist, numwords=length, random_delimiters=True, valid_delimiters=VALID_DELIMITERS)
-    return "".join([passwd, pass_complexity_chk])
+    passwd: str = xp.generate_xkcdpassword(
+        wordlist,
+        numwords=length,
+        random_delimiters=True,
+        valid_delimiters=VALID_DELIMITERS,
+    )
+    return f"{passwd}{pass_complexity_chk}"
 
 
 def gen_utf8(length=TOKEN_SIZE, smp=True, start=None, separator=""):

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
+# shellcheck disable=2317
 
 # https://blog.mphomphego.co.za/blog/2022/03/08/Note-to-self-How-to-get-a-complete-plugin-list-from-Jenkins.html
 function jenkins_plugin_list() {

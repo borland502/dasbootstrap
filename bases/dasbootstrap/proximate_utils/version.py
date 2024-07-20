@@ -5,9 +5,7 @@
 #
 # PSF License (see licenses/PSF-license.txt or https://opensource.org/licenses/Python-2.0)
 #
-
 # NOTE: Straight from https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/module_utils/compat/version.py
-
 """Provides classes to represent module version numbers (one class for
 each style of version numbering).  There are currently two such classes
 implemented: StrictVersion and LooseVersion.
@@ -26,9 +24,9 @@ Every version number class implements the following interface:
     of the same class or a string (which will be parsed to an instance
     of the same class, thus must follow the same rules)
 """
-
 from __future__ import annotations
 
+import contextlib
 import re
 
 try:
@@ -49,7 +47,7 @@ class Version:
             self.parse(vstring)
 
     def __repr__(self):
-        return "%s ('%s')" % (self.__class__.__name__, str(self))
+        return f"{self.__class__.__name__} ('{self!s}')"
 
     def __eq__(self, other):
         c = self._cmp(other)
@@ -143,14 +141,14 @@ class StrictVersion(Version):
     def parse(self, vstring):
         match = self.version_re.match(vstring)
         if not match:
-            raise ValueError("invalid version number '%s'" % vstring)
+            raise ValueError(f"invalid version number '{vstring}'")
 
         (major, minor, patch, prerelease, prerelease_num) = match.group(1, 2, 4, 5, 6)
 
         if patch:
             self.version = tuple(map(int, [major, minor, patch]))
         else:
-            self.version = tuple(map(int, [major, minor])) + (0,)
+            self.version = (*tuple(map(int, [major, minor])), 0)
 
         if prerelease:
             self.prerelease = (prerelease[0], int(prerelease_num))
@@ -158,10 +156,7 @@ class StrictVersion(Version):
             self.prerelease = None
 
     def __str__(self):
-        if self.version[2] == 0:
-            vstring = ".".join(map(str, self.version[0:2]))
-        else:
-            vstring = ".".join(map(str, self.version))
+        vstring = ".".join(map(str, self.version[0:2])) if self.version[2] == 0 else ".".join(map(str, self.version))
 
         if self.prerelease:
             vstring = vstring + self.prerelease[0] + str(self.prerelease[1])
@@ -318,10 +313,8 @@ class LooseVersion(Version):
         self.vstring = vstring
         components = [x for x in self.component_re.split(vstring) if x and x != "."]
         for i, obj in enumerate(components):
-            try:
+            with contextlib.suppress(ValueError):
                 components[i] = int(obj)
-            except ValueError:
-                pass
 
         self.version = components
 
@@ -329,7 +322,7 @@ class LooseVersion(Version):
         return self.vstring
 
     def __repr__(self):
-        return "LooseVersion ('%s')" % str(self)
+        return f"LooseVersion ('{self!s}')"
 
     def _cmp(self, other):
         if isinstance(other, str):
@@ -343,6 +336,7 @@ class LooseVersion(Version):
             return -1
         if self.version > other.version:
             return 1
+        return None
 
 
 # end class LooseVersion

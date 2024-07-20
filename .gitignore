@@ -128,3 +128,5 @@ reports/
 .streamlit
 .env
 .envrc
+!/components/**/log/*.py
+

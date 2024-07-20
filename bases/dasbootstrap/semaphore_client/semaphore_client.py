@@ -1,4 +1,5 @@
 """Client module for the Ansible Semaphore Api project."""
+from __future__ import annotations
 
 from pydantic import StrictInt, StrictStr
 from semaphore_api.api.authentication_api import AuthenticationApi
@@ -22,7 +23,9 @@ class SemaphoreActions:
     def __init__(self):
         """:rtype: object"""
         _host_vars = ansible_inventory.get_host_vars("semaphore")
-        _host = _host_vars["proxmox_hostname"] + "." + _host_vars["proxmox_searchdomain"]
+        _host = (
+            _host_vars["proxmox_hostname"] + "." + _host_vars["proxmox_searchdomain"]
+        )
         _port = _host_vars["semaphore_port"]
         _protocol = _host_vars["semaphore_protocol"]
 
@@ -35,7 +38,9 @@ class SemaphoreActions:
         )
         self.semaphore_client = ApiClient(configuration=self.semaphore_config)
         self.semaphore_instance = AuthenticationApi(api_client=self.semaphore_client)
-        self.auth_call = Login(auth=self.semaphore_config.username, password=self.semaphore_config.password)
+        self.auth_call = Login(
+            auth=self.semaphore_config.username, password=self.semaphore_config.password
+        )
         self.all_vars = ansible_inventory.get_host_vars()
         self.project_api = ProjectApi(api_client=self.semaphore_client)
         self._sort_default: StrictStr = StrictStr("name")
@@ -46,7 +51,9 @@ class SemaphoreActions:
 
     def connect(self):
         """Initialize the semaphore client and initialize."""
-        login: ApiResponse = self.semaphore_instance.auth_login_post_with_http_info(self.auth_call)
+        login: ApiResponse = self.semaphore_instance.auth_login_post_with_http_info(
+            self.auth_call
+        )
         api_cookie = login.headers["Set-Cookie"]
         self.semaphore_client.cookie = api_cookie
         # TODO: Reinitialize if cookie expires
@@ -80,7 +87,9 @@ class SemaphoreActions:
         proj_inventory: list[Inventory] = [
             inventory
             for inventory in self.project_api.project_project_id_inventory_get(
-                project_id=strict_proj_id, sort=self._sort_default, order=self._order_default
+                project_id=strict_proj_id,
+                sort=self._sort_default,
+                order=self._order_default,
             )
             if inventory.name == hostname
         ]
@@ -90,27 +99,37 @@ class SemaphoreActions:
                 project_id=inventory.project_id, inventory_id=inventory.id
             )
 
-    def find_ssh_key(self, project_id=1, key_name="Ansible Service Key") -> AccessKey | None:
+    def find_ssh_key(
+        self, project_id=1, key_name="Ansible Service Key"
+    ) -> AccessKey | None:
         """:type project_id: Annotated[StrictInt, Field(description="Project ID")],
         :type key_name: str
         """
         ssh_keys = self.project_api.project_project_id_keys_get(
-            project_id=project_id, key_type="ssh", sort=self._sort_default, order=self._order_default
+            project_id=project_id,
+            key_type="ssh",
+            sort=self._sort_default,
+            order=self._order_default,
         )
         for key in ssh_keys:
             if key_name == key.name:
                 return key
         return None
 
-    def create_key(self, project_id: StrictInt = 1, access_key: AccessKeyRequest = None):
+    def create_key(
+        self, project_id: StrictInt = 1, access_key: AccessKeyRequest = None
+    ):
         """Create ssh key in Semaphore project."""
-        return self.project_api.project_project_id_keys_post(project_id=project_id, access_key=access_key)
+        return self.project_api.project_project_id_keys_post(
+            project_id=project_id, access_key=access_key
+        )
 
     # TODO: Simply have to generate using the ansible inventory dump command and upload the resulting yaml
     def create_inventory(self, hostname: str, project_id: StrictInt = 1) -> Inventory:
         """Create inventory in Semaphore project."""
         return self.project_api.project_project_id_inventory_post(
-            project_id=project_id, inventory=self.from_ansible_inventory(hostname=hostname)
+            project_id=project_id,
+            inventory=self.from_ansible_inventory(hostname=hostname),
         )
 
 

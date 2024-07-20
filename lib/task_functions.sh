@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Taken in conjunction with the task dbs:run mimics the original dbs script execution
 # e.g. dbs
 function dbs_run(){
@@ -6,10 +8,10 @@ function dbs_run(){
 
 function get_confirmed_path() {
     local path
-    
+
     while true; do
         path=$(gum prompt "Enter path: ")
-        
+
         if [[ -d "$path" ]]; then  # Check if directory exists
             gum echo "You entered: $path"
             if gum confirm "Is this path correct?"; then

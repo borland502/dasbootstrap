@@ -1,60 +1,87 @@
-# Singleton pattern for "private" methods
+from __future__ import annotations
+
+import re
+from pathlib import Path
+
+from ansible.inventory.host import Host
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import init_plugin_loader
 from ansible.vars.manager import VariableManager
 
-from dasbootstrap.paths.resources.paths import Directories
+from dasbootstrap.resources.paths import Directories, Inventory as inv_sources
 
 
-def _get_dataloader(basedir=Directories.AHOME):
-  init_plugin_loader()
-  loader = DataLoader()
-  loader.set_basedir(basedir)
-  return loader
+def extract_ips(data: list[Host]):
+  """Extracts all valid IP addresses (IPv4) from a list.
+
+  Args:
+      data: A list containing mixed elements (strings and IP addresses).
+
+  Returns:
+      A list containing only the extracted valid IP addresses.
+  """
+  ip_pattern = r"((?:\d{1,3}\.){3}\d{1,3})|(?:\d{1,3}\.){3}\d{1,3}-\d{1,3}"
+  return [item for item in data if re.match(ip_pattern, item.get_name())]
 
 
-def _get_inventory_manager(loader: DataLoader | None = None, sources: str | None = None):
-  if loader is None:
-    loader = _get_dataloader()
+class InventorySource:
+  """InventorySource is a simple abstraction over ansible's complicated inventory plugin system."""
+  default_basedir: Path = Path(Directories.IHOME)
 
-  if sources is None:
-    sources = os.path.join(Directories.AHOME, "inventory")
+  def __init__(self, basedir: Path = default_basedir, source=None):
+    """To gain absolute control over merge we accept only one source rather than a directory."""
+    self.basedir = basedir
+    self.sources = source
 
-  return InventoryManager(loader, sources)
+  def _get_dataloader(self):
+    init_plugin_loader()
+    loader = DataLoader()
+    loader.set_basedir(str(self.basedir))
+    return loader
+
+  def get_inventory_manager(self):
+    return InventoryManager(self._get_dataloader(), self.sources)
+
+  def get_variable_manager(self):
+    return VariableManager(self._get_dataloader(), self.get_inventory_manager())
 
 
-def _get_variable_manager(loader: DataLoader | None = None, inventory: InventoryManager | None = None):
-  if loader is None:
-    loader = _get_dataloader()
+def _load_hosts(inv_src: InventorySource) -> list[Host]:
+ inventory = inv_src.get_inventory_manager()
+ var_manager = inv_src.get_variable_manager()
 
-  if inventory is None:
-    inventory = _get_inventory_manager()
+ hosts: list[Host] = inventory.get_hosts()
+ hosts = [host for host in hosts if var_manager.get_vars(host=host, include_hostvars=True)]
 
-  return VariableManager(loader, inventory)
+ return hosts
+
+def _load_host(inv_src: InventorySource, hostname: str) -> Host:
+  inventory = inv_src.get_inventory_manager()
+  return inventory.get_host(hostname)
+
+class KitchenSinkInventory:
+
+  def __init__(self):
+    self._nmap_source = InventorySource(source=inv_sources.DYNAMIC_NMAP)
+    self._proxmox_source = InventorySource(source=inv_sources.DYNAMIC_PROXMOX)
+    self._ldap_source = InventorySource(source=inv_sources.DYNAMIC_LDAP)
+
+  @property
+  def nmap_hosts(self):
+    return _load_hosts(self._nmap_source)
+
+  def nmap_host(self, hostname: str) -> Host:
+    return _load_host(self._nmap_source, hostname)
+
+  @property
+  def proxmox_hosts(self):
+    return _load_hosts(self._proxmox_source)
+
+  def proxmox_host(self, hostname: str):
+    return _load_host(self._proxmox_source, hostname)
 
 
-# TODO: Add host programmatically rather than voiding cache on new proxmox container if absent
-
-
-# TODO: Transform this into a class with singletons
-def get_host_vars(
-  hostname: str | None = None, inventory: InventoryManager | None = None, var_manager: VariableManager | None = None
-) -> dict | list[dict]:
-  """Get ansible variables for hostname or a list of all hosts with their variables."""
-  if inventory is None:
-    inventory = _get_inventory_manager()
-
-  if var_manager is None:
-    var_manager = _get_variable_manager()
-
-  """Return either the vars for a specific host, or a list of hosts with vars."""
-  if hostname is None:
-    hosts: list[dict] = inventory.get_hosts()
-    for host in hosts:
-      # prime the cache of host_vars, either internal or persistent
-      var_manager.get_vars(host=host, include_hostvars=True, use_cache=True)
-    return hosts
-
-  host = inventory.get_host(hostname)
-  return var_manager.get_vars(host=host, use_cache=True)
+if __name__ == '__main__':
+    kitchenSink = KitchenSinkInventory()
+    kitchenSink._process_source()

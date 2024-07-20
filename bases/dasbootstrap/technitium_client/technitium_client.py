@@ -1,4 +1,5 @@
 """Client module for the Technitium DNS Server project."""
+from __future__ import annotations
 
 from pathlib import Path
 
@@ -22,7 +23,9 @@ class TechnitiumActions:
     def __init__(self):
         """Initialize the client using the api against the Technitium Server."""
         _host_vars = ansible_inventory.get_host_vars("technitiumdns")
-        self._host = _host_vars["proxmox_hostname"] + "." + _host_vars["pve_lxc_searchdomain"]
+        self._host = (
+            _host_vars["proxmox_hostname"] + "." + _host_vars["pve_lxc_searchdomain"]
+        )
         self._port = _host_vars["technitiumdns_port"]
         self._protocol = _host_vars["technitiumdns_protocol"]
         self._endpoint = f"{self._protocol}://{self._host}:{self._port}"

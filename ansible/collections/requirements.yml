@@ -33,3 +33,6 @@ collections:
   - name: git+https://github.com/borland502/proxmox-ansible.git
     type: git
     version: "*"
+
+  - name: "community.zabbix"
+    version: "*"

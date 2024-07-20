@@ -1,9 +1,10 @@
-"""Actions module for proxmox tasks using proxmoxer
+"""Actions module for proxmox tasks using proxmoxer.
 
 Logic adapted from:
 https://github.com/ansible-collections/community.general/blob/d2d7deb4ecb978dd21a68b4ebd372da891ee3029/plugins/module_utils/proxmox.py#L12
 https://github.com/ansible-collections/community.general/blob/d2d7deb4ecb978dd21a68b4ebd372da891ee3029/plugins/modules/proxmox.py
 """
+from __future__ import annotations
 
 import re
 import time
@@ -27,13 +28,15 @@ class Actions(Resources):
         config = getattr(proxmox_node, self.VZ_TYPE)(vmid).config.get()
         return config.get("template", False)
 
-    def create_instance(self, vmid, node, disk, storage, cpus, memory, swap, timeout, clone, **kwargs):
+    def create_instance(
+        self, vmid, node, disk, storage, cpus, memory, swap, timeout, clone, **kwargs
+    ):
         # Version limited features
         minimum_version = {"tags": "6.1", "timezone": "6.3"}
         proxmox_node = self.proxmox.nodes(node)
 
         # Remove all empty kwarg entries
-        kwargs = dict((k, v) for k, v in kwargs.items() if v is not None)
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         pve_version = LooseVersion(self.info.version())
 
@@ -41,9 +44,7 @@ class Actions(Resources):
         for option, version in minimum_version.items():
             if pve_version < LooseVersion(version) and option in kwargs:
                 self.log.error(
-                    msg="Feature {option} is only supported in PVE {version}+, and you're using PVE {pve_version}".format(
-                        option=option, version=version, pve_version=pve_version
-                    )
+                    msg=f"Feature {option} is only supported in PVE {version}+, and you're using PVE {pve_version}"
                 )
                 return False
 
@@ -69,7 +70,7 @@ class Actions(Resources):
             re_tag = re.compile(r"^[a-z0-9_][a-z0-9_\-+.]*$")
             for tag in kwargs["tags"]:
                 if not re_tag.match(tag):
-                    self.log.error(msg="%s is not a valid tag" % tag)
+                    self.log.error(msg=f"{tag} is not a valid tag")
                     return False
             kwargs["tags"] = ",".join(kwargs["tags"])
 
@@ -78,16 +79,22 @@ class Actions(Resources):
 
         if clone is not None:
             if self.VZ_TYPE != "lxc":
-                self.log.error(msg="Clone operator is only supported for LXC enabled proxmox clusters.")
+                self.log.error(
+                    msg="Clone operator is only supported for LXC enabled proxmox clusters."
+                )
                 return False
 
             # clone_is_template = self.is_template_container(node, clone)
             # TODO: Integrate options back without adopting ansible structure completely
             clone_parameters = {}
 
-            taskid = getattr(proxmox_node, self.VZ_TYPE)(clone).clone.post(newid=vmid, **clone_parameters)
+            taskid = getattr(proxmox_node, self.VZ_TYPE)(clone).clone.post(
+                newid=vmid, **clone_parameters
+            )
         else:
-            taskid = getattr(proxmox_node, self.VZ_TYPE).create(vmid=vmid, storage=storage, memory=memory, swap=swap, **kwargs)
+            taskid = getattr(proxmox_node, self.VZ_TYPE).create(
+                vmid=vmid, storage=storage, memory=memory, swap=swap, **kwargs
+            )
 
         while timeout:
             if self.info.api_task_ok(node, taskid):
@@ -95,8 +102,7 @@ class Actions(Resources):
             timeout -= 1
             if timeout == 0:
                 self.log.error(
-                    msg="Reached timeout while waiting for creating VM. Last line in task before timeout: %s"
-                    % proxmox_node.tasks(taskid).log.get()[:1]
+                    msg=f"Reached timeout while waiting for creating VM. Last line in task before timeout: {proxmox_node.tasks(taskid).log.get()[:1]}"
                 )
                 return False
             time.sleep(1)

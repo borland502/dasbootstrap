@@ -1,17 +1,18 @@
-from __future__ import annotations
-
 import tempfile
 import unittest
 from pathlib import Path
 
-from dasbootstrap.trapper_keeper.tk import DbTypes, open_tk_store
 from faker import Faker
 from pykeepass.pykeepass import PyKeePass, create_database
+
+from dasbootstrap.trapper_keeper.tk import open_tk_store, DbTypes
 
 
 class TestTrapperKeeper(unittest.TestCase):
     def setUp(self):
-        """Sets up the test environment."""
+        """
+        Sets up the test environment.
+        """
         self.fake = Faker()
 
         with tempfile.TemporaryDirectory(delete=False) as tmpdir:
@@ -26,9 +27,7 @@ class TestTrapperKeeper(unittest.TestCase):
     def test_chezmoi_bolt_db_rw(self):
         # Create boltdb file
         self.bolt_path.touch()
-        with open_tk_store(
-            db_type=DbTypes.BOLT, db_path=self.bolt_path, readonly=False
-        ) as tx:
+        with open_tk_store(db_type=DbTypes.BOLT, db_path=self.bolt_path, readonly=False) as tx:
             config_state = tx.create_bucket(b"configState")
             config_state.put(b"configState", b"1")
             tx.entry_state = tx.create_bucket(b"entryState")
@@ -39,34 +38,30 @@ class TestTrapperKeeper(unittest.TestCase):
             tx.script_state = tx.create_bucket(b"scriptState")
 
         with open_tk_store(DbTypes.BOLT, self.bolt_path, readonly=True) as tx:
-            assert tx is not None
+            self.assertIsNotNone(tx)
             config_state = tx.bucket(b"configState")
-            assert config_state is not None
+            self.assertIsNotNone(config_state)
             config_state_val = config_state.get(b"configState")
-            assert config_state_val is not None
+            self.assertIsNotNone(config_state_val)
             entry_state = tx.bucket(b"entryState")
-            assert entry_state is not None
+            self.assertIsNotNone(entry_state)
             github_keys = tx.bucket(b"gitHubKeysState")
-            assert github_keys is not None
+            self.assertIsNotNone(github_keys)
             github_release = tx.bucket(b"gitHubLatestReleaseState")
-            assert github_release is not None
+            self.assertIsNotNone(github_release)
             github_tags = tx.bucket(b"gitHubTagsState")
-            assert github_tags is not None
+            self.assertIsNotNone(github_tags)
             git_external = tx.bucket(b"gitRepoExternalState")
-            assert git_external is not None
+            self.assertIsNotNone(git_external)
             script_state = tx.bucket(b"scriptState")
-            assert script_state is not None
+            self.assertIsNotNone(script_state)
 
     def test_keepass_basic_db_rw(self):
-        create_database(
-            self.kp_db, self.kp_token.read_text(encoding="utf-8"), keyfile=self.kp_key
-        )
-        with open_tk_store(
-            db_type=DbTypes.KP, db_path=self.kp_db, token=self.kp_token, key=self.kp_key
-        ) as tk_db:
+        create_database(self.kp_db, self.kp_token.read_text(encoding="utf-8"), keyfile=self.kp_key)
+        with open_tk_store(db_type=DbTypes.KP, db_path=self.kp_db, token=self.kp_token, key=self.kp_key) as tk_db:
             tk_db: PyKeePass = tk_db
-            assert self.kp_token.exists()
-            assert self.kp_key.exists()
+            self.assertTrue(self.kp_token.exists())
+            self.assertTrue(self.kp_key.exists())
             for _ in range(19):
                 username = self.fake.user_name()
                 password = self.fake.password()
@@ -75,14 +70,14 @@ class TestTrapperKeeper(unittest.TestCase):
                 tk_db.add_entry(tk_db.root_group, title, username, password, url)
             tk_db.save()
 
-        with open_tk_store(
-            db_type=DbTypes.KP, db_path=self.kp_db, token=self.kp_token, key=self.kp_key
-        ) as tk_db:
-            assert self.kp_db.exists()
-            assert len(tk_db.entries) == 19
+        with open_tk_store(db_type=DbTypes.KP, db_path=self.kp_db, token=self.kp_token, key=self.kp_key) as tk_db:
+            self.assertTrue(self.kp_db.exists())
+            self.assertEqual(19, len(tk_db.entries))
 
     def tearDown(self):
-        """Tears down the test environment."""
+        """
+        Tears down the test environment.
+        """
         dir_parent: Path = self.kp_key.parent
         self.kp_key.unlink(missing_ok=True)
         self.kp_token.unlink(missing_ok=True)

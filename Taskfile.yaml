@@ -1,0 +1,34 @@
+  version: "3"
+
+  tasks:
+    build:automation_station:
+      desc: Build the automation_station module
+      cmd: poetry build-project
+      dir: projects/automation_station
+      sources:
+        - "{{.DBS_POLY_BASES}}"
+        - "{{.DBS_POLY_COMPONENTS}}"
+
+    install:automation_station:
+      deps:
+        - build:automation_station
+      desc: Install automation station module to venv
+      cmd: pip install {{.AS_WHEEL}}
+      dir: projects/automation_station
+      generates:
+        - "{{.DBS_VENV_PACKAGES}}/automation_station"
+      vars:
+        AS_WHEEL:
+          sh: find . -name "automation_station*.whl"
+
+    run:automation_station:
+      deps:
+        - install:automation_station
+      desc: "Launch a streamlit app to control automation workflows"
+      cmd: "poetry run streamlit run {{.DBS_VENV_PACKAGES}}/automation_station/Home.py"
+
+    run:chrome_kiosk:
+      desc: "Launch a chrome kiosk browser test coded to google"
+      cmd: poetry run chrome_kiosk main --url {{.CLI_ARGS}} --user_data_dir "${XDG_CACHE_HOME}"
+      dir: projects/kiosk
+

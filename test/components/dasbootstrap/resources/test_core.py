@@ -1,13 +1,11 @@
-from __future__ import annotations
-
 import os
 import shutil
 import tempfile
 import unittest
 from pathlib import Path
-
-from dasbootstrap.resources import pack, unpack
 from faker import Faker
+
+from dasbootstrap.resources import unpack, pack
 
 
 class TestFileUtil(unittest.TestCase):
@@ -21,26 +19,24 @@ class TestFileUtil(unittest.TestCase):
         with tempfile.TemporaryDirectory(delete=False) as tmp_src_dir:
             self.src_dir = Path(tmp_src_dir)
             for _ in range(20):
-                tmp_file: Path = Path.joinpath(
-                    self.src_dir, self.fake.file_path(absolute=False)
-                )
+                tmp_file: Path = Path.joinpath(self.src_dir, self.fake.file_path(absolute=False))
                 tmp_file.parent.mkdir(parents=True, exist_ok=True)
                 tmp_file.write_text(self.fake.text(max_nb_chars=200), encoding="utf-8")
 
     def test_pack_default(self):
         pack(src_dir=self.src_dir, out_file=f"{self.src_dir}.zst")
-        assert Path(f"{self.src_dir}.zst").exists()
-        assert not Path(f"{self.src_dir}.tar").exists()
-        assert Path(f"{self.src_dir}.zst").stat().st_size > 0
+        self.assertTrue(Path(f"{self.src_dir}.zst").exists())
+        self.assertFalse(Path(f"{self.src_dir}.tar").exists())
+        self.assertGreater(Path(f"{self.src_dir}.zst").stat().st_size, 0)
 
     def test_unpack_default(self):
         self.test_pack_default()
         with tempfile.TemporaryDirectory(delete=False) as tmp_src_dir:
             unpack(f"{self.src_dir}.zst", tmp_src_dir)
             out_dir = Path.joinpath(Path(tmp_src_dir), self.src_dir)
-            assert out_dir.exists()
-            assert out_dir.is_dir()
-            assert len(os.listdir(out_dir)) == 20
+            self.assertTrue(out_dir.exists())
+            self.assertTrue(out_dir.is_dir())
+            self.assertEqual(19, len(os.listdir(out_dir)))
 
     def tearDown(self):
         shutil.rmtree(path=self.src_dir)

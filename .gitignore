@@ -129,4 +129,5 @@ reports/
 .env
 .envrc
 !/components/**/log/*.py
+*.iml
 

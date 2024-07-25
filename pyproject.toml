@@ -7,6 +7,7 @@
     { include = "dasbootstrap/technitium_client", from = "bases" },
     { include = "dasbootstrap/chrome_kiosk", from = "bases" },
     { include = "dasbootstrap/automation_station", from = "bases" },
+    { include = "dasbootstrap/paramiko_client", from = "bases" },
     { include = "dasbootstrap/semaphore_client", from = "bases" },
     { include = "dasbootstrap/dasbootstrap", from = "bases" },
     { include = "dasbootstrap/proximate_utils", from = "bases" },
@@ -19,7 +20,7 @@
   ]
   readme = "README.md"
   repository = "https://github.com/borland502/dasbootstrap"
-  version = "0.2.4"
+  version = "0.2.5"
 
   # https://github.com/cod3licious/pubvis/blob/f3559f6b906d24d2104e0808dd5749dce6e02360/pyproject.toml#L36
 
@@ -213,8 +214,8 @@ netaddr = "^1.3.0"
 sqlalchemy = "^2.0.31"
 configparser = "^7.0.0"
 six = "^1.16.0"
-systemd = "^0.17.1"
 icecream = "^2.1.3"
+fire = "^0.6.0"
 
 [tool.poetry.group.dev.dependencies]
   bandit = "^1.7.8"

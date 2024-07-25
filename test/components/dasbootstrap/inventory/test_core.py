@@ -1,13 +1,8 @@
-import os
 import tempfile
 import unittest
-from linecache import cache
 from pathlib import Path
 
-from ansible_collections.google.cloud.plugins.modules.gcp_iam_service_account_key import self_link
-from cachetools import cached
-
-from dasbootstrap.inventory.core import InventorySource, Inventory
+from dasbootstrap.inventory.core import InventorySource
 from .inventory_generator import inventory_generator
 
 

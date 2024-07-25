@@ -36,7 +36,7 @@ class TestFileUtil(unittest.TestCase):
             out_dir = Path.joinpath(Path(tmp_src_dir), self.src_dir)
             self.assertTrue(out_dir.exists())
             self.assertTrue(out_dir.is_dir())
-            self.assertEqual(19, len(os.listdir(out_dir)))
+            self.assertEqual(20, len(os.listdir(out_dir)))
 
     def tearDown(self):
         shutil.rmtree(path=self.src_dir)

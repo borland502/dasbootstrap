@@ -135,7 +135,7 @@
   "tests" = ["test"]
 
 [tool.pytest.ini_options]
-  addopts = "--color=yes --doctest-modules --exitfirst --failed-first --verbosity=5 --junitxml=reports/pytest.xml"
+  addopts = "--color=yes --doctest-modules --exitfirst --import-mode=importlib --failed-first --verbosity=5 --junitxml=reports/pytest.xml"
   filterwarnings = [
     'ignore:AnsibleCollectionFinder has already been configured',
   ]

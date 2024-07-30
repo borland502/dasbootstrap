@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# https://github.com/nicholaswilde/docker-cryptpad/blob/main/.taskfiles/build.yaml
+tasks:
+  all:
+    desc: Build all platforms
+    cmds:
+      - "docker buildx build -t latest {{ .PLATFORMS }} -f Dockerfile ."
+    deps:
+      - build-deps
+
+  latest:
+    desc: Build the latest Docker image
+    cmds:
+      - "docker buildx build -t latest -f Dockerfile ."
+    deps:
+      - build-deps
+
+  build-deps:
+    preconditions:
+      - sh: "docker buildx version"
+        msg: "buildx is not installed"
+    silent: true

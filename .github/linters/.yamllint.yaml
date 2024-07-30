@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=<urlToTheSchema>
+# https://github.com/MrMarble/home-ops/blob/315a54f0a93cb8e0ff2b1900f1f80373e3cb905d/.github/linters/.markdownlint.yaml
+ignore: |
+
+extends: default
+rules:
+  truthy:
+    allowed-values: ["true", "false"]
+  comments:
+    min-spaces-from-content: 1
+  line-length: disable
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+  indentation: enable

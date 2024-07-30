@@ -1,15 +1,24 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Hashable
+from functools import cached_property
 from pathlib import Path
+
+import xdg_base_dirs
+from ansible.inventory.group import Group
+from cache_decorator import Cache
+
+from components.dasbootstrap.resources.paths import Directories, Inventory
+from components.dasbootstrap.resources.paths import Inventory as inv_sources
+from components.dasbootstrap.ansible.core import Actions
 
 from ansible.inventory.host import Host
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import init_plugin_loader
 from ansible.vars.manager import VariableManager
-
-from dasbootstrap.resources.paths import Directories, Inventory as inv_sources
+import ansible_runner
 
 
 def extract_ips(data: list[Host]):
@@ -46,42 +55,36 @@ class InventorySource:
   def get_variable_manager(self):
     return VariableManager(self._get_dataloader(), self.get_inventory_manager())
 
+  def get_dataloader(self):
+    return self._get_dataloader()
 
-def _load_hosts(inv_src: InventorySource) -> list[Host]:
- inventory = inv_src.get_inventory_manager()
- var_manager = inv_src.get_variable_manager()
-
- hosts: list[Host] = inventory.get_hosts()
- hosts = [host for host in hosts if var_manager.get_vars(host=host, include_hostvars=True)]
-
- return hosts
-
-def _load_host(inv_src: InventorySource, hostname: str) -> Host:
-  inventory = inv_src.get_inventory_manager()
-  return inventory.get_host(hostname)
 
 class KitchenSinkInventory:
 
+  cache_dir = xdg_base_dirs.xdg_cache_home() / "ansible/inventory.pkl"
+  ignore_args = tuple("self")
+
   def __init__(self):
-    self._nmap_source = InventorySource(source=inv_sources.DYNAMIC_NMAP)
-    self._proxmox_source = InventorySource(source=inv_sources.DYNAMIC_PROXMOX)
-    self._ldap_source = InventorySource(source=inv_sources.DYNAMIC_LDAP)
+    # self._nmap_hosts = self._load_hosts(InventorySource(source=inv_sources.DYNAMIC_NMAP))
+    # self._proxmox_hosts = self._load_hosts(InventorySource(source=inv_sources.DYNAMIC_PROXMOX))
+    self._static_hosts = self._load_hosts(InventorySource(source=inv_sources.STATIC_HOSTS_YAML))
 
-  @property
-  def nmap_hosts(self):
-    return _load_hosts(self._nmap_source)
+  def _load_hosts(self, inv_src: InventorySource) -> list[Host]:
+    inventory = inv_src.get_inventory_manager()
+    var_manager = inv_src.get_variable_manager()
 
-  def nmap_host(self, hostname: str) -> Host:
-    return _load_host(self._nmap_source, hostname)
+    hosts: list[Host] = inventory.get_hosts()
+    for host in hosts:
+      host.vars = var_manager.get_vars(host=host)
 
-  @property
-  def proxmox_hosts(self):
-    return _load_hosts(self._proxmox_source)
+    return hosts
 
-  def proxmox_host(self, hostname: str):
-    return _load_host(self._proxmox_source, hostname)
+  def host(self, hostname: str) -> Host:
 
+    hosts = [host for host in self._static_hosts if host.name == hostname]
+    if hosts:
+      return hosts[0]
 
-if __name__ == '__main__':
-    kitchenSink = KitchenSinkInventory()
-    kitchenSink._process_source()
+  @Cache(cache_dir=str(cache_dir))
+  def static_hosts(self) -> list[Host]:
+    return self._static_hosts

@@ -1,5 +1,6 @@
-from .chrome_kiosk import ChromeKiosk
 import fire
+
+from .chrome_kiosk import ChromeKiosk
 
 
 def chrome_kiosk():

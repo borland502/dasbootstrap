@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# https://github.com/ishioni/homelab-ops/blob/893c5618034baf89a2ca65e9543dc48206bf0213/.taskfiles/Ansible.yml
+version: "3"
+
+env:
+  ANSIBLE_CONFIG: "{{.ANSIBLE_HOME}}/ansible.cfg"
+
+vars:
+  ANSIBLE_PLAYBOOK_DIR: "{{.ANSIBLE_HOME}}/playbooks"
+  ANSIBLE_INV_HOME: "{{.ANSIBLE_HOME}}/inventory"
+
+tasks:
+  default:
+    - deps
+
+  deps:
+    desc: Install / Upgrade Ansible galaxy deps
+    cmds:
+      - ansible-galaxy install -r {{ .ANSIBLE_HOME }}/roles/requirements.yml --force
+      - ansible-galaxy collection install -r {{ .ANSIBLE_HOME }}/collections/requirements.yml --force
+
+  list:
+    desc: List all the hosts
+    cmds:
+      - ansible all -i {{.ANSIBLE_INV_HOME}}/hosts.yml --list-hosts
+
+  ping:
+    desc: Ping all the hosts
+    cmds:
+      - ansible all -i {{.ANSIBLE_INV_HOME}}/hosts.yml --one-line -m 'ping'
+
+  setup:
+    desc: Canvas all the available dynamic and static sources for host information
+    run: "once"
+    silent: true
+    ignore_error: true
+    cmds:
+      - ansible all -i {{.ANSIBLE_INV_HOME}}/ -m 'setup'
+    sources:
+      - "{{.ANSIBLE_INV_HOME}}/*"
+    generates:
+      - "${XDG_CACHE_HOME}/ansible/*"
+
+
+  uptime:
+    desc: Uptime of all the hosts
+    cmds:
+      - ansible all -i {{.ANSIBLE_INV_HOME}}/hosts.yml --one-line -a 'uptime'

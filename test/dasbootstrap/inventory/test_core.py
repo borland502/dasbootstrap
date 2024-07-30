@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from dasbootstrap.inventory.core import InventorySource
+
 from .inventory_generator import inventory_generator
 
 

@@ -1,5 +1,6 @@
-from sqlite_utils import Database
 from pathlib import Path
+
+from sqlite_utils import Database
 
 
 class SqliteStore(Database):

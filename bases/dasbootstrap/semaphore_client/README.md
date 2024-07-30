@@ -30,6 +30,7 @@ semaphore-client --help
 
 1. [Generate an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key) and [add the SSH key to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 1. Configure SSH to automatically load your SSH keys:
+
     ```sh
     cat << EOF >> ~/.ssh/config
     
@@ -49,6 +50,7 @@ semaphore-client --help
 1. [Install Docker Desktop](https://www.docker.com/get-started).
     - _Linux only_:
         - Export your user's user id and group id so that [files created in the Dev Container are owned by your user](https://github.com/moby/moby/issues/3206):
+
             ```sh
             cat << EOF >> ~/.bashrc
             

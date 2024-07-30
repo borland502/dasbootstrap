@@ -3,11 +3,10 @@ from __future__ import annotations
 import os
 
 import ansible_runner
-from dasbootstrap.resources.ansible import find_playbook
-from dasbootstrap.resources.paths import Directories, Inventory, Requirements, Variables
+from components.dasbootstrap.resources.ansible import find_playbook
+from components.dasbootstrap.resources.paths import Directories, Inventory, Requirements, Variables
 
-INVENTORY: list[str] = ["-i", str(Directories.IHOME + "/hosts.yaml")]
-# TODO: Validate vars
+INVENTORY: list[str] = [str(Inventory.STATIC_HOSTS_YAML)]
 VARS: list[str] = [
   *INVENTORY,
   *[
@@ -49,24 +48,39 @@ class Actions:
   and run playbooks for LXC containers.
   """
 
-  def __init__(self, app="lxc"):
-    """Initialize the Actions class with the specified application name.
+  def __init__(self):
+    """Initialize the Actions class with the specified application name."""
+    self.gather_facts()
+    self.dump_inventory()
 
-    Args:
-        app (str, optional): The application name for the LXC container.
-            Defaults to "lxc".
+  @classmethod
+  def gather_facts(cls, disable_output: bool = True) -> tuple:
     """
-    self.app = app
-    self.app_path = f"@{Directories.HVHOME}/{app}.yaml"
+    Gather facts so that vars & inventory will include them.  Assume ssh already setup with keys.
+    """
+    return ansible_runner.run_command('ansible', cmdline_args=[
+      'all',
+      '-m',
+      'ansible.builtin.setup',
+      *INVENTORY,
+      '--user=root'
+    ], quiet=disable_output)
 
-    ansible_runner.run_command(
+  @classmethod
+  def dump_inventory(cls) -> tuple:
+    """Convert dynamic inventory sources into a single static host file.
+
+    :return:
+    """
+    return ansible_runner.run_command(
       executable_cmd="ansible-inventory",
       cmdline_args=[
         "all",
         "--export",
         "--list",
         "--yaml",
-        *VARS,
+        "-i",
+        Directories.IHOME,
         "--output",
         str(Inventory.STATIC_HOSTS),
       ],
@@ -182,25 +196,6 @@ class Actions:
     )
 
   @classmethod
-  def dump_inventory(cls):
-    """Convert dynamic inventory sources into a single static host file.
-
-    :return:
-    """
-    ansible_runner.run_command(
-      executable_cmd="ansible-inventory",
-      cmdline_args=[
-        "all",
-        "--export",
-        "--list",
-        "--yaml",
-        *VARS,
-        "--output",
-        str(Inventory.STATIC_HOSTS),
-      ],
-    )
-
-  @classmethod
   def update_collections(cls):
     """Update galaxy collections for Dasbootstrap.
 
@@ -215,14 +210,6 @@ class Actions:
         str(Requirements.COLLECTIONS_REQS),
         "--force",
       ],
-    )
-
-  @classmethod
-  def update_facts(cls):
-    """Run the ansible.builtin.setup module against all hosts with the service user."""
-    ansible_runner.run_command(
-      executable_cmd="ansible",
-      cmdline_args=["all", "-m", "setup", *VARS, "--user", "ansible"],
     )
 
   @classmethod

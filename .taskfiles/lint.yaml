@@ -1,0 +1,47 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+
+tasks:
+  default:
+    desc: Run all linters
+    cmds:
+      - task: ansible
+      - task: bandit
+      - task: markdown
+      - task: ruff
+      - task: yaml
+
+  ansible:
+    silent: true
+    desc: lint ansible directory files
+    cmds:
+      - ansible-lint -c .github/linters/.ansible.yaml
+
+  bandit:
+    silent: true
+    desc: lint python for security vulnerabilities
+    cmds:
+      - "{{.RUN_PREFIX}} bandit -c {{.DASBOOTSTRAP_HOME}}/pyproject.toml -r {{.PYTHON_FILES}}"
+    ignore_error : true
+
+  markdown:
+    desc: Lint Markdown
+    cmds:
+      - markdownlint-cli2 -c '.github/linters/.markdownlint.yaml' *.md **/*.md !.venv/**/*.md
+    ignore_error : true
+
+  ruff:
+    silent: true
+    desc: Run ruff
+    cmds:
+      - "{{.RUN_PREFIX}} ruff check {{.PYTHON_SRC}} --fix --config {{.DASBOOTSTRAP_HOME}}/pyproject.toml --line-length 128 --target-version py312"
+    ignore_error : true
+
+  yaml:
+    desc: Run yaml linter
+    cmds:
+      - yamllint -c '.github/linters/.yamllint.yaml' {{.YAML_FILES}}
+    ignore_error : true

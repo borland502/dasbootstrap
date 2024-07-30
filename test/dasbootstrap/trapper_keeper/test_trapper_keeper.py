@@ -2,16 +2,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from dasbootstrap.trapper_keeper.tk import DbTypes, open_tk_store
 from faker import Faker
 from pykeepass.pykeepass import PyKeePass, create_database
-
-from dasbootstrap.trapper_keeper.tk import open_tk_store, DbTypes
 
 
 class TestTrapperKeeper(unittest.TestCase):
     def setUp(self):
-        """
-        Sets up the test environment.
+        """Sets up the test environment.
         """
         self.fake = Faker()
 
@@ -75,8 +73,7 @@ class TestTrapperKeeper(unittest.TestCase):
             self.assertEqual(19, len(tk_db.entries))
 
     def tearDown(self):
-        """
-        Tears down the test environment.
+        """Tears down the test environment.
         """
         dir_parent: Path = self.kp_key.parent
         self.kp_key.unlink(missing_ok=True)

@@ -3,6 +3,7 @@ from simple_toml_settings import TOMLSettings
 
 class BirthdayReminder(TOMLSettings):
     """Settings for birthday reminder.
+
     Args:
         TOMLSettings (_type_): _description_
     """

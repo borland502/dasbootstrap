@@ -3,9 +3,9 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
-from faker import Faker
 
-from dasbootstrap.resources import unpack, pack
+from dasbootstrap.resources import pack, unpack
+from faker import Faker
 
 
 class TestFileUtil(unittest.TestCase):

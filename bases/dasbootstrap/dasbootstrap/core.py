@@ -3,13 +3,11 @@
 from typer import Option, Typer
 
 from dasbootstrap.ansible.core import Actions, Plays
+
 from dasbootstrap.resources.paths import OperatingSystemFiles
+
 from dasbootstrap.ssh import HostKeysUtils
 
-app = Typer()
-
-
-@app.command()
 def create_kvm(
   app_name: str = Option("kvm", help="Virtual machine to manage (defaults to kvm)"),
 ):
@@ -23,7 +21,6 @@ def create_kvm(
   actions.ansible_user_lxc(app_name)
 
 
-@app.command()
 def create_lxc(
   app_name: str = Option("lxc", help="Application to manage (defaults to lxc)"),
 ):
@@ -39,7 +36,6 @@ def create_lxc(
   actions.setup_playbook(app_name)
 
 
-@app.command()
 def destroy(
   app_name: str = Option("lxc", help="Application to manage (defaults to lxc)"),
 ):
@@ -48,13 +44,11 @@ def destroy(
   actions.destroy_lxc()
 
 
-@app.command()
 def update_facts():
   """Update facts for all managed hosts."""
   Actions.update_facts()
 
 
-@app.command()
 def update_containers(
   user: str = Option("user", help="Ansible user to run playbook under"),
 ):
@@ -62,23 +56,16 @@ def update_containers(
   Plays.update_containers(user=user)
 
 
-@app.command()
 def update_collections():
   """Update Ansible collections from requirements."""
   Actions.update_collections()
 
 
-@app.command()
 def dump_inventory():
   """Dump the inventory to hosts.yaml."""
   Actions.dump_inventory()
 
 
-@app.command()
 def update_roles():
   """Update Ansible roles from requirements."""
   Actions.update_roles()
-
-
-if __name__ == "__main__":
-  app()

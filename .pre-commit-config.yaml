@@ -1,3 +1,4 @@
+---
 # https://pre-commit.com
 default_install_hook_types: [commit-msg, pre-commit]
 default_stages: [commit, manual]
@@ -64,25 +65,25 @@ repos:
         types_or: [python, pyi]
       - id: ruff-format
   - repo: https://github.com/python-poetry/poetry
-    rev: "1.8.0"
+    rev: 1.8.0
     hooks:
       - id: poetry-check
-        name: "check poetry files"
+        name: check poetry files
         entry: poetry check
         language: system
         pass_filenames: false
       - id: poetry-lock
-        name: "check poetry lock"
+        name: check poetry lock
         entry: poetry lock
         language: system
         pass_filenames: false
       - id: poetry-export
-        name: "export poetry"
+        name: export poetry
         entry: poetry export
         language: system
         pass_filenames: false
       - id: poetry-install
-        name: "install poetry"
+        name: install poetry
         entry: poetry install
         language: system
         pass_filenames: false
@@ -103,10 +104,10 @@ repos:
         entry: bandit
         language: system
         types_or: [python, pyi]
-        args: ["-iii", "-ll"]
+        args: [-iii, -ll]
       - id: pyupgrade
         name: pyupgrade
         entry: pyupgrade
         language: system
         types_or: [python, pyi]
-        args: ["--py312"]
+        args: [--py312]

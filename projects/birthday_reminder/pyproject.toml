@@ -5,10 +5,7 @@
   name = "birthday_reminder"
   version = "0.1.0"
 
-  packages = [
-    { include = "dasbootstrap/config", from = "../../components" },
-    { include = "dasbootstrap/files", from = "../../components" },
-  ]
+  packages = [{ include = "dasbootstrap/resources", from = "../../components" }]
 
 [tool.poetry.dependencies]
   python = "^3.12"

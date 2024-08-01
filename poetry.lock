@@ -368,6 +368,20 @@ html5lib = ["html5lib"]
 lxml = ["lxml"]
 
 [[package]]
+name = "benedict"
+version = "0.3.2"
+description = ""
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "BeneDict-0.3.2-py3-none-any.whl", hash = "sha256:3bff72dc6d30d02fe51f613694c7efa2b21cde4aacc73613726ba3610f900c73"},
+    {file = "BeneDict-0.3.2.tar.gz", hash = "sha256:e6f66b544393fd628110e79af8854b88aa825606247e28c28decdf010c9d5df3"},
+]
+
+[package.dependencies]
+pyyaml = "*"
+
+[[package]]
 name = "black"
 version = "24.4.2"
 description = "The uncompromising code formatter."
@@ -456,23 +470,6 @@ files = [
 ]
 
 [[package]]
-name = "cache-decorator"
-version = "2.2.0"
-description = "a simple decorator to cache the results of computationally heavy functions"
-optional = false
-python-versions = "*"
-files = [
-    {file = "cache_decorator-2.2.0.tar.gz", hash = "sha256:ebb427b5acb00fb0a47ed9fc7d52fe96de94f40ca52f381205ace8756df6df5a"},
-]
-
-[package.dependencies]
-compress_json = ">=1.0.4"
-compress_pickle = ">=2.0.1"
-deflate_dict = "*"
-dict_hash = ">=1.1.32"
-humanize = ">=3.4.1"
-
-[[package]]
 name = "cachetools"
 version = "5.4.0"
 description = "Extensible memoizing collections and decorators"
@@ -482,6 +479,22 @@ files = [
     {file = "cachetools-5.4.0-py3-none-any.whl", hash = "sha256:3ae3b49a3d5e28a77a0be2b37dbcb89005058959cb2323858c2657c4a8cab474"},
     {file = "cachetools-5.4.0.tar.gz", hash = "sha256:b8adc2e7c07f105ced7bc56dbb6dfbe7c4a00acce20e2227b3f355be89bc6827"},
 ]
+
+[[package]]
+name = "cachier"
+version = "3.0.0"
+description = "Persistent, stale-free, local and cross-machine caching for Python functions."
+optional = false
+python-versions = "*"
+files = [
+    {file = "cachier-3.0.0-py3-none-any.whl", hash = "sha256:627455077d3619a27b1c63368d49533ffe6807a1b19fe6944e4c8f3ac895d1bc"},
+    {file = "cachier-3.0.0.tar.gz", hash = "sha256:f756ebeabf8b397f75fbbb9a5841972d4c85a81b7313e2812b3448e80d74c66d"},
+]
+
+[package.dependencies]
+portalocker = ">=2.3.2"
+setuptools = ">=67.6.0"
+watchdog = ">=2.3.1"
 
 [[package]]
 name = "certifi"
@@ -745,36 +758,6 @@ humanfriendly = ">=9.1"
 cron = ["capturer (>=2.4)"]
 
 [[package]]
-name = "compress-json"
-version = "1.1.0"
-description = "The missing Python utility to read and write large compressed JSONs."
-optional = false
-python-versions = "*"
-files = [
-    {file = "compress_json-1.1.0.tar.gz", hash = "sha256:0fcc3fb518250546e747af4b00cca488c62c60cee84a79f33374ff0b77adec43"},
-]
-
-[package.extras]
-test = ["dict_hash", "pytest", "pytest-cov", "pytest-readme", "random_dict", "validate_version_code"]
-
-[[package]]
-name = "compress-pickle"
-version = "2.1.0"
-description = "Standard pickle, wrapped with standard compression libraries"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "compress_pickle-2.1.0-py3-none-any.whl", hash = "sha256:598650da4686d9bd97bee185b61e74d7fe1872bb0c23909d5ed2d8793b4a8818"},
-    {file = "compress_pickle-2.1.0.tar.gz", hash = "sha256:3e944ce0eeab5b6331324d62351c957d41c9327c8417d439843e88fe69b77991"},
-]
-
-[package.extras]
-cloudpickle = ["cloudpickle"]
-dill = ["dill"]
-full = ["cloudpickle", "dill", "lz4"]
-lz4 = ["lz4"]
-
-[[package]]
 name = "configparser"
 version = "7.0.0"
 description = "Updated configparser from stdlib for earlier Pythons."
@@ -940,35 +923,6 @@ files = [
     {file = "decorator-5.1.1-py3-none-any.whl", hash = "sha256:b8c3f85900b9dc423225913c5aace94729fe1fa9763b38939a95226f02d37186"},
     {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
 ]
-
-[[package]]
-name = "deflate-dict"
-version = "1.2.0"
-description = "Package to deflate and inflate dictionaries."
-optional = false
-python-versions = "*"
-files = [
-    {file = "deflate_dict-1.2.0.tar.gz", hash = "sha256:f03d8335629b192467fcc4ce5cb4fdc0f716e3ebdd0bd30edbf81113d49e2bb8"},
-]
-
-[package.extras]
-test = ["pytest", "pytest-cov", "random_dict", "validate_version_code"]
-
-[[package]]
-name = "dict-hash"
-version = "1.2.0"
-description = "Python package to hash dictionaries using both default hash and sha256."
-optional = false
-python-versions = "*"
-files = [
-    {file = "dict_hash-1.2.0.tar.gz", hash = "sha256:15ca35be7448485d742451cfaea6db51cf9bfbf4ea70ca41da99bc4f54d5f59b"},
-]
-
-[package.dependencies]
-deflate_dict = ">=1.0.8"
-
-[package.extras]
-test = ["hvplot (>=0.9.1)", "netaddr", "numba", "polars", "pytest", "pytest-cov", "random_dict", "tqdm", "validate_version_code"]
 
 [[package]]
 name = "distlib"
@@ -1516,20 +1470,6 @@ files = [
 
 [package.dependencies]
 pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_version >= \"3.8\""}
-
-[[package]]
-name = "humanize"
-version = "4.10.0"
-description = "Python humanize utilities"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "humanize-4.10.0-py3-none-any.whl", hash = "sha256:39e7ccb96923e732b5c2e27aeaa3b10a8dfeeba3eb965ba7b74a3eb0e30040a6"},
-    {file = "humanize-4.10.0.tar.gz", hash = "sha256:06b6eb0293e4b85e8d385397c5868926820db32b9b654b932f57fa41c23c9978"},
-]
-
-[package.extras]
-tests = ["freezegun", "pytest", "pytest-cov"]
 
 [[package]]
 name = "icecream"
@@ -2746,6 +2686,25 @@ pywin32 = {version = "*", markers = "platform_system == \"Windows\" and platform
 dev = ["paramiko", "psutil", "pytest (>=6.0)", "pytest-cov", "pytest-mock", "pytest-timeout"]
 docs = ["sphinx (>=4.0.0)", "sphinx-rtd-theme (>=1.0.0)"]
 ssh = ["paramiko"]
+
+[[package]]
+name = "portalocker"
+version = "2.10.1"
+description = "Wraps the portalocker recipe for easy usage"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "portalocker-2.10.1-py3-none-any.whl", hash = "sha256:53a5984ebc86a025552264b459b46a2086e269b21823cb572f8f28ee759e45bf"},
+    {file = "portalocker-2.10.1.tar.gz", hash = "sha256:ef1bf844e878ab08aee7e40184156e1151f228f103aa5c6bd0724cc330960f8f"},
+]
+
+[package.dependencies]
+pywin32 = {version = ">=226", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+docs = ["sphinx (>=1.7.1)"]
+redis = ["redis"]
+tests = ["pytest (>=5.4.1)", "pytest-cov (>=2.8.1)", "pytest-mypy (>=0.8.0)", "pytest-timeout (>=2.1.0)", "redis", "sphinx (>=6.0.0)", "types-redis"]
 
 [[package]]
 name = "pre-commit"
@@ -5396,4 +5355,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "eac7afb54d52d83e5f5c20eabd41b345dd00ac51ea521f37fd3e3c680f7683de"
+content-hash = "4984f19993879e564bca47a2a2be59599bf9c1fb22435c1a534e2d682dae36ce"

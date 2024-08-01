@@ -12,9 +12,10 @@ class AnsibleInventory(DASBootstrap):
     self.inventory = KitchenSinkInventory()
 
   def run(self):
-    host: Host = self.inventory.host("lxc")
-    if host:
-      self.ansible_actions.create_lxc()
+    self.ansible_actions.create_lxc()
+    self.ansible_actions.bootstrap_lxc("lxc")
+    self.ansible_actions.destroy_lxc()
+
 
 if __name__ == '__main__':
-    fire.Fire(AnsibleInventory)
+  fire.Fire(AnsibleInventory)

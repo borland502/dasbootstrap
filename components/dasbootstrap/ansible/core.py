@@ -6,7 +6,8 @@ import ansible_runner
 from components.dasbootstrap.resources.ansible import find_playbook
 from components.dasbootstrap.resources.paths import Directories, Inventory, Requirements, Variables
 
-INVENTORY: list[str] = [str(Inventory.STATIC_HOSTS_YAML)]
+INVENTORY: list[str] = ["-i", str(Inventory.DYNAMIC_LDAP), "-i", str(Inventory.DYNAMIC_NMAP),"-i",
+                        str(Inventory.DYNAMIC_PROXMOX),"-i", str(Inventory.STATIC_HOSTS_TOML)]
 VARS: list[str] = [
   *INVENTORY,
   *[
@@ -48,23 +49,28 @@ class Actions:
   and run playbooks for LXC containers.
   """
 
-  def __init__(self):
-    """Initialize the Actions class with the specified application name."""
-    self.gather_facts()
-    self.dump_inventory()
+  def __init__(self, app="lxc"):
+    """Initialize the Actions class with the specified application name.
+
+    Args:
+        app (str, optional): The application name for the LXC container.
+            Defaults to "lxc".
+    """
+    self.app = app
+    self.app_path = f"@{Directories.HVHOME}/{app}.yaml"
 
   @classmethod
-  def gather_facts(cls, disable_output: bool = True) -> tuple:
+  def gather_facts(cls):
     """
     Gather facts so that vars & inventory will include them.  Assume ssh already setup with keys.
     """
-    return ansible_runner.run_command('ansible', cmdline_args=[
+    ansible_runner.run_command('ansible', cmdline_args=[
       'all',
       '-m',
       'ansible.builtin.setup',
       *INVENTORY,
       '--user=root'
-    ], quiet=disable_output)
+    ])
 
   @classmethod
   def dump_inventory(cls) -> tuple:
@@ -78,11 +84,11 @@ class Actions:
         "all",
         "--export",
         "--list",
-        "--yaml",
+        "--toml",
         "-i",
         Directories.IHOME,
         "--output",
-        str(Inventory.STATIC_HOSTS),
+        str(Inventory.STATIC_HOSTS_TOML),
       ],
     )
 

@@ -1,3 +1,3 @@
-from dasbootstrap.inventory import core
+from bases.dasbootstrap.inventory import cli
 
 __all__ = ["cli.py"]

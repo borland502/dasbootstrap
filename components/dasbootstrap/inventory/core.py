@@ -20,7 +20,8 @@ from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import init_plugin_loader
 from ansible.vars.manager import VariableManager
-import ansible_runner
+from benedict import benedict
+
 
 class InventorySource:
   """InventorySource is a simple abstraction over ansible's complicated inventory plugin system."""
@@ -52,73 +53,64 @@ class InventorySource:
 
 
 class KitchenSinkInventory:
-
   cache_dir = xdg_base_dirs.xdg_cache_home() / "dasbootstrap"
   ignore_args = tuple("self")
 
   def __init__(self):
-    set_default_params(
-      stale_after=datetime.timedelta(days=1),
-      cache_dir=self.cache_dir,
-    )
+    self._gather_facts()
 
-  @cachier(allow_none=True)
+  @cachier(stale_after=datetime.timedelta(days=1), cache_dir=cache_dir, allow_none=True)
   def _gather_facts(self):
     Actions.gather_facts()
+    Actions.dump_inventory()
 
-  @cachier()
+  @cachier(stale_after=datetime.timedelta(days=1), cache_dir=cache_dir)
   def _proxmox_source(self) -> list[Host]:
     inv_source = InventorySource(source=inv_sources.DYNAMIC_PROXMOX)
-    return self._load_hosts(inv_source, inv_source.get_inventory_manager(), inv_source.get_variable_manager())
+    return self._load_hosts(inv_source.get_inventory_manager(), inv_source.get_variable_manager())
 
-  @cachier()
+  @cachier(stale_after=datetime.timedelta(days=1), cache_dir=cache_dir)
   def _static_source(self) -> list[Host]:
     inv_source = InventorySource(source=inv_sources.STATIC_HOSTS_TOML)
-    return self._load_hosts(InventorySource(source=inv_sources.STATIC_HOSTS), inv_source.get_inventory_manager(), inv_source.get_variable_manager())
+    return self._load_hosts(inv_source.get_inventory_manager(), inv_source.get_variable_manager())
 
-  @cachier()
+  @cachier(stale_after=datetime.timedelta(days=1), cache_dir=cache_dir)
   def _ldap_source(self) -> list[Host]:
     inv_source = InventorySource(source=inv_sources.DYNAMIC_LDAP)
-    return self._load_hosts(InventorySource(source=inv_sources.DYNAMIC_LDAP), inv_source.get_inventory_manager(), inv_source.get_variable_manager())
+    return self._load_hosts(inv_source.get_inventory_manager(), inv_source.get_variable_manager())
 
-  @cachier()
+  @cachier(stale_after=datetime.timedelta(days=1), cache_dir=cache_dir)
   def _nmap_source(self) -> list[Host]:
     inv_source = InventorySource(source=inv_sources.DYNAMIC_NMAP)
-    return self._load_hosts(InventorySource(source=inv_sources.DYNAMIC_NMAP), inv_source.get_inventory_manager(), inv_source.get_variable_manager())
+    return self._load_hosts(inv_source.get_inventory_manager(), inv_source.get_variable_manager())
 
   @classmethod
-  def _load_hosts(cls, inv_src: InventorySource, inv_mgr: InventoryManager, var_mgr: VariableManager) -> list[Host]:
-
+  def _load_hosts(cls, inv_mgr: InventoryManager, var_mgr: VariableManager) -> list[Host]:
     hosts: list[Host] = inv_mgr.get_hosts()
     for host in hosts:
       host.vars = var_mgr.get_vars(host=host)
 
-      # if cls._merged_hosts.get(host.name) is None:
-      #   cls._merged_hosts[host.name] = host
-      # else:
-      #   host.vars.update({k:v for (k,v) in host.vars if cls._merged_hosts[host.name].vars.get(k) is None })
     return hosts
 
-  @cached_property
+  @property
   def static_hosts(self) -> list[Host]:
-    Actions.dump_inventory()
-    return self._load_hosts(self._static_source)
+    return self._static_source()
 
-  @cached_property
+  @property
   def proxmox_hosts(self) -> list[Host]:
-    return self._proxmox_source
+    return self._proxmox_source()
 
-  @cached_property
+  @property
   def nmap_hosts(self) -> list[Host]:
-    return self._nmap_source
+    return self._nmap_source()
 
-  @cached_property
+  @property
   def ldap_hosts(self) -> list[Host]:
-    return self._ldap_source
+    return self._ldap_source()
 
   @property
   def merged_inventory(self) -> list[Host]:
-    merged_inventory: list[Host] = self.proxmox_hosts()
-    merged_inventory.extend(self.ldap_hosts())
-    merged_inventory.extend(self.nmap_hosts())
+    merged_inventory: list[Host] = self.proxmox_hosts
+    merged_inventory.extend(self.ldap_hosts)
+    merged_inventory.extend(self.static_hosts)
     return merged_inventory

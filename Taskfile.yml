@@ -1,0 +1,236 @@
+version: "3"
+
+dotenv:
+    - .envrc
+
+vars:
+    POETRY: poetry
+    PYTHON: python
+    PYTEST: pytest
+    PIP: pip
+    GH: gh
+    STREAMLIT: streamlit
+
+    DASBOOTSTRAP_HOME: "{{.XDG_DATA_HOME}}/automation/dasbootstrap"
+    # The prefix to use when running dev commands
+    RUN_PREFIX: "{{.POETRY}} run"
+    ANSIBLE_PB_PREFIX: "{{.RUN_PREFIX}} ansible-playbook"
+    # The prefix to use when running streamlit commands
+    ST_RUN_PREFIX: "{{.RUN_PREFIX}} {{.STREAMLIT}} run"
+    # necessary if we've been in other poetry venvs and activated them manually
+    VENV_ACTIVATE: "if [[ $(command -v deactivate) ]]; then deactivate; fi; poetry shell"
+    VENV_PYTHON: "{{.RUN_PREFIX}} python"
+    VENV_PACKAGES: "{{.DASBOOTSTRAP_HOME}}/.venv/lib/python3.12/site-packages/dasbootstrap"
+
+    PYTEST_PREFIX: "{{.RUN_PREFIX}} {{.PYTEST}}"
+    PIP_PREFIX: "{{.RUN_PREFIX}} {{.PIP}}"
+    BUILD_ALL_PREFIX: "{{.POETRY}} build-project --with-top-namespace=dasbootstrap"
+    PYTHON_PROJ_SRC: "{{.DASBOOTSTRAP_HOME}}/pyprojects/**/*.py"
+    PYTHON_SHARED_SRC: "{{.DASBOOTSTRAP_HOME}}/shared/**/*.py"
+    PYTHON_ST_SRC: "{{.DASBOOTSTRAP_HOME}}/pages/**/*.py"
+    PYTHON_DASH_SRC: "{{.DASBOOTSTRAP_HOME}}/Home.py"
+    PYTHON_TMP_FOLDER: "{{.DASBOOTSTRAP_HOME}}/.prepare_dasbootstrap"
+    PYTHON_DIST: "{{.DASBOOTSTRAP_HOME}}/dist"
+    PYPROJECTS_VENV: "{{.DASBOOTSTRAP_HOME}}/.venv/**/dasbootstrap/*"
+    RUN_MODULE_PREFIX: "{{.VENV_PYTHON}} -m"
+    DASBOOTSTRAP_PREFIX: "{{.RUN_MODULE_PREFIX}} dasbootstrap"
+    TK_PREFIX: "{{.RUN_MODULE_PREFIX}} trapper_keeper"
+    RUN_UNITTEST_PREFIX: "{{.RUN_MODULE_PREFIX}} unittest discover ."
+
+tasks:
+    default:
+        cmds:
+            - |
+                command -v brew >/dev/null || { echo "brew is mandatory for this to work, please install it"; exit 1; }
+                command -v gum >/dev/null|| brew install gum
+
+                selected=$(task --list-all | grep -v "task: Available" | grep -v "default:" | gum filter --indicator="->" --placeholder="Type to search for a task...")
+                echo "$selected" | awk '{sub(/:$/, "", $2); print $2}' | xargs task
+
+    poetry:dbsshell:
+        desc: Switch to Dasbootstrap shell
+        cmds:
+            - "{{.VENV_ACTIVATE}}"
+
+    # TODO: Gather playbooks and present a list
+    update:containers:
+        deps:
+            - task: poetry:dbsshell
+            - task: install
+        desc: Update lxc and kvm containers
+        cmds:
+            - "{{.DASBOOTSTRAP_PREFIX}} update-containers --user ansible"
+
+    create:kvm:
+        desc: Create a KVM by hostname
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} create-kvm --app-name {{.KVM_HOST}}
+        vars:
+            KVM_HOST:
+                sh: |
+                    echo $(gum input --prompt="What is the hostname for the KVM template? " --placeholder "kvm")
+
+    create:lxc:
+        desc: Create an LXC by hostname
+        deps:
+            - task: install
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name "{{ .LXC_HOST }}"
+        vars:
+            LXC_HOST:
+                sh: |
+                    echo "$(find ~/.ansible/inventory/host_vars -name "*.yaml" -exec sh -c 'basename {} .yaml' \; | gum choose)"
+
+    destroy:lxc:
+        desc: Destroy an LXC by hostname
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} destroy --app-name {{.LXC_HOST}}
+        vars:
+            LXC_HOST:
+                sh: |
+                    echo $(gum input --prompt="What is the hostname for the LXC template? " --placeholder "lxc")
+
+    dump-inventory:
+        desc: Dump the available ansible dynamic sources to a static hosts.yaml
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} dump-inventory
+
+    update-collections:
+        internal: true
+        desc: Update the available ansible collections using ~/.ansible/collections/requirements.yml
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} update-collections
+
+    update-roles:
+        internal: true
+        desc: Update the available ansible roles using ~/.ansible/roles/requirements.yml
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} update-roles
+
+    update-facts:
+        internal: true
+        desc: Update ansible facts
+        cmds:
+            - |
+                {{.DASBOOTSTRAP_PREFIX}} update-facts
+
+    ruff:check:
+        desc: Run ruff
+        cmds:
+            - "{{.RUN_PREFIX}} ruff check {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --fix"
+
+    ruff:format:
+        desc: Format code
+        cmds:
+            - "{{.RUN_PREFIX}} ruff format {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}} --config pyproject.toml --line-length 128 --target-version py311"
+
+    bandit:
+        internal: true
+        desc: Run bandit
+        cmds:
+            - "{{.RUN_PREFIX}} bandit -c pyproject.toml -r {{.PYTHON_PROJ_SRC}} {{.PYTHON_SHARED_SRC}}"
+
+    build:clean:
+        desc: Clean build directories
+        cmds:
+            - "{{.PIP_PREFIX}} uninstall {{.PYTHON_DIST}}/*.whl -y"
+            - "rm -rf {{.PYTHON_DIST}}"
+
+    build:
+        desc: Build all pyprojects and the shared libraries for them
+        cmds:
+            - "{{.BUILD_ALL_PREFIX}}"
+        sources:
+            - "{{.PYTHON_PROJ_SRC}}"
+            - "{{.PYTHON_SHARED_SRC}}"
+            - "{{.PYTHON_ST_SRC}}"
+            - "{{.PYTHON_DASH_SRC}}"
+            - "bin/*.py"
+
+    tests:integration:
+        internal: true
+        deps:
+            - task: lint
+        desc: Runs molecule integration and pytest unit/integration tests
+        cmds:
+            - "{{.PYTEST_PREFIX}}"
+
+    tests:functional:
+        internal: true
+        desc: Runs all actions against a live proxmox server
+        deps:
+            - task: install
+        cmds:
+            - task: tests:integration
+            - task: update
+            - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
+            - "{{.DASBOOTSTRAP_PREFIX}} create-lxc --app-name lxc"
+            - "{{.DASBOOTSTRAP_PREFIX}} destroy --app-name lxc"
+
+    lint:
+        desc: Runs linters for dasbootstrap project
+        deps:
+            - task: bandit
+            - task: ruff:check
+            - task: ruff:format
+
+    update:
+        desc: Update dasbootstrap and ansible dependencies
+        sources:
+            - "{{.HOME}}/.ansible/collections/requirements.yml"
+            - "{{.HOME}}/.ansible/roles/requirements.yml"
+        generates:
+            - "{{.HOME}}/.ansible/collections/**/*.yml"
+            - "{{.HOME}}/.ansible/collections/**/*.yaml"
+            - "{{.HOME}}/.ansible/roles/**/*.yaml"
+            - "{{.HOME}}/.anbile/roles/**/*.yml"
+        deps:
+            - task: update-roles
+            - task: update-facts
+            - task: update-collections
+        cmds:
+            - task: dump-inventory
+
+    install:
+        desc: Install all pyprojects to local .venv
+        sources:
+            - "{{.PYTHON_PROJ_SRC}}"
+            - "{{.PYTHON_SHARED_SOURCE}}"
+            - "{{.PYTHON_ST_SRC}}"
+            - "{{.PYTHON_DASH_SRC}}"
+        cmds:
+            - task: build
+            - "{{.PIP_PREFIX}} install {{.PYTHON_DIST}}/*.whl --force-reinstall --no-deps"
+        dir: "{{.DASBOOTSTRAP_HOME}}"
+
+    test:
+        desc: Run unit tests
+        deps:
+            - task: build
+            - task: ruff:format
+        cmds:
+            - "{{.RUN_UNITTEST_PREFIX}}"
+
+    test:all:
+        desc: Run unit, integration, and functional tests
+        deps:
+            - task: build
+            - task: ruff:format
+        cmds:
+            - task: test
+            - task: tests:integration
+            - task: tests:functional
+
+    run_app:
+        deps:
+            - install
+            - task: poetry:dbsshell
+        desc: Run Automation Station
+        cmds:
+            - "{{.ST_RUN_PREFIX}} Home.py"

@@ -21,6 +21,17 @@ function ensureDebianPackageInstalled() {
     fi
 }
 
+# @description Helper function for ensurePackageInstalled for ArchLinux installations
+function ensureArchPackageInstalled() {
+  if type sudo &> /dev/null && [ "$CAN_USE_SUDO" != 'false' ]; then
+    sudo pacman update
+    sudo pacman -S "$1"
+  else
+    pacman update
+    pacman -S "$1"
+  fi
+}
+
 # @description Ensures given package is installed on a system.
 #
 # @arg $1 string The name of the package that must be present
@@ -32,6 +43,8 @@ function ensurePackageInstalled() {
     # TODO: Restore other types later
     if ! [[ $(command -v "$1" ) ]]; then
         ensureDebianPackageInstalled "$1"
+    elif [[ -f "/etc/arch-release" ]]; then
+      ensureArchPackageInstalled "$1"
     fi
 }
 

@@ -5,27 +5,30 @@ version: "3"
 
 tasks:
   default:
-    desc: Run all linters
+    desc: Run all formatters
     cmds:
       - task: ansible
       - task: markdown
       - task: ruff
+    dir: "../"
 
   ansible:
     silent: true
     desc: lint ansible directory files
     cmds:
-      - ansible-lint --fix -c .github/linters/.ansible.yaml
+      - "{{.RUN_PREFIX}} ansible-lint --fix -c .github/linters/.ansible.yaml"
+    dir: "../"
 
   markdown:
     desc: Lint Markdown
     cmds:
-      - markdownlint-cli2 --fix -c '.github/linters/.markdownlint.yaml' *.md **/*.md !.venv/**/*.md
+      - "{{.RUN_PREFIX}} markdownlint-cli2 --fix -c '.github/linters/.markdownlint.yaml' *.md **/*.md !.venv/**/*.md"
     ignore_error : true
+    dir: "../"
 
   ruff:
-    silent: true
     desc: Run ruff
     cmds:
-      - "{{.RUN_PREFIX}} ruff format {{.PYTHON_SRC}} --fix --config {{.DASBOOTSTRAP_HOME}}/pyproject.toml --line-length 128 --target-version py312"
+      - "ruff format --config {{.DASBOOTSTRAP_HOME}}/pyproject.toml --line-length 128 --target-version py312 {{.PYTHON_SRC}}"
     ignore_error : true
+    dir: "../"

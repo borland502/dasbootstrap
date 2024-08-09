@@ -9,7 +9,9 @@ vars:
     sh: | 
       fd --extension 'yaml' --extension 'yml' --full-path . ~/.ansible/playbooks/
   PYTHON_SRC:
-    sh: fd --extension 'py' --type file --exclude='.venv'
+    sh: "fd --extension 'py' --type file --exclude='.venv' --full-path . {{.ROOT_DIR}} | tr '\n' ' '"
+  MARKDOWN_FILES:
+    sh: "fd --extension 'md' --type file --exclude='.venv' --full-path . {{.ROOT_DIR}} | tr '\n' ' '"
   PYTHON_FILES:
     sh: fd --extension 'py' --type file
   YAML_FILES:
@@ -17,12 +19,20 @@ vars:
 
 # System adapted from cryptpad:  https://github.com/nicholaswilde/docker-cryptpad
 includes:
-  ansible: "./.taskfiles/ansible.yaml"
-  build: "./.taskfiles/build.yaml"
+  ansible:
+    taskfile: "./.taskfiles/ansible.yaml"
+    dir: "{{.ROOT_DIR}}"
+  build:
+    taskfile: "./.taskfiles/build.yaml"
+    dir: "{{.ROOT_DIR}}"
   buildx: "./.taskfiles/buildx.yaml"
   format: "./.taskfiles/format.yaml"
   inventory: "./.taskfiles/inventory.yaml"
-  lint: "./.taskfiles/lint.yaml"
+  lint:
+    taskfile: "./.taskfiles/lint.yaml"
+    dir: "{{.ROOT_DIR}}"
+
+  test: "./.taskfiles/test.yaml"
 
 tasks:
   build:automation_station:

@@ -2,17 +2,16 @@ import ipaddress
 from functools import cached_property
 
 import fire
-from dns import reversename, resolver
+from dns import resolver, reversename
 from dns.name import Name
 from dns.resolver import NXDOMAIN
 
-from components.dasbootstrap.inventory.core import KitchenSinkInventory
-from components.dasbootstrap.abc.core import DASBootstrap
 from ansible.inventory.host import Host
+from components.dasbootstrap.abc.core import DASBootstrap
+from components.dasbootstrap.inventory.core import KitchenSinkInventory
 
 
 class ActiveInventory(DASBootstrap):
-
   def __init__(self):
     kitchen_sink_inventory = KitchenSinkInventory()
     inventory: list[Host] = kitchen_sink_inventory.merged_inventory
@@ -46,12 +45,12 @@ class ActiveInventory(DASBootstrap):
   def _filter_duplicates(cls, filtered_inventory, host: Host):
     # We are only interested in sources that provide Host objects
     if host is None or not isinstance(host, Host):
-      return None
+      return
 
     # hostname is not from nmap, so normalize and store host
     host.name = cls._normalize_hostname(host.name)
     if host.name is None:
-      return None
+      return
 
     if filtered_inventory.get(f"{host.name}") is None:
       filtered_inventory[f"{host.name}"] = host
@@ -77,6 +76,3 @@ class ActiveInventory(DASBootstrap):
 
   def run(self) -> None:
     print(self.inventory)
-
-
-fire.Fire(ActiveInventory)

@@ -8,23 +8,23 @@ from functools import cached_property
 from pathlib import Path
 
 import xdg_base_dirs
-from ansible.inventory.group import Group
-
-from components.dasbootstrap.resources.paths import Directories, Inventory
-from components.dasbootstrap.resources.paths import Inventory as inv_sources
-from components.dasbootstrap.ansible.core import Actions
+from benedict import benedict
 from cachier import cachier, set_default_params
 
+from ansible.inventory.group import Group
 from ansible.inventory.host import Host
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import init_plugin_loader
 from ansible.vars.manager import VariableManager
-from benedict import benedict
+from components.dasbootstrap.ansible.core import Actions
+from components.dasbootstrap.resources.paths import Directories, Inventory
+from components.dasbootstrap.resources.paths import Inventory as inv_sources
 
 
 class InventorySource:
   """InventorySource is a simple abstraction over ansible's complicated inventory plugin system."""
+
   default_basedir: Path = Path(Directories.IHOME)
 
   def __init__(self, basedir: Path = default_basedir, source=None):

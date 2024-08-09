@@ -1,0 +1,21 @@
+pve_node: "example_node"
+# FQDN or IP of the Proxmox API endpoint where we manage the cluster or node
+pve_api_host: "example.example.com"
+pve_ansible_user: "ansible_user"
+
+pve_hostname: "example"
+pve_lxc_ansible_user: ansible
+pve_lxc_searchdomain: example.com
+pve_lxc_root_authorized_pubkey: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+pve_lxc_vmid: 2300
+pve_lxc_net_interfaces:
+  - id: net0
+    name: eth0
+    ip4: 10.10.10.10
+    netmask4: 24
+    gw4: 10.10.10.1
+    bridge: vmbr0
+    firewall: false
+
+pve_lxc_disk: local-lvm:16
+pve_lxc_storage: local-lvm

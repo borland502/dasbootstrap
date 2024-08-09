@@ -1,6 +1,7 @@
 """PS: all password entries are in cleartext between server and browser, DO NOT DEPLOY THIS ON A SERVER. EVER.
 https://gist.github.com/andfanilo/4bd880ea760d67d5afc40d215ef060e1.
 """
+
 import logging
 from io import BytesIO, StringIO
 from pathlib import Path

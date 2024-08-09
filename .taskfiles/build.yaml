@@ -11,6 +11,7 @@ tasks:
     desc: Build entire multi-module mono repo
     cmds:
       - "poetry build-project"
+    dir: "{{.ROOT_DIR}}"
 
   all:projects:
     desc: Build all projects individually with their specific dependencies

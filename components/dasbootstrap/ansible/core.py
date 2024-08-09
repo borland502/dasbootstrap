@@ -3,11 +3,20 @@ from __future__ import annotations
 import os
 
 import ansible_runner
+
 from components.dasbootstrap.resources.ansible import find_playbook
 from components.dasbootstrap.resources.paths import Directories, Inventory, Requirements, Variables
 
-INVENTORY: list[str] = ["-i", str(Inventory.DYNAMIC_LDAP), "-i", str(Inventory.DYNAMIC_NMAP),"-i",
-                        str(Inventory.DYNAMIC_PROXMOX),"-i", str(Inventory.STATIC_HOSTS_TOML)]
+INVENTORY: list[str] = [
+  "-i",
+  str(Inventory.DYNAMIC_LDAP),
+  "-i",
+  str(Inventory.DYNAMIC_NMAP),
+  "-i",
+  str(Inventory.DYNAMIC_PROXMOX),
+  "-i",
+  str(Inventory.STATIC_HOSTS_TOML),
+]
 VARS: list[str] = [
   *INVENTORY,
   *[
@@ -61,16 +70,9 @@ class Actions:
 
   @classmethod
   def gather_facts(cls):
+    """Gather facts so that vars & inventory will include them.  Assume ssh already setup with keys.
     """
-    Gather facts so that vars & inventory will include them.  Assume ssh already setup with keys.
-    """
-    ansible_runner.run_command('ansible', cmdline_args=[
-      'all',
-      '-m',
-      'ansible.builtin.setup',
-      *INVENTORY,
-      '--user=root'
-    ])
+    ansible_runner.run_command("ansible", cmdline_args=["all", "-m", "ansible.builtin.setup", *INVENTORY, "--user=root"])
 
   @classmethod
   def dump_inventory(cls) -> tuple:

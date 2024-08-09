@@ -3,10 +3,9 @@
 from typer import Option, Typer
 
 from dasbootstrap.ansible.core import Actions, Plays
-
 from dasbootstrap.resources.paths import OperatingSystemFiles
-
 from dasbootstrap.ssh import HostKeysUtils
+
 
 def create_kvm(
   app_name: str = Option("kvm", help="Virtual machine to manage (defaults to kvm)"),

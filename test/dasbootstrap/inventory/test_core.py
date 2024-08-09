@@ -8,7 +8,6 @@ from .inventory_generator import inventory_generator
 
 
 class TestInventory(unittest.TestCase):
-
   def setUp(self):
     with tempfile.TemporaryDirectory(delete=False) as tmpdir:
       temp_inventory_file = str(Path(tmpdir).joinpath("hosts.ini"))
@@ -28,25 +27,3 @@ class TestInventory(unittest.TestCase):
     self.assertLessEqual(2, len(inv_mgr.groups))
     assert inv_mgr.groups.get("all") is not None
     assert inv_mgr.groups.get("ungrouped") is not None
-
-  # def test_cached_inventory(self):
-  #   with tempfile.TemporaryDirectory(delete=False) as tmpdir:
-  #     cache_path = os.path.join(tmpdir, 'inventory_cache.txt')
-  #     inventory = Inventory(self.inventory_source, cache_path=Path(cache_path))
-  #     assert inventory is not None
-  #     cached_inventory = Inventory(self.inventory_source)
-  #     # Two different memory references for the inventory container
-  #     assert inventory != cached_inventory
-  #     # However the hosts property is identical
-  #     assert inventory.hosts == cached_inventory.hosts
-  #     assert os.path.exists(cache_path)
-  #
-  #
-  # def uncached_inventory(self):
-  #   inventory = Inventory(self.inventory_source, cache=False)
-  #   assert inventory is not None
-  #   cached_inventory = Inventory(self.inventory_source, cache=False)
-  #   # Two different memory references for the inventory container
-  #   assert inventory != cached_inventory
-  #   # However the hosts property is identical
-  #   assert inventory.hosts == cached_inventory.hosts

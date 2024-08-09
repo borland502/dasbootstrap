@@ -8,6 +8,7 @@ hosts_db = Directories.ANSIBLE_HOME
 
 engine = create_engine()
 
+
 class AnsibleHost(Base):
   __tablename__ = "hosts"
   id = Column(Integer, primary_key=True)

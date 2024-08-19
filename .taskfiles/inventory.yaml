@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+includes:
+  ansible:
+    taskfile: ./ansible.yaml
+    internal: true
+
+tasks:
+
+  default:
+    cmds:
+      - task: nmap
+      - task: ldap
+      - task: proxmox
+
+#  proxmox-setup:
+#    desc: Run Ansible setup playbook on the nodes
+#    cmds:
+#      - ansible-playbook -i {{.ANSIBLE_INV_HOME}}/hosts.yml {{.ANSIBLE_PLAYBOOK_DIR}}/proxmox-setup.yml
+#
+#  proxmox-apt-upgrade:
+#    desc: Update proxmox packages
+#    cmds:
+#      - ansible-playbook -i {{.ANSIBLE_INV_HOME}}/hosts.yml {{.ANSIBLE_PLAYBOOK_DIR}}/proxmox-apt-upgrade.yml
+
+  nmap:
+    deps:
+      - task: ansible:setup
+        silent: true
+    desc: "Display inventory with the ansible nmap dynamic plugin"
+    cmds:
+      - "{{ .ANSIBLE_INVENTORY }} {{.ANSIBLE_NMAP_INV_SUFFIX}} {{.ANSIBLE_INV_EXPORT_SUFFIX}}"
+    dir: "{{.ANSIBLE_WORKING_DIR}}"
+
+  ldap:
+    deps:
+      - task: ansible:setup
+    desc: "Display inventory with the ansible ldap dynamic plugin"
+    cmds:
+      - "{{ .ANSIBLE_INVENTORY }} {{.ANSIBLE_LDAP_INV_SUFFIX}} {{.ANSIBLE_INV_EXPORT_SUFFIX}}"
+    dir: "{{.ANSIBLE_WORKING_DIR}}"
+
+  proxmox:
+    deps:
+      - task: ansible:setup
+    desc: "Display inventory with the ansible proxmox dynamic plugin"
+    cmds:
+      - "{{ .ANSIBLE_INVENTORY }} {{.ANSIBLE_PROXMOX_INV_SUFFIX}} {{.ANSIBLE_INV_EXPORT_SUFFIX}}"
+    dir: "{{.ANSIBLE_WORKING_DIR}}"

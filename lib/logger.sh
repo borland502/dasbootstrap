@@ -104,7 +104,7 @@ if [ "${container:=}" != 'docker' ]; then
     else
         installGum
     fi
-    
+
     # If gum's path was set, then turn on enhanced logging
     if [ -n "$GUM_PATH" ]; then
         chmod +x "$GUM_PATH"
@@ -139,7 +139,7 @@ logger() {
             else
                 installGlow
             fi
-            
+
             if [ -n "$GLOW_PATH" ]; then
                 chmod +x "$GLOW_PATH"
                 ENHANCED_LOGGING=true
@@ -179,7 +179,7 @@ choose() {
         for CURRENT_VAR in "$@"; do
             CHOOSE_ARGS="$CHOOSE_ARGS \"$CURRENT_VAR\""
         done
-        eval $CHOOSE_ARGS
+        eval "$CHOOSE_ARGS"
     else
         echo "ERROR: gum is not installed!"
     fi

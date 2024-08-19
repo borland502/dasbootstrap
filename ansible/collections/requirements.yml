@@ -1,35 +1,39 @@
 ---
+# code: language=ansible
 collections:
-  - name: "ansible.posix"
+  - name: ansible.posix
     version: "*"
 
-  - name: "community.general"
+  - name: community.general
     version: "*"
 
-  - name: "microsoft.ad"
+  - name: microsoft.ad
     version: "*"
 
-  - name: "community.docker"
+  - name: community.docker
     version: "*"
 
-  - name: "robertdebock.roles"
+  - name: robertdebock.roles
     version: "*"
 
-  - name: "buluma.roles"
+  - name: buluma.roles
     version: "*"
 
-  - name: "debops.debops"
+  - name: debops.debops
     version: "*"
 
-  - name: "linuxhq.linux"
+  - name: linuxhq.linux
     version: "*"
 
-  - name: "linuxhq.cloudflare"
+  - name: linuxhq.cloudflare
     version: "*"
 
-  - name: "bodsch.systemd"
+  - name: bodsch.systemd
     version: "*"
 
   - name: git+https://github.com/borland502/proxmox-ansible.git
     type: git
+    version: "*"
+
+  - name: community.zabbix
     version: "*"

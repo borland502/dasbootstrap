@@ -1,0 +1,56 @@
+---
+version: "3"
+
+vars:
+  ANSIBLE_INVENTORY_PICKLE_FILES:
+    sh: |
+      fd --type file --full-path . "${XDG_CACHE_HOME}/ansible"
+  ANSIBLE_PLAYBOOKS:
+    sh: | 
+      fd --extension 'yaml' --extension 'yml' --full-path . ~/.ansible/playbooks/
+  PYTHON_SRC:
+    sh: "fd --extension 'py' --type file --exclude='.venv' --full-path . {{.ROOT_DIR}} | tr '\n' ' '"
+  MARKDOWN_FILES:
+    sh: "fd --extension 'md' --type file --exclude='.venv' --full-path . {{.ROOT_DIR}} | tr '\n' ' '"
+  PYTHON_FILES:
+    sh: fd --extension 'py' --type file
+  YAML_FILES:
+    sh: fd --extension 'yaml' --extension 'yml' --type file --exclude='.venv'
+
+# System adapted from cryptpad:  https://github.com/nicholaswilde/docker-cryptpad
+includes:
+  ansible:
+    taskfile: "./.taskfiles/ansible.yaml"
+    dir: "{{.ROOT_DIR}}"
+  build:
+    taskfile: "./.taskfiles/build.yaml"
+    dir: "{{.ROOT_DIR}}"
+  buildx: "./.taskfiles/buildx.yaml"
+  format: "./.taskfiles/format.yaml"
+  inventory: "./.taskfiles/inventory.yaml"
+  lint:
+    taskfile: "./.taskfiles/lint.yaml"
+    dir: "{{.ROOT_DIR}}"
+
+  test: "./.taskfiles/test.yaml"
+
+tasks:
+  build:automation_station:
+    desc: Build the automation_station module
+    cmd: poetry build-project
+    dir: projects/automation_station
+    sources:
+      - "{{.DBS_POLY_BASES}}"
+      - "{{.DBS_POLY_COMPONENTS}}"
+
+  install:automation_station:
+    deps:
+      - build:automation_station
+    desc: Install automation station module to venv
+    cmd: pip install {{.AS_WHEEL}}
+    dir: projects/automation_station
+    generates:
+      - "{{.DBS_VENV_PACKAGES}}/automation_station"
+    vars:
+      AS_WHEEL:
+        sh: find . -name "automation_station*.whl"

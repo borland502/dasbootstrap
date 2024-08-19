@@ -1,0 +1,22 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+vars:
+  PROJECT_DIRS:
+    sh: fd --type d --exact-depth 2 --absolute-path --full-path 'projects'
+
+tasks:
+  all:
+    desc: Build entire multi-module mono repo
+    cmds:
+      - "poetry build-project"
+    dir: "{{.ROOT_DIR}}"
+
+  all:projects:
+    desc: Build all projects individually with their specific dependencies
+    cmds:
+      - for: { var: PROJECT_DIRS }
+        cmd: |
+          cd "{{ .ITEM }}"
+          poetry build-project
